@@ -1,0 +1,6 @@
+.env
+.git
+.gitignore
+*.md
+seed.sql
+docker-compose.yml

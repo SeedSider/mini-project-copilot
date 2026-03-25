@@ -1,0 +1,30 @@
+package models
+
+// Profile represents a user profile record in the database.
+type Profile struct {
+	ID           string `json:"id"`
+	Bank         string `json:"bank"`
+	Branch       string `json:"branch"`
+	Name         string `json:"name"`
+	CardNumber   string `json:"card_number"`
+	CardProvider string `json:"card_provider"`
+	Balance      int64  `json:"balance"`
+	Currency     string `json:"currency"`
+	AccountType  string `json:"accountType"`
+}
+
+// EditProfileRequest contains the fields that can be updated via PUT.
+type EditProfileRequest struct {
+	Bank         string `json:"bank"`
+	Branch       string `json:"branch"`
+	Name         string `json:"name"`
+	CardNumber   string `json:"card_number"`
+	CardProvider string `json:"card_provider"`
+	Currency     string `json:"currency"`
+}
+
+// StandardResponse is the consistent response format for success/error.
+type StandardResponse struct {
+	Code        int    `json:"code"`
+	Description string `json:"description"`
+}

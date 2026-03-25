@@ -1,0 +1,47 @@
+package server
+
+import (
+	"net/http"
+
+	"github.com/bankease/user-profile-service/internal/handlers"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+)
+
+// setupRoutes configures all routes and middleware.
+// Pattern from: addons-issuance-lc-service/server/gateway_http_handler.go
+func setupRoutes(profileHandler *handlers.ProfileHandler, menuHandler *handlers.MenuHandler) chi.Router {
+	r := chi.NewRouter()
+
+	// Middleware stack
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+	r.Use(corsMiddleware)
+
+	// Profile routes
+	r.Get("/api/profile/{id}", profileHandler.GetProfile)
+	r.Put("/api/profile/{id}", profileHandler.UpdateProfile)
+
+	// Menu routes
+	r.Get("/api/menu", menuHandler.GetAllMenus)
+	r.Get("/api/menu/{accountType}", menuHandler.GetMenusByAccountType)
+
+	return r
+}
+
+// corsMiddleware sets CORS headers for frontend (Expo web) compatibility.
+// Pattern from: addons-issuance-lc-service/server/gateway_http_handler.go cors()
+func corsMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, PUT, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Idempotency-Key")
+
+		if r.Method == http.MethodOptions {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}

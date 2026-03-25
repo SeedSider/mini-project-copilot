@@ -1,0 +1,67 @@
+package repository
+
+import (
+	"context"
+	"database/sql"
+	"time"
+
+	"github.com/bankease/user-profile-service/internal/models"
+)
+
+// ProfileRepository handles database operations for profile.
+// Pattern from: addons-issuance-lc-service/server/db/issued_lc_provider.go
+type ProfileRepository struct {
+	DB *sql.DB
+}
+
+// GetProfileByID retrieves a profile by its UUID.
+func (r *ProfileRepository) GetProfileByID(ctx context.Context, id string) (*models.Profile, error) {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	query := `SELECT id, bank, branch, name, card_number, card_provider, balance, currency, account_type
+		FROM profile WHERE id = $1`
+
+	var p models.Profile
+	err := r.DB.QueryRowContext(ctx, query, id).Scan(
+		&p.ID, &p.Bank, &p.Branch, &p.Name,
+		&p.CardNumber, &p.CardProvider, &p.Balance,
+		&p.Currency, &p.AccountType,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &p, nil
+}
+
+// UpdateProfile updates editable fields of a profile by ID.
+// Returns sql.ErrNoRows if profile not found.
+func (r *ProfileRepository) UpdateProfile(ctx context.Context, id string, req models.EditProfileRequest) error {
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	query := `UPDATE profile
+		SET bank = $1, branch = $2, name = $3, card_number = $4, card_provider = $5, currency = $6
+		WHERE id = $7`
+
+	result, err := r.DB.ExecContext(ctx, query,
+		req.Bank, req.Branch, req.Name,
+		req.CardNumber, req.CardProvider, req.Currency,
+		id,
+	)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return sql.ErrNoRows
+	}
+
+	return nil
+}
