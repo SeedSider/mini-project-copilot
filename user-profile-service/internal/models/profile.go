@@ -11,6 +11,7 @@ type Profile struct {
 	Balance      int64  `json:"balance"`
 	Currency     string `json:"currency"`
 	AccountType  string `json:"accountType"`
+	Image        string `json:"image"`
 }
 
 // EditProfileRequest contains the fields that can be updated via PUT.
@@ -19,8 +20,6 @@ type EditProfileRequest struct {
 	Branch       string `json:"branch"`
 	Name         string `json:"name"`
 	CardNumber   string `json:"card_number"`
-	CardProvider string `json:"card_provider"`
-	Currency     string `json:"currency"`
 }
 
 // StandardResponse is the consistent response format for success/error.

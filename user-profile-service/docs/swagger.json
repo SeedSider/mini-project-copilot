@@ -197,12 +197,6 @@
                 "card_number": {
                     "type": "string"
                 },
-                "card_provider": {
-                    "type": "string"
-                },
-                "currency": {
-                    "type": "string"
-                },
                 "name": {
                     "type": "string"
                 }
@@ -270,6 +264,9 @@
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "image": {
                     "type": "string"
                 }
             }
