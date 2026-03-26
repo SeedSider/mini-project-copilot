@@ -1,0 +1,70 @@
+package main
+
+import (
+	"fmt"
+	"os"
+	"strconv"
+	"time"
+
+	"bitbucket.bri.co.id/scm/addons/addons-identity-service/server/lib/database"
+	databasewrapper "bitbucket.bri.co.id/scm/addons/addons-identity-service/server/lib/database/wrapper"
+)
+
+var (
+	dbSql *database.DbSql
+)
+
+func startDBConnection() {
+	log.Info("", "startDBConnection", "Starting Db Connections", nil, nil, nil, nil)
+	initDBMain()
+}
+
+func closeDBConnections() {
+	closeDBMain()
+}
+
+func initDBMain() {
+	log.Info("", "initDBMain", "Main Db - Connecting", nil, nil, nil, nil)
+
+	maxRetry, convErr := strconv.Atoi(config.DbMaxRetry)
+	if convErr != nil {
+		maxRetry = 3
+	}
+
+	dbTimeout, convErr := strconv.Atoi(config.DbTimeout)
+	if convErr != nil {
+		dbTimeout = 120
+		log.Info("", "initDBMain", fmt.Sprintf("Failed to convert database Timeout, set to default: %ds", dbTimeout), nil, nil, nil, convErr)
+	}
+
+	dbSql = database.InitConnectionDB("postgres", database.Config{
+		Host:         config.DbHost,
+		Port:         config.DbPort,
+		User:         config.DbUser,
+		Password:     config.DbPassword,
+		DatabaseName: config.DbName,
+		SslMode:      config.DbSslmode,
+		TimeZone:     config.DbTimezone,
+		MaxRetry:     maxRetry,
+		Timeout:      time.Duration(dbTimeout) * time.Second,
+	}, &databasewrapper.DatabaseWrapper{})
+
+	err := dbSql.Connect()
+	if err != nil {
+		log.Fatal("", "initDBMain", fmt.Sprintf("[initDBMain] Failed connect to DB main: %v", err), nil, nil, nil, err)
+		os.Exit(1)
+		return
+	}
+
+	dbSql.SetMaxIdleConns(0)
+	dbSql.SetMaxOpenConns(100)
+
+	log.Info("", "initDBMain", "Main Db - Connected", nil, nil, nil, nil)
+}
+
+func closeDBMain() {
+	if err := dbSql.ClosePmConnection(); err != nil {
+		log.Error("", "closeDBMain", fmt.Sprintf("Error on disconnection with DB Main : %v", err), nil, nil, nil, err)
+	}
+	log.Info("", "closeDBMain", "Closing DB Main Success", nil, nil, nil, nil)
+}

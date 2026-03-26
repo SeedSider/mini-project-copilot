@@ -1,0 +1,144 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Identity Service API",
+    "description": "BRICaMS Identity Service - Sign Up & Sign In",
+    "version": "1.0.0"
+  },
+  "host": "localhost:3031",
+  "basePath": "/",
+  "schemes": ["http"],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "paths": {
+    "/api/auth/signup": {
+      "post": {
+        "summary": "Register a new user",
+        "operationId": "SignUp",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SignUpRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "User registered successfully",
+            "schema": {
+              "$ref": "#/definitions/SignUpResponse"
+            }
+          },
+          "409": {
+            "description": "Email already registered"
+          },
+          "422": {
+            "description": "Validation error"
+          }
+        }
+      }
+    },
+    "/api/auth/signin": {
+      "post": {
+        "summary": "Sign in with email and password",
+        "operationId": "SignIn",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/SignInRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Sign in successful",
+            "schema": {
+              "$ref": "#/definitions/SignInResponse"
+            }
+          },
+          "401": {
+            "description": "Invalid credentials"
+          }
+        }
+      }
+    },
+    "/api/identity/me": {
+      "get": {
+        "summary": "Get current user profile",
+        "operationId": "GetMe",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Authorization",
+            "type": "string",
+            "required": true,
+            "description": "Bearer <token>"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User profile",
+            "schema": {
+              "$ref": "#/definitions/GetMeResponse"
+            }
+          },
+          "401": {
+            "description": "Unauthorized"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "SignUpRequest": {
+      "type": "object",
+      "required": ["email", "password", "full_name"],
+      "properties": {
+        "email": { "type": "string", "example": "user@email.com" },
+        "password": { "type": "string", "example": "password123" },
+        "full_name": { "type": "string", "example": "John Doe" },
+        "phone": { "type": "string", "example": "08123456789" }
+      }
+    },
+    "SignUpResponse": {
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "email": { "type": "string" },
+        "full_name": { "type": "string" }
+      }
+    },
+    "SignInRequest": {
+      "type": "object",
+      "required": ["email", "password"],
+      "properties": {
+        "email": { "type": "string", "example": "user@email.com" },
+        "password": { "type": "string", "example": "password123" }
+      }
+    },
+    "SignInResponse": {
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "email": { "type": "string" },
+        "full_name": { "type": "string" },
+        "token": { "type": "string" }
+      }
+    },
+    "GetMeResponse": {
+      "type": "object",
+      "properties": {
+        "user_id": { "type": "string" },
+        "email": { "type": "string" },
+        "full_name": { "type": "string" },
+        "phone": { "type": "string" }
+      }
+    }
+  }
+}

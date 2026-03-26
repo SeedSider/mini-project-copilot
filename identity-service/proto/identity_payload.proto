@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package identity.service.v1;
+
+option go_package = "bitbucket.bri.co.id/scm/addons/addons-identity-service/protogen/identity-service";
+
+// SignUp
+message SignUpRequest {
+  string email = 1;
+  string password = 2;
+  string full_name = 3;
+  string phone = 4;
+}
+
+message SignUpResponse {
+  string user_id = 1;
+  string email = 2;
+  string full_name = 3;
+}
+
+// SignIn
+message SignInRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message SignInResponse {
+  string user_id = 1;
+  string email = 2;
+  string full_name = 3;
+  string token = 4;
+}
+
+// GetMe
+message GetMeRequest {}
+
+message GetMeResponse {
+  string user_id = 1;
+  string email = 2;
+  string full_name = 3;
+  string phone = 4;
+}
+
+// Error
+message ErrorBodyResponse {
+  bool error = 1;
+  uint32 code = 2;
+  string message = 3;
+}

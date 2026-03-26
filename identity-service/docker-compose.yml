@@ -1,0 +1,12 @@
+services:
+  identity-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: identity-service
+    ports:
+      - "3031:3031"
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package identity.service.v1;
+
+option go_package = "bitbucket.bri.co.id/scm/addons/addons-identity-service/protogen/identity-service";
+
+import "google/api/annotations.proto";
+import "identity_payload.proto";
+
+service IdentityService {
+  rpc SignUp(SignUpRequest) returns (SignUpResponse) {
+    option (google.api.http) = {
+      post: "/api/identity/signup"
+      body: "*"
+    };
+  }
+
+  rpc SignIn(SignInRequest) returns (SignInResponse) {
+    option (google.api.http) = {
+      post: "/api/identity/signin"
+      body: "*"
+    };
+  }
+
+  rpc GetMe(GetMeRequest) returns (GetMeResponse) {
+    option (google.api.http) = {
+      get: "/api/identity/me"
+    };
+  }
+}
