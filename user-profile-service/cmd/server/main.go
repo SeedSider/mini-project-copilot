@@ -4,10 +4,17 @@ import (
 	"log"
 	"os"
 
+	_ "github.com/bankease/user-profile-service/docs"
 	"github.com/bankease/user-profile-service/internal/db"
 	"github.com/bankease/user-profile-service/internal/server"
 	"github.com/joho/godotenv"
 )
+
+// @title        BankEase User Profile API
+// @version      1.0
+// @description  REST API for managing user profiles and homepage menus in BankEase mobile banking app.
+// @host         localhost:8080
+// @BasePath     /
 
 // GetEnv reads an environment variable with a fallback default.
 // Pattern from: addons-issuance-lc-service/server/core_config.go

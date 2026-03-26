@@ -1,0 +1,192 @@
+basePath: /
+definitions:
+  models.EditProfileRequest:
+    properties:
+      bank:
+        type: string
+      branch:
+        type: string
+      card_number:
+        type: string
+      card_provider:
+        type: string
+      currency:
+        type: string
+      name:
+        type: string
+    type: object
+  models.Menu:
+    properties:
+      icon_url:
+        type: string
+      id:
+        type: string
+      index:
+        type: integer
+      is_active:
+        type: boolean
+      title:
+        type: string
+      type:
+        type: string
+    type: object
+  models.MenuResponse:
+    properties:
+      menus:
+        items:
+          $ref: '#/definitions/models.Menu'
+        type: array
+    type: object
+  models.Profile:
+    properties:
+      accountType:
+        type: string
+      balance:
+        type: integer
+      bank:
+        type: string
+      branch:
+        type: string
+      card_number:
+        type: string
+      card_provider:
+        type: string
+      currency:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  models.StandardResponse:
+    properties:
+      code:
+        type: integer
+      description:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: REST API for managing user profiles and homepage menus in BankEase
+    mobile banking app.
+  title: BankEase User Profile API
+  version: "1.0"
+paths:
+  /api/menu:
+    get:
+      description: Retrieve all homepage menu items
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.MenuResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.StandardResponse'
+      summary: Get all menus
+      tags:
+      - Menu
+  /api/menu/{accountType}:
+    get:
+      description: Retrieve menu items filtered by account type. PREMIUM returns all
+        menus, REGULAR returns only REGULAR menus.
+      parameters:
+      - description: Account type (REGULAR or PREMIUM)
+        in: path
+        name: accountType
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.MenuResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.StandardResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.StandardResponse'
+      summary: Get menus by account type
+      tags:
+      - Menu
+  /api/profile/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a user profile by ID
+      parameters:
+      - description: Profile ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Profile'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.StandardResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.StandardResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.StandardResponse'
+      summary: Get user profile
+      tags:
+      - Profile
+    put:
+      consumes:
+      - application/json
+      description: Update editable fields of a user profile
+      parameters:
+      - description: Profile ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Profile fields to update
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/models.EditProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.StandardResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.StandardResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.StandardResponse'
+      summary: Update user profile
+      tags:
+      - Profile
+swagger: "2.0"

@@ -6,6 +6,7 @@ import (
 	"github.com/bankease/user-profile-service/internal/handlers"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 // setupRoutes configures all routes and middleware.
@@ -25,6 +26,11 @@ func setupRoutes(profileHandler *handlers.ProfileHandler, menuHandler *handlers.
 	// Menu routes
 	r.Get("/api/menu", menuHandler.GetAllMenus)
 	r.Get("/api/menu/{accountType}", menuHandler.GetMenusByAccountType)
+
+	// Swagger UI
+	r.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL("/swagger/doc.json"),
+	))
 
 	return r
 }

@@ -19,6 +19,17 @@ type ProfileHandler struct {
 }
 
 // GetProfile handles GET /api/profile/{id}
+// @Summary      Get user profile
+// @Description  Retrieve a user profile by ID
+// @Tags         Profile
+// @Accept       json
+// @Produce      json
+// @Param        id   path      string  true  "Profile ID (UUID)"
+// @Success      200  {object}  models.Profile
+// @Failure      400  {object}  models.StandardResponse
+// @Failure      404  {object}  models.StandardResponse
+// @Failure      500  {object}  models.StandardResponse
+// @Router       /api/profile/{id} [get]
 func (h *ProfileHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if id == "" {
@@ -41,6 +52,18 @@ func (h *ProfileHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
 }
 
 // UpdateProfile handles PUT /api/profile/{id}
+// @Summary      Update user profile
+// @Description  Update editable fields of a user profile
+// @Tags         Profile
+// @Accept       json
+// @Produce      json
+// @Param        id    path      string                    true  "Profile ID (UUID)"
+// @Param        body  body      models.EditProfileRequest  true  "Profile fields to update"
+// @Success      200   {object}  models.StandardResponse
+// @Failure      400   {object}  models.StandardResponse
+// @Failure      404   {object}  models.StandardResponse
+// @Failure      500   {object}  models.StandardResponse
+// @Router       /api/profile/{id} [put]
 func (h *ProfileHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	if id == "" {

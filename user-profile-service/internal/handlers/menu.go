@@ -15,6 +15,13 @@ type MenuHandler struct {
 }
 
 // GetAllMenus handles GET /api/menu
+// @Summary      Get all menus
+// @Description  Retrieve all homepage menu items
+// @Tags         Menu
+// @Produce      json
+// @Success      200  {object}  models.MenuResponse
+// @Failure      500  {object}  models.StandardResponse
+// @Router       /api/menu [get]
 func (h *MenuHandler) GetAllMenus(w http.ResponseWriter, r *http.Request) {
 	menus, err := h.Repo.GetAllMenus(r.Context())
 	if err != nil {
@@ -27,6 +34,15 @@ func (h *MenuHandler) GetAllMenus(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetMenusByAccountType handles GET /api/menu/{accountType}
+// @Summary      Get menus by account type
+// @Description  Retrieve menu items filtered by account type. PREMIUM returns all menus, REGULAR returns only REGULAR menus.
+// @Tags         Menu
+// @Produce      json
+// @Param        accountType  path      string  true  "Account type (REGULAR or PREMIUM)"
+// @Success      200          {object}  models.MenuResponse
+// @Failure      400          {object}  models.StandardResponse
+// @Failure      500          {object}  models.StandardResponse
+// @Router       /api/menu/{accountType} [get]
 func (h *MenuHandler) GetMenusByAccountType(w http.ResponseWriter, r *http.Request) {
 	accountType := chi.URLParam(r, "accountType")
 	if accountType == "" {
