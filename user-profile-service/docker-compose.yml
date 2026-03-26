@@ -9,5 +9,7 @@ services:
     environment:
       DATABASE_URL: ${DATABASE_URL}
       PORT: "8080"
+      AZURE_STORAGE_SAS_URL: ${AZURE_STORAGE_SAS_URL}
+      AZURE_STORAGE_CONTAINER: ${AZURE_STORAGE_CONTAINER:-images}
     extra_hosts:
       - "host.docker.internal:host-gateway"

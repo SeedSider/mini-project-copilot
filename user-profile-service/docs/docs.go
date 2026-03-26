@@ -188,6 +188,56 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/upload/image": {
+            "post": {
+                "description": "Upload an image file to Azure Blob Storage. Returns the URL of the uploaded image.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Upload"
+                ],
+                "summary": "Upload an image",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Image file (jpeg, png, gif, webp — max 5MB)",
+                        "name": "image",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.UploadResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/models.StandardResponse"
+                        }
+                    },
+                    "413": {
+                        "description": "Request Entity Too Large",
+                        "schema": {
+                            "$ref": "#/definitions/models.StandardResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/models.StandardResponse"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -269,10 +319,10 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
-                "name": {
+                "image": {
                     "type": "string"
                 },
-                "image": {
+                "name": {
                     "type": "string"
                 }
             }
@@ -284,6 +334,20 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "description": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.UploadResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "url": {
                     "type": "string"
                 }
             }

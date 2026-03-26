@@ -27,3 +27,10 @@ type StandardResponse struct {
 	Code        int    `json:"code"`
 	Description string `json:"description"`
 }
+
+// UploadResponse is returned after a successful image upload.
+type UploadResponse struct {
+	Code        int    `json:"code"`
+	Description string `json:"description"`
+	URL         string `json:"url"`
+}

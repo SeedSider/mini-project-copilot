@@ -11,7 +11,7 @@ import (
 
 // setupRoutes configures all routes and middleware.
 // Pattern from: addons-issuance-lc-service/server/gateway_http_handler.go
-func setupRoutes(profileHandler *handlers.ProfileHandler, menuHandler *handlers.MenuHandler) chi.Router {
+func setupRoutes(profileHandler *handlers.ProfileHandler, menuHandler *handlers.MenuHandler, uploadHandler *handlers.UploadHandler) chi.Router {
 	r := chi.NewRouter()
 
 	// Middleware stack
@@ -27,6 +27,9 @@ func setupRoutes(profileHandler *handlers.ProfileHandler, menuHandler *handlers.
 	r.Get("/api/menu", menuHandler.GetAllMenus)
 	r.Get("/api/menu/{accountType}", menuHandler.GetMenusByAccountType)
 
+	// Upload routes
+	r.Post("/api/upload/image", uploadHandler.UploadImage)
+
 	// Swagger UI
 	r.Get("/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL("/swagger/doc.json"),
@@ -40,7 +43,7 @@ func setupRoutes(profileHandler *handlers.ProfileHandler, menuHandler *handlers.
 func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, PUT, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Idempotency-Key")
 
 		if r.Method == http.MethodOptions {
