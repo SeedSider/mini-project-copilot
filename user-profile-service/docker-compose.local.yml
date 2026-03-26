@@ -1,0 +1,36 @@
+services:
+  db:
+    image: postgres:17-alpine
+    container_name: bankease-db
+    environment:
+      POSTGRES_USER: bankease
+      POSTGRES_PASSWORD: bankease123
+      POSTGRES_DB: bankease_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./internal/db/migrations/001_init.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bankease -d bankease_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bankease-app
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: postgres://bankease:bankease123@db:5432/bankease_db?sslmode=disable
+      PORT: "8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  pgdata:
