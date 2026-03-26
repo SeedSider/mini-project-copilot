@@ -77,12 +77,6 @@ func (h *ProfileHandler) UpdateProfile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate currency
-	if req.Currency != "IDR" && req.Currency != "USD" {
-		writeError(w, http.StatusBadRequest, "Currency tidak didukung")
-		return
-	}
-
 	if err := h.Repo.UpdateProfile(r.Context(), id, req); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			writeError(w, http.StatusNotFound, "Profile not found")

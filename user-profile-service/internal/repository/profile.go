@@ -19,14 +19,14 @@ func (r *ProfileRepository) GetProfileByID(ctx context.Context, id string) (*mod
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	query := `SELECT id, bank, branch, name, card_number, card_provider, balance, currency, account_type
+	query := `SELECT id, bank, branch, name, card_number, card_provider, balance, currency, account_type, image
 		FROM profile WHERE id = $1`
 
 	var p models.Profile
 	err := r.DB.QueryRowContext(ctx, query, id).Scan(
 		&p.ID, &p.Bank, &p.Branch, &p.Name,
 		&p.CardNumber, &p.CardProvider, &p.Balance,
-		&p.Currency, &p.AccountType,
+		&p.Currency, &p.AccountType, &p.Image,
 	)
 	if err != nil {
 		return nil, err
@@ -42,12 +42,12 @@ func (r *ProfileRepository) UpdateProfile(ctx context.Context, id string, req mo
 	defer cancel()
 
 	query := `UPDATE profile
-		SET bank = $1, branch = $2, name = $3, card_number = $4, card_provider = $5, currency = $6
-		WHERE id = $7`
+		SET bank = $1, branch = $2, name = $3, card_number = $4
+		WHERE id = $5`
 
 	result, err := r.DB.ExecContext(ctx, query,
 		req.Bank, req.Branch, req.Name,
-		req.CardNumber, req.CardProvider, req.Currency,
+		req.CardNumber,
 		id,
 	)
 	if err != nil {
