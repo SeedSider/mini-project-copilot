@@ -203,12 +203,6 @@ const docTemplate = `{
                 "card_number": {
                     "type": "string"
                 },
-                "card_provider": {
-                    "type": "string"
-                },
-                "currency": {
-                    "type": "string"
-                },
                 "name": {
                     "type": "string"
                 }
@@ -276,6 +270,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "image": {
                     "type": "string"
                 }
             }
