@@ -30,9 +30,12 @@ jobs:
               git pull origin master
             fi
 
+            # Deploy user-profile-service
             cd "$REPO_DIR/user-profile-service"
+            docker compose up --build -d
 
-            # Build and restart containers
+            # Deploy identity-service
+            cd "$REPO_DIR/identity-service"
             docker compose up --build -d
 
             # Remove dangling images from previous builds
