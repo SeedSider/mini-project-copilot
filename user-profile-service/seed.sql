@@ -2,7 +2,7 @@
 -- Run: psql -d bankease_db -f seed.sql
 
 -- Profile: 1 default user
-INSERT INTO profile (id, bank, branch, name, card_number, card_provider, balance, currency, account_type)
+INSERT INTO profile (id, bank, branch, name, card_number, card_provider, balance, currency, account_type, image)
 VALUES (
     'da08ecfe-de3b-42b1-b1ce-018e144198f5',
     'Citibank',
@@ -12,13 +12,14 @@ VALUES (
     'Mastercard Platinum',
     5000000,
     'IDR',
-    'REGULAR'
+    'REGULAR',
+    'https://plnsa.blob.core.windows.net/images/309639b1a516241527289b081036c93c.png?sv=2025-11-05&ss=bfqt&srt=sco&sp=rwdlacupiytfx&se=2026-04-11T14:56:36Z&st=2026-03-26T06:41:36Z&spr=https&sig=uqbKbqKFLDkoZX%2FxLosVhIardyUGotShuDGtHWv9yjE%3D'
 ) ON CONFLICT (id) DO NOTHING;
 
 -- Menu: 9 homepage menu items (mix of REGULAR and PREMIUM)
 INSERT INTO menu (id, "index", type, title, icon_url, is_active) VALUES
 ('menu_001', 1, 'REGULAR', 'Account and Card',
- 'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=id_card',
+ 'https://plnsa.blob.core.windows.net/images/23308e7b3129d24e3384d33c8b37e196.svg?sv=2025-11-05&ss=bfqt&srt=sco&sp=rwdlacupiytfx&se=2026-04-11T14:56:36Z&st=2026-03-26T06:41:36Z&spr=https&sig=uqbKbqKFLDkoZX%2FxLosVhIardyUGotShuDGtHWv9yjE%3',
  TRUE),
 ('menu_002', 2, 'PREMIUM', 'Transfer',
  'https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=send_money',
