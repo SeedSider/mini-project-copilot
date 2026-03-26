@@ -30,7 +30,7 @@ definitions:
     properties:
       menus:
         items:
-          $ref: '#/definitions/models.Menu'
+          $ref: "#/definitions/models.Menu"
         type: array
     type: object
   models.Profile:
@@ -72,162 +72,202 @@ definitions:
       url:
         type: string
     type: object
-host: localhost:8080
 info:
   contact: {}
-  description: REST API for managing user profiles and homepage menus in BankEase
+  description:
+    REST API for managing user profiles and homepage menus in BankEase
     mobile banking app.
   title: BankEase User Profile API
   version: "1.0"
 paths:
+  /api/profile:
+    get:
+      description:
+        Retrieve the authenticated user's banking profile using JWT Bearer
+        token
+      parameters:
+        - description: Bearer <token>
+          in: header
+          name: Authorization
+          required: true
+          type: string
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: "#/definitions/models.Profile"
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/models.StandardResponse"
+        "404":
+          description: Not Found
+          schema:
+            $ref: "#/definitions/models.StandardResponse"
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/models.StandardResponse"
+      summary: Get my profile
+      tags:
+        - Profile
   /api/menu:
     get:
       description: Retrieve all homepage menu items
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.MenuResponse'
+            $ref: "#/definitions/models.MenuResponse"
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/models.StandardResponse'
+            $ref: "#/definitions/models.StandardResponse"
       summary: Get all menus
       tags:
-      - Menu
+        - Menu
   /api/menu/{accountType}:
     get:
-      description: Retrieve menu items filtered by account type. PREMIUM returns all
+      description:
+        Retrieve menu items filtered by account type. PREMIUM returns all
         menus, REGULAR returns only REGULAR menus.
       parameters:
-      - description: Account type (REGULAR or PREMIUM)
-        in: path
-        name: accountType
-        required: true
-        type: string
+        - description: Account type (REGULAR or PREMIUM)
+          in: path
+          name: accountType
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.MenuResponse'
+            $ref: "#/definitions/models.MenuResponse"
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.StandardResponse'
+            $ref: "#/definitions/models.StandardResponse"
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/models.StandardResponse'
+            $ref: "#/definitions/models.StandardResponse"
       summary: Get menus by account type
       tags:
-      - Menu
+        - Menu
   /api/profile/{id}:
     get:
       consumes:
-      - application/json
+        - application/json
       description: Retrieve a user profile by ID
       parameters:
-      - description: Profile ID (UUID)
-        in: path
-        name: id
-        required: true
-        type: string
+        - description: Profile ID (UUID)
+          in: path
+          name: id
+          required: true
+          type: string
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Profile'
+            $ref: "#/definitions/models.Profile"
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.StandardResponse'
+            $ref: "#/definitions/models.StandardResponse"
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/models.StandardResponse'
+            $ref: "#/definitions/models.StandardResponse"
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/models.StandardResponse'
+            $ref: "#/definitions/models.StandardResponse"
       summary: Get user profile
       tags:
-      - Profile
+        - Profile
     put:
       consumes:
-      - application/json
+        - application/json
       description: Update editable fields of a user profile
       parameters:
-      - description: Profile ID (UUID)
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Profile fields to update
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/models.EditProfileRequest'
+        - description: Profile ID (UUID)
+          in: path
+          name: id
+          required: true
+          type: string
+        - description: Profile fields to update
+          in: body
+          name: body
+          required: true
+          schema:
+            $ref: "#/definitions/models.EditProfileRequest"
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.StandardResponse'
+            $ref: "#/definitions/models.StandardResponse"
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.StandardResponse'
+            $ref: "#/definitions/models.StandardResponse"
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/models.StandardResponse'
+            $ref: "#/definitions/models.StandardResponse"
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/models.StandardResponse'
+            $ref: "#/definitions/models.StandardResponse"
       summary: Update user profile
       tags:
-      - Profile
+        - Profile
   /api/upload/image:
     post:
       consumes:
-      - multipart/form-data
-      description: Upload an image file to Azure Blob Storage. Returns the URL of
+        - multipart/form-data
+      description:
+        Upload an image file to Azure Blob Storage. Returns the URL of
         the uploaded image.
       parameters:
-      - description: Image file (jpeg, png, gif, webp — max 5MB)
-        in: formData
-        name: image
-        required: true
-        type: file
+        - description: Image file (jpeg, png, gif, webp — max 5MB)
+          in: formData
+          name: image
+          required: true
+          type: file
       produces:
-      - application/json
+        - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.UploadResponse'
+            $ref: "#/definitions/models.UploadResponse"
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/models.StandardResponse'
+            $ref: "#/definitions/models.StandardResponse"
         "413":
           description: Request Entity Too Large
           schema:
-            $ref: '#/definitions/models.StandardResponse'
+            $ref: "#/definitions/models.StandardResponse"
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/models.StandardResponse'
+            $ref: "#/definitions/models.StandardResponse"
       summary: Upload an image
       tags:
-      - Upload
+        - Upload
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

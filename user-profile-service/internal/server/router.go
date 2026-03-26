@@ -20,6 +20,9 @@ func setupRoutes(profileHandler *handlers.ProfileHandler, menuHandler *handlers.
 	r.Use(corsMiddleware)
 
 	// Profile routes
+	r.Get("/api/profile", profileHandler.GetMyProfile)
+	r.Post("/api/profile", profileHandler.CreateProfile)
+	r.Get("/api/profile/user/{user_id}", profileHandler.GetProfileByUserID)
 	r.Get("/api/profile/{id}", profileHandler.GetProfile)
 	r.Put("/api/profile/{id}", profileHandler.UpdateProfile)
 

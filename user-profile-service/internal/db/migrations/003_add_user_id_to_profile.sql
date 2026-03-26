@@ -1,0 +1,2 @@
+ALTER TABLE profile
+    ADD COLUMN IF NOT EXISTS user_id UUID UNIQUE;

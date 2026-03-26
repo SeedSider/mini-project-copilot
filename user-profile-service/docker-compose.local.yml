@@ -7,7 +7,7 @@ services:
       POSTGRES_PASSWORD: bankease123
       POSTGRES_DB: bankease_db
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./internal/db/migrations/001_init.sql:/docker-entrypoint-initdb.d/01-schema.sql
@@ -30,6 +30,7 @@ services:
       PORT: "8080"
       AZURE_STORAGE_SAS_URL: https://plnsa.blob.core.windows.net/?sv=2025-11-05&ss=bfqt&srt=sco&sp=rwdlacupiytfx&se=2026-04-11T14:56:36Z&st=2026-03-26T06:41:36Z&spr=https&sig=uqbKbqKFLDkoZX%2FxLosVhIardyUGotShuDGtHWv9yjE%3D
       AZURE_STORAGE_CONTAINER: images
+      JWT_SECRET: secret
     depends_on:
       db:
         condition: service_healthy

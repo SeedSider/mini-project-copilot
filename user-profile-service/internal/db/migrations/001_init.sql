@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS profile (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id         UUID UNIQUE,
     bank            VARCHAR(50)  NOT NULL,
     branch          VARCHAR(50)  NOT NULL,
     name            VARCHAR(100) NOT NULL,
@@ -7,7 +8,8 @@ CREATE TABLE IF NOT EXISTS profile (
     card_provider   VARCHAR(50)  NOT NULL,
     balance         BIGINT       NOT NULL DEFAULT 0,
     currency        VARCHAR(3)   NOT NULL DEFAULT 'IDR',
-    account_type    VARCHAR(20)  NOT NULL DEFAULT 'REGULAR'
+    account_type    VARCHAR(20)  NOT NULL DEFAULT 'REGULAR',
+    image           TEXT         NOT NULL DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS menu (

@@ -37,6 +37,7 @@ func main() {
 	port := GetEnv("PORT", "8080")
 	azureSASURL := GetEnv("AZURE_STORAGE_SAS_URL", "")
 	azureContainer := GetEnv("AZURE_STORAGE_CONTAINER", "images")
+	jwtSecret := GetEnv("JWT_SECRET", "secret")
 
 	if azureSASURL == "" {
 		log.Println("Warning: AZURE_STORAGE_SAS_URL is not set — POST /api/upload/image will return 500")
@@ -55,7 +56,7 @@ func main() {
 	}
 
 	// Create and start server
-	srv := server.NewServer(database, port, azureSASURL, azureContainer)
+	srv := server.NewServer(database, port, azureSASURL, azureContainer, jwtSecret)
 
 	log.Printf("Server started on :%s", port)
 	if err := srv.Start(); err != nil {

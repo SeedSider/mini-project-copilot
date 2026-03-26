@@ -1,12 +1,12 @@
 package api
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"regexp"
 	"strings"
 
 	manager "bitbucket.bri.co.id/scm/addons/addons-identity-service/server/jwt"
@@ -19,16 +19,14 @@ import (
 //#region SignUp
 
 type SignUpRequest struct {
-	Email    string `json:"email"`
+	Username string `json:"username"`
 	Password string `json:"password"`
-	FullName string `json:"full_name"`
 	Phone    string `json:"phone"`
 }
 
 type SignUpResponse struct {
 	UserID   string `json:"user_id"`
-	Email    string `json:"email"`
-	FullName string `json:"full_name"`
+	Username string `json:"username"`
 }
 
 func (s *Server) SignUp(ctx context.Context, req *SignUpRequest) (*SignUpResponse, error) {
@@ -41,15 +39,15 @@ func (s *Server) SignUp(ctx context.Context, req *SignUpRequest) (*SignUpRespons
 		return nil, s.badRequestError(err.Error())
 	}
 
-	// 2. Check email exists
-	exists, err := s.provider.CheckEmailExists(ctx, req.Email)
+	// 2. Check username exists
+	exists, err := s.provider.CheckUsernameExists(ctx, req.Username)
 	if err != nil {
-		log.Error(processId, "SignUp", fmt.Sprintf("[error][api][func: SignUp] check email: %v", err), nil, nil, nil, err)
+		log.Error(processId, "SignUp", fmt.Sprintf("[error][api][func: SignUp] check username: %v", err), nil, nil, nil, err)
 		return nil, s.serverError()
 	}
 	if exists {
-		log.Info(processId, "SignUp", "Email already registered", nil, nil, nil, nil)
-		return nil, s.conflictError("Email already registered")
+		log.Info(processId, "SignUp", "Username already registered", nil, nil, nil, nil)
+		return nil, s.conflictError("Username already registered")
 	}
 
 	// 3. Hash password
@@ -59,19 +57,21 @@ func (s *Server) SignUp(ctx context.Context, req *SignUpRequest) (*SignUpRespons
 		return nil, s.serverError()
 	}
 
-	// 4-5. Insert user + profile (transactional)
-	result, err := s.provider.CreateUserWithProfile(ctx, req.Email, string(hashedPassword), req.FullName, req.Phone)
+	// 4. Insert user
+	result, err := s.provider.CreateUser(ctx, req.Username, string(hashedPassword), req.Phone)
 	if err != nil {
 		log.Error(processId, "SignUp", fmt.Sprintf("[error][api][func: SignUp] create user: %v", err), nil, nil, nil, err)
 		return nil, s.serverError()
 	}
 
+	// 5. Create banking profile in user-profile-service (best-effort)
+	s.createBankingProfile(processId, result.UserID, req.Username)
+
 	// 6. Return response
 	log.Info(processId, "SignUp", fmt.Sprintf("User registered: %s", result.UserID), nil, nil, nil, nil)
 	return &SignUpResponse{
 		UserID:   result.UserID,
-		Email:    result.Email,
-		FullName: result.FullName,
+		Username: result.Username,
 	}, nil
 }
 
@@ -80,14 +80,13 @@ func (s *Server) SignUp(ctx context.Context, req *SignUpRequest) (*SignUpRespons
 //#region SignIn
 
 type SignInRequest struct {
-	Email    string `json:"email"`
+	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
 type SignInResponse struct {
 	UserID   string `json:"user_id"`
-	Email    string `json:"email"`
-	FullName string `json:"full_name"`
+	Username string `json:"username"`
 	Token    string `json:"token"`
 }
 
@@ -96,12 +95,12 @@ func (s *Server) SignIn(ctx context.Context, req *SignInRequest) (*SignInRespons
 	log.Info(processId, "SignIn", "Processing signin request", nil, nil, nil, nil)
 
 	// 1. Validate input
-	if req.Email == "" || req.Password == "" {
-		return nil, s.badRequestError("Email and password are required")
+	if req.Username == "" || req.Password == "" {
+		return nil, s.badRequestError("Username and password are required")
 	}
 
-	// 2. Find user by email
-	user, err := s.provider.GetUserByEmail(ctx, req.Email)
+	// 2. Find user by username
+	user, err := s.provider.GetUserByUsername(ctx, req.Username)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			log.Info(processId, "SignIn", "Invalid credentials - user not found", nil, nil, nil, nil)
@@ -119,14 +118,10 @@ func (s *Server) SignIn(ctx context.Context, req *SignInRequest) (*SignInRespons
 	}
 
 	// 4. Get profile
-	profile, err := s.provider.GetProfileByUserID(ctx, user.ID)
-	if err != nil {
-		log.Error(processId, "SignIn", fmt.Sprintf("[error][api][func: SignIn] get profile: %v", err), nil, nil, nil, err)
-		return nil, s.serverError()
-	}
+	// (profiles table removed — user data is in users table only)
 
 	// 5. Generate JWT
-	token, err := s.manager.Generate(user.ID, user.Email, profile.FullName)
+	token, err := s.manager.Generate(user.ID, user.Username)
 	if err != nil {
 		log.Error(processId, "SignIn", fmt.Sprintf("[error][api][func: SignIn] generate token: %v", err), nil, nil, nil, err)
 		return nil, s.serverError()
@@ -136,8 +131,7 @@ func (s *Server) SignIn(ctx context.Context, req *SignInRequest) (*SignInRespons
 	log.Info(processId, "SignIn", fmt.Sprintf("User signed in: %s", user.ID), nil, nil, nil, nil)
 	return &SignInResponse{
 		UserID:   user.ID,
-		Email:    user.Email,
-		FullName: profile.FullName,
+		Username: user.Username,
 		Token:    token,
 	}, nil
 }
@@ -148,9 +142,7 @@ func (s *Server) SignIn(ctx context.Context, req *SignInRequest) (*SignInRespons
 
 type GetMeResponse struct {
 	UserID   string `json:"user_id"`
-	Email    string `json:"email"`
-	FullName string `json:"full_name"`
-	Phone    string `json:"phone,omitempty"`
+	Username string `json:"username"`
 }
 
 func (s *Server) GetMe(ctx context.Context) (*GetMeResponse, error) {
@@ -162,22 +154,15 @@ func (s *Server) GetMe(ctx context.Context) (*GetMeResponse, error) {
 		return nil, s.unauthorizedError()
 	}
 
-	profile, err := s.provider.GetProfileByUserID(ctx, claims.UserID)
+	profile, err := s.provider.GetUserByUsername(ctx, claims.Username)
 	if err != nil {
-		log.Error(processId, "GetMe", fmt.Sprintf("[error][api][func: GetMe] get profile: %v", err), nil, nil, nil, err)
+		log.Error(processId, "GetMe", fmt.Sprintf("[error][api][func: GetMe] get user: %v", err), nil, nil, nil, err)
 		return nil, s.serverError()
-	}
-
-	phone := ""
-	if profile.Phone != nil {
-		phone = *profile.Phone
 	}
 
 	return &GetMeResponse{
 		UserID:   claims.UserID,
-		Email:    claims.Email,
-		FullName: profile.FullName,
-		Phone:    phone,
+		Username: profile.Username,
 	}, nil
 }
 
@@ -254,21 +239,57 @@ func (s *Server) HandleGetMe(w http.ResponseWriter, r *http.Request) {
 
 //#endregion
 
+//#region Cross-service
+
+func (s *Server) createBankingProfile(processId, userID, username string) {
+	if s.profileServiceURL == "" {
+		log.Info(processId, "createBankingProfile", "PROFILE_SERVICE_URL not set, skipping", nil, nil, nil, nil)
+		return
+	}
+
+	payload := map[string]interface{}{
+		"user_id":       userID,
+		"bank":          "BRI",
+		"branch":        "Jakarta",
+		"name":          username,
+		"card_number":   "",
+		"card_provider": "",
+		"balance":       0,
+		"currency":      "IDR",
+		"accountType":   "REGULAR",
+	}
+
+	body, err := json.Marshal(payload)
+	if err != nil {
+		log.Error(processId, "createBankingProfile", fmt.Sprintf("marshal error: %v", err), nil, nil, nil, err)
+		return
+	}
+
+	resp, err := http.Post(s.profileServiceURL+"/api/profile", "application/json", bytes.NewReader(body))
+	if err != nil {
+		log.Error(processId, "createBankingProfile", fmt.Sprintf("HTTP call failed: %v", err), nil, nil, nil, err)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 300 {
+		log.Error(processId, "createBankingProfile", fmt.Sprintf("Profile service returned %d", resp.StatusCode), nil, nil, nil, nil)
+		return
+	}
+
+	log.Info(processId, "createBankingProfile", fmt.Sprintf("Banking profile created for user %s", userID), nil, nil, nil, nil)
+}
+
+//#endregion
+
 //#region Helpers
 
 func validateSignUpRequest(req *SignUpRequest) error {
-	if req.Email == "" {
-		return fmt.Errorf("email is required")
-	}
-	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`)
-	if !emailRegex.MatchString(req.Email) {
-		return fmt.Errorf("invalid email format")
+	if req.Username == "" {
+		return fmt.Errorf("username is required")
 	}
 	if len(req.Password) < 6 {
 		return fmt.Errorf("password must be at least 6 characters")
-	}
-	if req.FullName == "" {
-		return fmt.Errorf("full_name is required")
 	}
 	return nil
 }

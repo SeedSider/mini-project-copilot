@@ -11,6 +11,11 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d identity"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   identity-service:
     build:
@@ -36,8 +41,12 @@ services:
       LOGGER_LEVEL: debug
       FLUENTBIT_HOST: 0.0.0.0
       FLUENTBIT_PORT: 24223
+      PROFILE_SERVICE_URL: http://host.docker.internal:8080
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     command:
       [
         "grpc-gw-server",

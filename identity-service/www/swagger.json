@@ -5,7 +5,6 @@
     "description": "BRICaMS Identity Service - Sign Up & Sign In",
     "version": "1.0.0"
   },
-  "host": "localhost:3031",
   "basePath": "/",
   "schemes": ["http"],
   "consumes": ["application/json"],
@@ -33,7 +32,7 @@
             }
           },
           "409": {
-            "description": "Email already registered"
+            "description": "Username already registered"
           },
           "422": {
             "description": "Validation error"
@@ -43,7 +42,7 @@
     },
     "/api/auth/signin": {
       "post": {
-        "summary": "Sign in with email and password",
+        "summary": "Sign in with username and password",
         "operationId": "SignIn",
         "parameters": [
           {
@@ -70,7 +69,7 @@
     },
     "/api/identity/me": {
       "get": {
-        "summary": "Get current user profile",
+        "summary": "Get current user info",
         "operationId": "GetMe",
         "parameters": [
           {
@@ -83,7 +82,7 @@
         ],
         "responses": {
           "200": {
-            "description": "User profile",
+            "description": "User info",
             "schema": {
               "$ref": "#/definitions/GetMeResponse"
             }
@@ -98,11 +97,10 @@
   "definitions": {
     "SignUpRequest": {
       "type": "object",
-      "required": ["email", "password", "full_name"],
+      "required": ["username", "password"],
       "properties": {
-        "email": { "type": "string", "example": "user@email.com" },
+        "username": { "type": "string", "example": "John Doe" },
         "password": { "type": "string", "example": "password123" },
-        "full_name": { "type": "string", "example": "John Doe" },
         "phone": { "type": "string", "example": "08123456789" }
       }
     },
@@ -110,15 +108,14 @@
       "type": "object",
       "properties": {
         "user_id": { "type": "string" },
-        "email": { "type": "string" },
-        "full_name": { "type": "string" }
+        "username": { "type": "string" }
       }
     },
     "SignInRequest": {
       "type": "object",
-      "required": ["email", "password"],
+      "required": ["username", "password"],
       "properties": {
-        "email": { "type": "string", "example": "user@email.com" },
+        "username": { "type": "string", "example": "John Doe" },
         "password": { "type": "string", "example": "password123" }
       }
     },
@@ -126,8 +123,7 @@
       "type": "object",
       "properties": {
         "user_id": { "type": "string" },
-        "email": { "type": "string" },
-        "full_name": { "type": "string" },
+        "username": { "type": "string" },
         "token": { "type": "string" }
       }
     },
@@ -135,9 +131,7 @@
       "type": "object",
       "properties": {
         "user_id": { "type": "string" },
-        "email": { "type": "string" },
-        "full_name": { "type": "string" },
-        "phone": { "type": "string" }
+        "username": { "type": "string" }
       }
     }
   }

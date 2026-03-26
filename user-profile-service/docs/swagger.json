@@ -1,350 +1,373 @@
 {
-    "swagger": "2.0",
-    "info": {
-        "description": "REST API for managing user profiles and homepage menus in BankEase mobile banking app.",
-        "title": "BankEase User Profile API",
-        "contact": {},
-        "version": "1.0"
-    },
-    "host": "localhost:8080",
-    "basePath": "/",
-    "paths": {
-        "/api/menu": {
-            "get": {
-                "description": "Retrieve all homepage menu items",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Menu"
-                ],
-                "summary": "Get all menus",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.MenuResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.StandardResponse"
-                        }
-                    }
-                }
+  "swagger": "2.0",
+  "info": {
+    "description": "REST API for managing user profiles and homepage menus in BankEase mobile banking app.",
+    "title": "BankEase User Profile API",
+    "contact": {},
+    "version": "1.0"
+  },
+  "basePath": "/",
+  "paths": {
+    "/api/profile": {
+      "get": {
+        "description": "Retrieve the authenticated user's banking profile using JWT Bearer token",
+        "produces": ["application/json"],
+        "tags": ["Profile"],
+        "summary": "Get my profile",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Bearer \u003ctoken\u003e",
+            "name": "Authorization",
+            "in": "header",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/models.Profile"
             }
-        },
-        "/api/menu/{accountType}": {
-            "get": {
-                "description": "Retrieve menu items filtered by account type. PREMIUM returns all menus, REGULAR returns only REGULAR menus.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Menu"
-                ],
-                "summary": "Get menus by account type",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Account type (REGULAR or PREMIUM)",
-                        "name": "accountType",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.MenuResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/models.StandardResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.StandardResponse"
-                        }
-                    }
-                }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "schema": {
+              "$ref": "#/definitions/models.StandardResponse"
             }
-        },
-        "/api/profile/{id}": {
-            "get": {
-                "description": "Retrieve a user profile by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Profile"
-                ],
-                "summary": "Get user profile",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Profile ID (UUID)",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.Profile"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/models.StandardResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/models.StandardResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.StandardResponse"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Update editable fields of a user profile",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Profile"
-                ],
-                "summary": "Update user profile",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Profile ID (UUID)",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Profile fields to update",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/models.EditProfileRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.StandardResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/models.StandardResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/models.StandardResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.StandardResponse"
-                        }
-                    }
-                }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.StandardResponse"
             }
-        },
-        "/api/upload/image": {
-            "post": {
-                "description": "Upload an image file to Azure Blob Storage. Returns the URL of the uploaded image.",
-                "consumes": [
-                    "multipart/form-data"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Upload"
-                ],
-                "summary": "Upload an image",
-                "parameters": [
-                    {
-                        "type": "file",
-                        "description": "Image file (jpeg, png, gif, webp — max 5MB)",
-                        "name": "image",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/models.UploadResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/models.StandardResponse"
-                        }
-                    },
-                    "413": {
-                        "description": "Request Entity Too Large",
-                        "schema": {
-                            "$ref": "#/definitions/models.StandardResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/models.StandardResponse"
-                        }
-                    }
-                }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.StandardResponse"
             }
+          }
         }
+      }
     },
-    "definitions": {
-        "models.EditProfileRequest": {
-            "type": "object",
-            "properties": {
-                "bank": {
-                    "type": "string"
-                },
-                "branch": {
-                    "type": "string"
-                },
-                "card_number": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                }
+    "/api/menu": {
+      "get": {
+        "description": "Retrieve all homepage menu items",
+        "produces": ["application/json"],
+        "tags": ["Menu"],
+        "summary": "Get all menus",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/models.MenuResponse"
             }
-        },
-        "models.Menu": {
-            "type": "object",
-            "properties": {
-                "icon_url": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "index": {
-                    "type": "integer"
-                },
-                "is_active": {
-                    "type": "boolean"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
-                }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.StandardResponse"
             }
-        },
-        "models.MenuResponse": {
-            "type": "object",
-            "properties": {
-                "menus": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Menu"
-                    }
-                }
-            }
-        },
-        "models.Profile": {
-            "type": "object",
-            "properties": {
-                "accountType": {
-                    "type": "string"
-                },
-                "balance": {
-                    "type": "integer"
-                },
-                "bank": {
-                    "type": "string"
-                },
-                "branch": {
-                    "type": "string"
-                },
-                "card_number": {
-                    "type": "string"
-                },
-                "card_provider": {
-                    "type": "string"
-                },
-                "currency": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "image": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.StandardResponse": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "integer"
-                },
-                "description": {
-                    "type": "string"
-                }
-            }
-        },
-        "models.UploadResponse": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "integer"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "url": {
-                    "type": "string"
-                }
-            }
+          }
         }
+      }
+    },
+    "/api/menu/{accountType}": {
+      "get": {
+        "description": "Retrieve menu items filtered by account type. PREMIUM returns all menus, REGULAR returns only REGULAR menus.",
+        "produces": ["application/json"],
+        "tags": ["Menu"],
+        "summary": "Get menus by account type",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Account type (REGULAR or PREMIUM)",
+            "name": "accountType",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/models.MenuResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.StandardResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.StandardResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/profile/{id}": {
+      "get": {
+        "description": "Retrieve a user profile by ID",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["Profile"],
+        "summary": "Get user profile",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Profile ID (UUID)",
+            "name": "id",
+            "in": "path",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/models.Profile"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.StandardResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.StandardResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.StandardResponse"
+            }
+          }
+        }
+      },
+      "put": {
+        "description": "Update editable fields of a user profile",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "tags": ["Profile"],
+        "summary": "Update user profile",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Profile ID (UUID)",
+            "name": "id",
+            "in": "path",
+            "required": true
+          },
+          {
+            "description": "Profile fields to update",
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/models.EditProfileRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/models.StandardResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.StandardResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/models.StandardResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.StandardResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/upload/image": {
+      "post": {
+        "description": "Upload an image file to Azure Blob Storage. Returns the URL of the uploaded image.",
+        "consumes": ["multipart/form-data"],
+        "produces": ["application/json"],
+        "tags": ["Upload"],
+        "summary": "Upload an image",
+        "parameters": [
+          {
+            "type": "file",
+            "description": "Image file (jpeg, png, gif, webp — max 5MB)",
+            "name": "image",
+            "in": "formData",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "$ref": "#/definitions/models.UploadResponse"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/models.StandardResponse"
+            }
+          },
+          "413": {
+            "description": "Request Entity Too Large",
+            "schema": {
+              "$ref": "#/definitions/models.StandardResponse"
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": {
+              "$ref": "#/definitions/models.StandardResponse"
+            }
+          }
+        }
+      }
     }
+  },
+  "securityDefinitions": {
+    "BearerAuth": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
+  "definitions": {
+    "models.EditProfileRequest": {
+      "type": "object",
+      "properties": {
+        "bank": {
+          "type": "string"
+        },
+        "branch": {
+          "type": "string"
+        },
+        "card_number": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "models.Menu": {
+      "type": "object",
+      "properties": {
+        "icon_url": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "index": {
+          "type": "integer"
+        },
+        "is_active": {
+          "type": "boolean"
+        },
+        "title": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "models.MenuResponse": {
+      "type": "object",
+      "properties": {
+        "menus": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/models.Menu"
+          }
+        }
+      }
+    },
+    "models.Profile": {
+      "type": "object",
+      "properties": {
+        "accountType": {
+          "type": "string"
+        },
+        "balance": {
+          "type": "integer"
+        },
+        "bank": {
+          "type": "string"
+        },
+        "branch": {
+          "type": "string"
+        },
+        "card_number": {
+          "type": "string"
+        },
+        "card_provider": {
+          "type": "string"
+        },
+        "currency": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string"
+        },
+        "image": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "models.StandardResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "models.UploadResponse": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer"
+        },
+        "description": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        }
+      }
+    }
+  }
 }

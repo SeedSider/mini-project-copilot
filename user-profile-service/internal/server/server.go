@@ -18,11 +18,11 @@ type Server struct {
 }
 
 // NewServer creates a new Server with all dependencies wired up.
-func NewServer(db *sql.DB, port string, azureSASURL string, azureContainer string) *Server {
+func NewServer(db *sql.DB, port string, azureSASURL string, azureContainer string, jwtSecret string) *Server {
 	profileRepo := &repository.ProfileRepository{DB: db}
 	menuRepo := &repository.MenuRepository{DB: db}
 
-	profileHandler := &handlers.ProfileHandler{Repo: profileRepo}
+	profileHandler := &handlers.ProfileHandler{Repo: profileRepo, JWTSecret: jwtSecret}
 	menuHandler := &handlers.MenuHandler{Repo: menuRepo}
 	uploadHandler := &handlers.UploadHandler{
 		AzureSASURL:    azureSASURL,

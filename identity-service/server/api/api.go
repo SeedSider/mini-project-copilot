@@ -12,9 +12,10 @@ import (
 var log *logger.Logger
 
 type Server struct {
-	provider *db.Provider
-	manager  *manager.JWTManager
-	logger   *logger.Logger
+	provider          *db.Provider
+	manager           *manager.JWTManager
+	logger            *logger.Logger
+	profileServiceURL string
 }
 
 func New(
@@ -23,6 +24,7 @@ func New(
 	dbConnection *database.DbSql,
 	logger *logger.Logger,
 	provider *db.Provider,
+	profileServiceURL string,
 ) *Server {
 	log = logger
 	tokenDuration, err := time.ParseDuration(jwtDuration)
@@ -31,9 +33,10 @@ func New(
 	}
 
 	return &Server{
-		provider: db.New(dbConnection, logger),
-		manager:  manager.NewJWTManager(jwtSecret, tokenDuration),
-		logger:   logger,
+		provider:          db.New(dbConnection, logger),
+		manager:           manager.NewJWTManager(jwtSecret, tokenDuration),
+		logger:            logger,
+		profileServiceURL: profileServiceURL,
 	}
 }
 

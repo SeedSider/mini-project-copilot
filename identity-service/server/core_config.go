@@ -44,6 +44,8 @@ type Config struct {
 	DbTimezone string `config:"DB_TIMEZONE"`
 	DbMaxRetry string `config:"DB_MAX_RETRY"`
 	DbTimeout  string `config:"DB_TIMEOUT"`
+
+	ProfileServiceURL string `config:"PROFILE_SERVICE_URL"`
 }
 
 var config *Config
@@ -109,6 +111,8 @@ func initConfig() {
 		DbTimezone: GetEnv("DB_TIMEZONE", "Asia/Jakarta"),
 		DbMaxRetry: GetEnv("DB_MAX_RETRY", "3"),
 		DbTimeout:  GetEnv("DB_TIMEOUT", "300"),
+
+		ProfileServiceURL: GetEnv("PROFILE_SERVICE_URL", "http://localhost:8080"),
 	}
 }
 
