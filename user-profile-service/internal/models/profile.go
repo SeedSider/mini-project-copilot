@@ -20,6 +20,9 @@ type EditProfileRequest struct {
 	Branch       string `json:"branch"`
 	Name         string `json:"name"`
 	CardNumber   string `json:"card_number"`
+	CardProvider string `json:"card_provider"`
+	Currency     string `json:"currency"`
+	Image        string `json:"image"`
 }
 
 // StandardResponse is the consistent response format for success/error.

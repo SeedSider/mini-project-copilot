@@ -42,12 +42,13 @@ func (r *ProfileRepository) UpdateProfile(ctx context.Context, id string, req mo
 	defer cancel()
 
 	query := `UPDATE profile
-		SET bank = $1, branch = $2, name = $3, card_number = $4
-		WHERE id = $5`
+		SET bank = $1, branch = $2, name = $3, card_number = $4,
+		    card_provider = $5, currency = $6, image = $7
+		WHERE id = $8`
 
 	result, err := r.DB.ExecContext(ctx, query,
 		req.Bank, req.Branch, req.Name,
-		req.CardNumber,
+		req.CardNumber, req.CardProvider, req.Currency, req.Image,
 		id,
 	)
 	if err != nil {
