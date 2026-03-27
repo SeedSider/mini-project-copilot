@@ -72,7 +72,7 @@ definitions:
       url:
         type: string
     type: object
-host: localhost:8080
+host: ""
 info:
   contact: {}
   description: REST API for managing user profiles and homepage menus in BankEase
