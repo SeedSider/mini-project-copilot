@@ -18,6 +18,6 @@ WORKDIR /app
 COPY --from=builder /server .
 COPY --from=builder /app/www ./www
 
-EXPOSE 8080
+EXPOSE 3031 9301
 
-CMD ["./server"]
+CMD ["./server", "grpc-gw-server", "--port1", "9301", "--port2", "3031", "--grpc-endpoint", ":9301"]

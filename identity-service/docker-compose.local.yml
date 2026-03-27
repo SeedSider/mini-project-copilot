@@ -23,6 +23,7 @@ services:
       dockerfile: Dockerfile.local
     ports:
       - "3031:3031"
+      - "9301:9301"
     environment:
       DB_HOST: db
       DB_PORT: "5432"

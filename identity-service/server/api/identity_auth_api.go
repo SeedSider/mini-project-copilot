@@ -1,7 +1,6 @@
 package api
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
 	"encoding/json"
@@ -29,9 +28,9 @@ type SignUpResponse struct {
 	Username string `json:"username"`
 }
 
-func (s *Server) SignUp(ctx context.Context, req *SignUpRequest) (*SignUpResponse, error) {
+func (s *Server) httpSignUp(ctx context.Context, req *SignUpRequest) (*SignUpResponse, error) {
 	processId := utils.GetProcessIdFromCtx(ctx)
-	log.Info(processId, "SignUp", "Processing signup request", nil, nil, nil, nil)
+	log.Info(processId, "httpSignUp", "Processing signup request", nil, nil, nil, nil)
 
 	// 1. Validate input
 	if err := validateSignUpRequest(req); err != nil {
@@ -60,15 +59,12 @@ func (s *Server) SignUp(ctx context.Context, req *SignUpRequest) (*SignUpRespons
 	// 4. Insert user
 	result, err := s.provider.CreateUser(ctx, req.Username, string(hashedPassword), req.Phone)
 	if err != nil {
-		log.Error(processId, "SignUp", fmt.Sprintf("[error][api][func: SignUp] create user: %v", err), nil, nil, nil, err)
+		log.Error(processId, "httpSignUp", fmt.Sprintf("[error][api][func: httpSignUp] create user: %v", err), nil, nil, nil, err)
 		return nil, s.serverError()
 	}
 
-	// 5. Create banking profile in user-profile-service (best-effort)
-	s.createBankingProfile(processId, result.UserID, req.Username)
-
-	// 6. Return response
-	log.Info(processId, "SignUp", fmt.Sprintf("User registered: %s", result.UserID), nil, nil, nil, nil)
+	// 5. Return response (profile creation handled by BFF orchestration)
+	log.Info(processId, "httpSignUp", fmt.Sprintf("User registered: %s", result.UserID), nil, nil, nil, nil)
 	return &SignUpResponse{
 		UserID:   result.UserID,
 		Username: result.Username,
@@ -90,9 +86,9 @@ type SignInResponse struct {
 	Token    string `json:"token"`
 }
 
-func (s *Server) SignIn(ctx context.Context, req *SignInRequest) (*SignInResponse, error) {
+func (s *Server) httpSignIn(ctx context.Context, req *SignInRequest) (*SignInResponse, error) {
 	processId := utils.GetProcessIdFromCtx(ctx)
-	log.Info(processId, "SignIn", "Processing signin request", nil, nil, nil, nil)
+	log.Info(processId, "httpSignIn", "Processing signin request", nil, nil, nil, nil)
 
 	// 1. Validate input
 	if req.Username == "" || req.Password == "" {
@@ -145,9 +141,9 @@ type GetMeResponse struct {
 	Username string `json:"username"`
 }
 
-func (s *Server) GetMe(ctx context.Context) (*GetMeResponse, error) {
+func (s *Server) httpGetMe(ctx context.Context) (*GetMeResponse, error) {
 	processId := utils.GetProcessIdFromCtx(ctx)
-	log.Info(processId, "GetMe", "Processing get me request", nil, nil, nil, nil)
+	log.Info(processId, "httpGetMe", "Processing get me request", nil, nil, nil, nil)
 
 	claims, ok := ctx.Value("user_claims").(*manager.UserClaims)
 	if !ok || claims == nil {
@@ -180,7 +176,7 @@ func (s *Server) HandleSignUp(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := s.SignUp(ctx, &req)
+	resp, err := s.httpSignUp(ctx, &req)
 	if err != nil {
 		writeGrpcErrorResponse(w, err)
 		return
@@ -199,7 +195,7 @@ func (s *Server) HandleSignIn(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := s.SignIn(ctx, &req)
+	resp, err := s.httpSignIn(ctx, &req)
 	if err != nil {
 		writeGrpcErrorResponse(w, err)
 		return
@@ -228,56 +224,13 @@ func (s *Server) HandleGetMe(w http.ResponseWriter, r *http.Request) {
 
 	ctx = context.WithValue(ctx, "user_claims", claims)
 
-	resp, svcErr := s.GetMe(ctx)
+	resp, svcErr := s.httpGetMe(ctx)
 	if svcErr != nil {
 		writeGrpcErrorResponse(w, svcErr)
 		return
 	}
 
 	writeJSONResponse(w, http.StatusOK, resp)
-}
-
-//#endregion
-
-//#region Cross-service
-
-func (s *Server) createBankingProfile(processId, userID, username string) {
-	if s.profileServiceURL == "" {
-		log.Info(processId, "createBankingProfile", "PROFILE_SERVICE_URL not set, skipping", nil, nil, nil, nil)
-		return
-	}
-
-	payload := map[string]interface{}{
-		"user_id":       userID,
-		"bank":          "BRI",
-		"branch":        "Jakarta",
-		"name":          username,
-		"card_number":   "",
-		"card_provider": "",
-		"balance":       0,
-		"currency":      "IDR",
-		"accountType":   "REGULAR",
-	}
-
-	body, err := json.Marshal(payload)
-	if err != nil {
-		log.Error(processId, "createBankingProfile", fmt.Sprintf("marshal error: %v", err), nil, nil, nil, err)
-		return
-	}
-
-	resp, err := http.Post(s.profileServiceURL+"/api/profile", "application/json", bytes.NewReader(body))
-	if err != nil {
-		log.Error(processId, "createBankingProfile", fmt.Sprintf("HTTP call failed: %v", err), nil, nil, nil, err)
-		return
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode >= 300 {
-		log.Error(processId, "createBankingProfile", fmt.Sprintf("Profile service returned %d", resp.StatusCode), nil, nil, nil, nil)
-		return
-	}
-
-	log.Info(processId, "createBankingProfile", fmt.Sprintf("Banking profile created for user %s", userID), nil, nil, nil, nil)
 }
 
 //#endregion

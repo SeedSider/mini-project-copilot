@@ -4,9 +4,20 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: identity-service
-    command: ["./server", "grpc-gw-server"]
+    command:
+      [
+        "./server",
+        "grpc-gw-server",
+        "--port1",
+        "9301",
+        "--port2",
+        "3031",
+        "--grpc-endpoint",
+        ":9301",
+      ]
     ports:
-      - "3031:3000"
+      - "3031:3031"
+      - "9301:9301"
     env_file:
       - .env
     extra_hosts:

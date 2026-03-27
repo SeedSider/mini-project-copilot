@@ -10,14 +10,14 @@ import "identity_payload.proto";
 service IdentityService {
   rpc SignUp(SignUpRequest) returns (SignUpResponse) {
     option (google.api.http) = {
-      post: "/api/identity/signup"
+      post: "/api/auth/signup"
       body: "*"
     };
   }
 
   rpc SignIn(SignInRequest) returns (SignInResponse) {
     option (google.api.http) = {
-      post: "/api/identity/signin"
+      post: "/api/auth/signin"
       body: "*"
     };
   }

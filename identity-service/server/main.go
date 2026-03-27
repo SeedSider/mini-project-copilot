@@ -10,18 +10,23 @@ import (
 	"strings"
 	"time"
 
+	pb "bitbucket.bri.co.id/scm/addons/addons-identity-service/protogen/identity-service"
 	"bitbucket.bri.co.id/scm/addons/addons-identity-service/server/api"
 	"bitbucket.bri.co.id/scm/addons/addons-identity-service/server/db"
 	"bitbucket.bri.co.id/scm/addons/addons-identity-service/server/lib/logger"
 
 	"github.com/urfave/cli"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/health"
+	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
 const serviceName = "identity"
 const defaultPort = 9090
 
 var (
-	log *logger.Logger
+	log        *logger.Logger
+	grpcServer *grpc.Server
 )
 
 func init() {
@@ -58,7 +63,7 @@ func main() {
 func grpcGatewayServerCmd() cli.Command {
 	return cli.Command{
 		Name:  "grpc-gw-server",
-		Usage: "Starts HTTP server",
+		Usage: "Starts gRPC and HTTP server",
 		Flags: []cli.Flag{
 			cli.IntFlag{
 				Name:  "port1",
@@ -75,11 +80,20 @@ func grpcGatewayServerCmd() cli.Command {
 			},
 		},
 		Action: func(c *cli.Context) error {
+			grpcPort := c.Int("port1")
 			httpPort := c.Int("port2")
 
 			startDBConnection()
 			runMigration()
 
+			// Start gRPC server
+			go func() {
+				if err := startGrpcServer(grpcPort); err != nil {
+					log.Fatal("", "grpcGatewayServerCmd", fmt.Sprintf("failed gRPC serve: %v", err), nil, nil, nil, err)
+				}
+			}()
+
+			// Start HTTP server
 			go func() {
 				if err := httpServer(httpPort); err != nil {
 					log.Fatal("", "grpcGatewayServerCmd", fmt.Sprintf("failed HTTP serve: %v", err), nil, nil, nil, err)
@@ -91,6 +105,11 @@ func grpcGatewayServerCmd() cli.Command {
 			<-ch
 
 			closeDBConnections()
+			if grpcServer != nil {
+				log.Info("", "grpcGatewayServerCmd", "Stopping gRPC server", nil, nil, nil, nil)
+				grpcServer.GracefulStop()
+				log.Info("", "grpcGatewayServerCmd", "gRPC server stopped", nil, nil, nil, nil)
+			}
 			log.Info("", "grpcGatewayServerCmd", "Server stopped", nil, nil, nil, nil)
 
 			return nil
@@ -140,6 +159,38 @@ func httpServer(port int) error {
 	}
 
 	return http.Serve(listener, cors(mux))
+}
+
+func startGrpcServer(port int) error {
+	log.Info("", "startGrpcServer", fmt.Sprintf("Starting gRPC server on port %d...", port), nil, nil, nil, nil)
+
+	list, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
+	if err != nil {
+		return err
+	}
+
+	dbProvider := db.New(dbSql, log)
+	apiServer := api.New(
+		config.JWTSecret,
+		config.JWTDuration,
+		dbSql,
+		log,
+		dbProvider,
+		config.ProfileServiceURL,
+	)
+
+	authInterceptor := api.NewAuthInterceptor(apiServer.GetManager())
+
+	grpcServer = grpc.NewServer(
+		grpc.UnaryInterceptor(api.UnaryInterceptors(authInterceptor)),
+		grpc.StreamInterceptor(api.StreamInterceptors(authInterceptor)),
+	)
+
+	pb.RegisterIdentityServiceServer(grpcServer, apiServer)
+	grpc_health_v1.RegisterHealthServer(grpcServer, health.NewServer())
+
+	log.Info("", "startGrpcServer", fmt.Sprintf("gRPC server listening on port %d", port), nil, nil, nil, nil)
+	return grpcServer.Serve(list)
 }
 
 func methodOnly(method string, next http.HandlerFunc) http.HandlerFunc {
