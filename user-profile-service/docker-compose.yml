@@ -11,5 +11,6 @@ services:
       PORT: "8080"
       AZURE_STORAGE_SAS_URL: ${AZURE_STORAGE_SAS_URL}
       AZURE_STORAGE_CONTAINER: ${AZURE_STORAGE_CONTAINER:-images}
+      JWT_SECRET: ${JWT_SECRET:-secret}
     extra_hosts:
       - "host.docker.internal:host-gateway"

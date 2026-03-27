@@ -33,7 +33,8 @@ func setupRoutes(profileHandler *handlers.ProfileHandler, menuHandler *handlers.
 	// Upload routes
 	r.Post("/api/upload/image", uploadHandler.UploadImage)
 
-	// Swagger UI
+	// Swagger UI — host is omitted from the spec so Swagger UI automatically
+	// uses whatever host the browser is currently on (localhost, VM IP, etc.)
 	r.Get("/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL("/swagger/doc.json"),
 	))
@@ -47,7 +48,7 @@ func corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Idempotency-Key")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, Idempotency-Key")
 
 		if r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusNoContent)
