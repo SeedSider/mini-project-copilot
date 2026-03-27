@@ -13,7 +13,7 @@ import (
 // @title        BankEase User Profile API
 // @version      1.0
 // @description  REST API for managing user profiles and homepage menus in BankEase mobile banking app.
-// @host         localhost:8080
+// @host         
 // @BasePath     /
 
 // GetEnv reads an environment variable with a fallback default.
