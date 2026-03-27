@@ -1,13 +1,15 @@
 ---
-applyTo: '**'
+applyTo: "**"
 ---
 
 # Progress
 
 ## Completed
+
+### user-profile-service — SELESAI ✅
+
 - [x] Backend API spec (`backend-spec.md`) — kontrak lengkap semua endpoint
 - [x] Analisis service referensi (`addons-issuance-lc-service`) — pattern dan arsitektur
-- [x] Inisiasi Memory Bank — semua core files terisi
 - [x] Detail implementasi (`implementation-plan.md`) — 8 phase, file mapping, verification checklist
 - [x] Go project initialization (`go.mod`, folder structure) — `user-profile-service/`
 - [x] Database layer (`db.go`, `migrate.go`, `001_init.sql`) — embed.FS migration
@@ -17,38 +19,125 @@ applyTo: '**'
 - [x] Server & Router setup (chi router, CORS middleware, Logger, Recoverer)
 - [x] Entrypoint (`cmd/server/main.go`) — godotenv + GetEnv pattern
 - [x] Seed data (`seed.sql`) — 1 profile + 9 menu items
-- [x] Environment config (`.env.example`, `.gitignore`)
-- [x] Go runtime installed + `go mod tidy` → `go.sum` generated
 - [x] Docker setup (`Dockerfile`, `docker-compose.yml`, `.dockerignore`)
-- [x] `.env.example` updated dengan Docker Compose credentials
-- [x] Docker Compose fix — DDL mount as `01-schema.sql` before seed
-- [x] `docker compose up --build` — both containers running successfully
-- [x] All 4 endpoints verified via Invoke-RestMethod:
-  - GET /api/profile/{id} → 200
-  - PUT /api/profile/{id} → 200 + data persisted
-  - GET /api/menu → 200 (9 items)
-  - GET /api/menu/REGULAR → 200 (5 REGULAR items)
-  - GET /api/menu/PREMIUM → 200 (all 9 items)
+- [x] Additional features: CreateProfile, GetProfileByUserID, GetMyProfile (JWT), Upload Image (Azure Blob)
+- [x] All 8 endpoints verified (Profile CRUD 5 + Menu 2 + Upload 1)
+
+### identity-service — SELESAI ✅ (dari project terpisah)
+
+> Dikembangkan di `mini-project-copilot-identity/`, kemudian disatukan ke monorepo `mini-project-copilot/identity-service/`
+> Memory bank history tersedia di `.identity-service/instructions/`
+
+**Tahap 1 — Foundation: SELESAI ✅**
+
+- [x] Go module (`go.mod`) — `bitbucket.bri.co.id/scm/addons/addons-identity-service`
+- [x] Proto source files (`proto/identity_api.proto`, `proto/identity_payload.proto`)
+- [x] Entry point + CLI (`server/main.go`) — command `grpc-gw-server`
+- [x] Config loading (`server/core_config.go`) — godotenv + os.LookupEnv
+- [x] DB connection lifecycle (`server/core_db.go`) — dengan retry logic
+- [x] API struct + constructor (`server/api/api.go`)
+- [x] Auth interceptor JWT (`server/api/identity_authInterceptor.go`)
+- [x] Interceptor chain (`server/api/identity_interceptor.go`) — ProcessId → Logging → Errors → Auth
+- [x] Error helpers (`server/api/error.go`)
+- [x] DB provider (`server/db/provider.go`)
+- [x] DB queries (`server/db/identity_provider.go`) — CreateUser, GetUserByUsername, CheckUsernameExists
+- [x] JWT manager (`server/jwt/manager.go`) — HS256 Generate + Verify
+- [x] DB wrapper (`server/lib/database/`) — interface, wrapper, mock
+- [x] Logger (`server/lib/logger/`) — Zap + FluentBit hook
+- [x] Utils, Constants
+- [x] Migration SQL (`migrations/001_init.sql`, `002_rename_email_to_username.sql`)
+
+**Tahap 2 — API Implementation: SELESAI ✅**
+
+- [x] `POST /api/auth/signup` — SignUp (validasi, bcrypt, INSERT + best-effort create profile)
+- [x] `POST /api/auth/signin` — SignIn (bcrypt compare, JWT generate)
+- [x] `GET /api/identity/me` — GetMe (JWT verify, get user)
+- [x] `GET /health` — Health check
+- [x] CORS middleware + security headers
+- [x] gRPC → HTTP error code mapping
+
+**Tahap 3 — Deployment: SELESAI ✅**
+
+- [x] Dockerfile (multi-stage: golang:1.24-alpine → alpine:3.19)
+- [x] Docker Compose (PostgreSQL 15 + identity-service)
+- [x] Swagger JSON, Makefile, sonar-project.properties
+- [x] `go build ./server/` — compile pass ✅
+- [x] Docker Compose running — service UP ✅
+
+**Functional Testing: LULUS 12/12 ✅**
+
+- [x] Health check, SignUp (success + 3 error cases), SignIn (success + 2 error cases), GetMe (success + 2 error cases)
+
+### BFF Service Spec — SELESAI ✅
+
+- [x] Backend spec BFF service (`backend-spec-bff-service.md`) — 11 endpoint lengkap
+- [x] Proto definitions (BFF + user-profile-service baru)
+- [x] Orchestration flows (SignUp, SignIn, GetMe, Profile, Menu, Upload)
+- [x] Docker Compose full stack (5 containers)
+- [x] Testing checklist 30+ test cases
+
+### Infrastructure
+
+- [x] Memory Bank initialized dan updated (semua core files)
+- [x] identity-service disatukan ke monorepo
 
 ## In Progress
-- Tidak ada — semua task selesai
 
-## Not Started (Future Enhancements)
+- Tidak ada — menunggu keputusan next step
+
+## Not Started
+
+### Implementasi bff-service
+
+- [ ] Go project scaffolding (`bff-service/`)
+- [ ] Proto code generation (BFF, identity client, profile client)
+- [ ] gRPC server + grpc-gateway setup
+- [ ] ServiceConnection (identity + profile gRPC clients)
+- [ ] Auth handlers (SignUp orchestration, SignIn proxy, GetMe)
+- [ ] Profile handlers (proxy to user-profile-service)
+- [ ] Menu handlers (proxy to user-profile-service)
+- [ ] Upload handler (direct to Azure Blob)
+- [ ] JWT verify (lokal, secret sama dgn identity)
+- [ ] Interceptor chain (ProcessId → Logging → Auth)
+- [ ] Docker Compose full stack integration
+
+### Prerequisite: Tambah gRPC ke Downstream Services
+
+- [ ] user-profile-service: Proto files + gRPC server layer (port 9302)
+- [ ] identity-service: Aktifkan gRPC server (port 9301), hapus best-effort HTTP call ke profile
+
+### Unit Tests & Quality
+
+- [ ] Unit tests identity-service (target ≥ 90%)
+- [ ] Unit tests user-profile-service (target ≥ 90%)
+- [ ] Unit tests bff-service (target ≥ 90%)
+- [ ] SonarQube analysis pass untuk semua service
+
+### Future Enhancements
+
 - [ ] Frontend integration — hubungkan mobile app ke backend real
-- [ ] Unit tests — Go tests untuk handler dan repository
-- [ ] Graceful shutdown — handle SIGINT untuk clean DB close
+- [ ] Email verification, forgot password, refresh token
+- [ ] Rate limiting pada login endpoint
+- [ ] Graceful shutdown
 
 ## Known Issues
-- PostgreSQL 12 terinstall tapi incomplete (hanya data dir, tanpa binaries) — tidak masalah, pakai Docker
-- Docker init script ordering: DDL harus dimount sebagai `01-schema.sql` agar jalan sebelum `02-seed.sql` — sudah di-fix
+
+- identity-service menggunakan `net/http` bukan gRPC aktif — perlu diaktifkan gRPC server untuk BFF
+- user-profile-service hanya REST — perlu ditambah gRPC layer
+- identity-service masih punya best-effort HTTP call ke profile service (`createBankingProfile`) — harus dihapus setelah BFF jadi orchestrator
 
 ## Architecture Decisions Log
-| Keputusan | Alasan | Tanggal |
-|---|---|---|
-| REST-only (tanpa gRPC) | Scope lebih kecil, mobile app cuma perlu REST | 2026-03-25 |
-| database/sql (tanpa GORM) | Lebih ringan, query simple | 2026-03-25 |
-| chi router | Lightweight, idiomatic Go, middleware support | 2026-03-25 |
-| godotenv (tanpa Viper) | Config sederhana, cukup .env + os.Getenv | 2026-03-25 |
-| Docker Compose | Satu command untuk start semua (DB + app), no manual PostgreSQL setup | 2026-03-25 |
-| Multi-stage Dockerfile | Build kecil (alpine), Go build di stage terpisah | 2026-03-25 |
-| DDL + seed via init dir | Mount both 001_init.sql dan seed.sql ke /docker-entrypoint-initdb.d/ | 2026-03-25 |
+
+| Keputusan                               | Alasan                                             | Tanggal    |
+| --------------------------------------- | -------------------------------------------------- | ---------- |
+| REST-only user-profile-service          | Scope awal kecil, mobile app cuma perlu REST       | 2026-03-25 |
+| database/sql (tanpa GORM)               | Lebih ringan, query simple                         | 2026-03-25 |
+| chi router (user-profile)               | Lightweight, idiomatic Go, middleware support      | 2026-03-25 |
+| net/http (identity, tanpa grpc-gateway) | Tidak ada toolchain protoc, HTTP handler pragmatis | 2026-03-25 |
+| Docker Compose per service              | Satu command untuk start semua                     | 2026-03-25 |
+| identity-service module path bitbucket  | Konsisten dengan naming convention BRI             | 2026-03-25 |
+| BFF pattern — single entry point        | Mobile app hanya perlu 1 endpoint                  | 2026-03-27 |
+| gRPC inter-service communication        | Standard BRICaMS pattern                           | 2026-03-27 |
+| JWT local verification di BFF           | Tidak perlu call identity utk setiap request       | 2026-03-27 |
+| Upload langsung di BFF ke Azure Blob    | Tidak perlu forward file besar via gRPC            | 2026-03-27 |
+| identity-service dari project terpisah  | Dikembangkan paralel, disatukan ke monorepo        | 2026-03-27 |

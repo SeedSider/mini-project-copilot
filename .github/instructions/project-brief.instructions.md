@@ -1,33 +1,73 @@
 ---
-applyTo: '**'
+applyTo: "**"
 ---
 
 # Project Brief
 
 ## Nama Project
-**BankEase** — Backend API service untuk mobile banking app.
+
+**BankEase** — Backend microservices untuk mobile banking app (BRI BRICaMS ecosystem).
 
 ## Deskripsi
-BankEase adalah backend service yang berfungsi sebagai pengganti MSW mock untuk mobile app (React Native/Expo). Service ini menyediakan REST API untuk manajemen profil pengguna dan daftar menu homepage berdasarkan tipe akun.
+
+BankEase adalah platform backend microservices yang menyediakan layanan identitas, profil pengguna, dan menu homepage untuk mobile app (React Native/Expo). Awalnya menggunakan MSW mock, sekarang sudah memiliki backend nyata dengan arsitektur microservices. Proyek ini merupakan bagian dari POC AI-assisted development menggunakan GitHub Copilot untuk BRI.
+
+## Konteks Bisnis
+
+- BRI memiliki backlog menumpuk dengan resource developer terbatas
+- Divisi IT BRI mengadopsi AI (GitHub Copilot) untuk mempercepat development
+- Tim backend: **Usman & Sintong** (Ecomindo), Tim frontend: **Arief, Fajri, Rizky, Maul**
+- Timeline mulai: **April 2026**, Review oleh: **Tech Lead BRI**
+- Standar kualitas: SonarQube approved, unit test coverage ≥ 90%, code duplication < 3%
 
 ## Tujuan Utama
-1. Menyediakan backend API yang production-ready sebagai pengganti mock server (MSW)
-2. Mengelola data profil pengguna bank (CRUD)
-3. Mengelola daftar menu homepage dengan filtering berdasarkan account type (REGULAR/PREMIUM)
-4. Mendukung idempotency untuk operasi transaksional
+
+1. Menyediakan backend microservices production-ready sebagai pengganti MSW mock
+2. Mengelola identitas pengguna (registrasi, autentikasi, JWT)
+3. Mengelola data profil pengguna bank (CRUD) dan menu homepage
+4. Menyediakan BFF (Backend for Frontend) sebagai single entry point untuk mobile app
+5. Menerapkan AI-assisted development untuk efisiensi
 
 ## Scope
+
 - **In scope**:
-  - REST API endpoints: Profile (GET, PUT) dan Menu (GET, GET by accountType)
-  - Database PostgreSQL untuk persistensi data
-  - Single merchant / tenant
-  - Local development environment (localhost:8080)
-  - Idempotency support via UUID header
+  - **3 backend services**: identity-service, user-profile-service, bff-service
+  - Identity: SignUp, SignIn, GetMe (JWT auth)
+  - Profile: CRUD profil pengguna, upload image (Azure Blob)
+  - Menu: Get all menus, filter by accountType (REGULAR/PREMIUM)
+  - BFF: REST entry point → gRPC orchestration ke downstream services
+  - Database PostgreSQL per service
+  - Docker Compose untuk development
 - **Out of scope**:
-  - Autentikasi (internal/dev only)
   - Multi-tenancy
-  - Production deployment
-  - gRPC (menggunakan REST murni, berbeda dari service referensi)
+  - Production deployment (Kubernetes)
+  - Email verification, forgot password, refresh token (future)
+
+## Services
+
+### 1. identity-service (SELESAI)
+
+- Autentikasi: SignUp, SignIn, GetMe
+- JWT HS256, bcrypt password hashing
+- PostgreSQL (tabel `users`)
+- Asal: dikembangkan di project terpisah, kemudian disatukan ke monorepo ini
+- Module path: `bitbucket.bri.co.id/scm/addons/addons-identity-service`
+
+### 2. user-profile-service (SELESAI)
+
+- Profil pengguna: CRUD + image upload
+- Menu homepage: filter by accountType
+- PostgreSQL (tabel `profile`, `menu`)
+- REST API via chi router
+
+### 3. bff-service (SPEC SELESAI, BELUM IMPLEMENTASI)
+
+- Single entry point untuk mobile app (REST via grpc-gateway)
+- Orchestrate calls ke identity-service + user-profile-service via gRPC
+- JWT verification lokal
+- Upload image langsung ke Azure Blob Storage
 
 ## Referensi Arsitektur
-Project ini menggunakan arsitektur yang terinspirasi dari `addons-issuance-lc-service` (BRI CAMS ecosystem) namun disederhanakan untuk kebutuhan REST API murni dengan Go stdlib + chi router.
+
+- **`addons-issuance-lc-service`** (BRI BRICaMS ecosystem) — pattern gRPC + grpc-gateway, interceptor chain, ServiceConnection, Provider DB, JWT auth
+- Source repo: Bitbucket (`bitbucket.bri.co.id/scm/addons/`)

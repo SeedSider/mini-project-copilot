@@ -31,3 +31,6 @@ go.work.sum
 # .idea/
 # .vscode/
 *.pem
+
+addons-issuance-lc-service
+.identity-service
