@@ -186,6 +186,7 @@ func runMigration() {
 	log.Info("", "runMigration", "Running database migration...", nil, nil, nil, nil)
 
 	migrations := []string{
+		// 001: Create users table
 		`CREATE TABLE IF NOT EXISTS users (
 			id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 			username VARCHAR(255) UNIQUE NOT NULL,
@@ -193,6 +194,26 @@ func runMigration() {
 			phone VARCHAR(50),
 			created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 		)`,
+		// 002: Rename email→username if old schema exists (safe: skips if already renamed)
+		`DO $$
+		BEGIN
+			IF EXISTS (
+				SELECT 1 FROM information_schema.columns
+				WHERE table_name = 'users' AND column_name = 'email'
+			) THEN
+				ALTER TABLE users RENAME COLUMN email TO username;
+			END IF;
+		END $$;`,
+		// 002b: Add phone column if missing (old schema may not have it)
+		`DO $$
+		BEGIN
+			IF NOT EXISTS (
+				SELECT 1 FROM information_schema.columns
+				WHERE table_name = 'users' AND column_name = 'phone'
+			) THEN
+				ALTER TABLE users ADD COLUMN phone VARCHAR(50);
+			END IF;
+		END $$;`,
 	}
 
 	for _, m := range migrations {
