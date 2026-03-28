@@ -22,6 +22,8 @@ applyTo: "**"
 - [x] Docker setup (`Dockerfile`, `docker-compose.yml`, `.dockerignore`)
 - [x] Additional features: CreateProfile, GetProfileByUserID, GetMyProfile (JWT), Upload Image (Azure Blob)
 - [x] All 8 endpoints verified (Profile CRUD 5 + Menu 2 + Upload 1)
+- [x] gRPC layer added: proto files, hand-written protogen, `internal/grpchandler/` (6 RPC)
+- [x] `StartGRPC()` melayani port 9302 bersamaan dengan REST port 8080
 
 ### identity-service — SELESAI ✅ (dari project terpisah)
 
@@ -68,6 +70,23 @@ applyTo: "**"
 
 - [x] Health check, SignUp (success + 3 error cases), SignIn (success + 2 error cases), GetMe (success + 2 error cases)
 
+**Unit Tests: DITAMBAHKAN ✅**
+
+- [x] `server/api/identity_auth_api_test.go` — SignUp, SignIn, GetMe (HTTP + gRPC)
+- [x] `server/api/identity_interceptor_test.go` — interceptor chain
+- [x] `server/db/identity_provider_test.go` — DB queries (sqlmock)
+- [x] `server/constant/constant_test.go` — constants
+- [x] `server/jwt/manager_test.go` — JWT generate + verify
+- [x] `server/utils/utils_test.go` — utility functions
+- [x] `server/lib/database/database_test.go` — DB wrapper
+- [x] Pattern: `newTestServer(t)` → `sqlmock.New()` + `testify/assert`
+
+**gRPC Server Handler: DITAMBAHKAN ✅**
+
+- [x] `server/api/identity_grpc_api.go` — SignUp, SignIn, GetMe via gRPC
+- [x] `var _ pb.IdentityServiceServer = (*Server)(nil)` compile-time check
+- [x] SignUp gRPC TIDAK melakukan best-effort HTTP ke profile (BFF orchestrates)
+
 ### BFF Service Spec — SELESAI ✅
 
 - [x] Backend spec BFF service (`backend-spec-bff-service.md`) — 11 endpoint lengkap
@@ -83,7 +102,8 @@ applyTo: "**"
 
 ## In Progress
 
-- Tidak ada — menunggu keputusan next step
+- [ ] Verifikasi gRPC listener identity-service aktif di port 9301 (identity_grpc_api.go sudah ada, perlu cek server.go expose port)
+- [ ] Unit tests coverage ≥ 90% identity-service (go test -coverprofile)
 
 ## Not Started
 
@@ -101,15 +121,14 @@ applyTo: "**"
 - [ ] Interceptor chain (ProcessId → Logging → Auth)
 - [ ] Docker Compose full stack integration
 
-### Prerequisite: Tambah gRPC ke Downstream Services
+### Prerequisite: Aktifkan gRPC listener identity-service
 
-- [ ] user-profile-service: Proto files + gRPC server layer (port 9302)
-- [ ] identity-service: Aktifkan gRPC server (port 9301), hapus best-effort HTTP call ke profile
+- [ ] Pastikan gRPC server listener di-expose di port 9301 dari `server/main.go`
 
 ### Unit Tests & Quality
 
-- [ ] Unit tests identity-service (target ≥ 90%)
-- [ ] Unit tests user-profile-service (target ≥ 90%)
+- [ ] Unit tests identity-service coverage ≥ 90% (test files sudah ada, perlu verifikasi coverage)
+- [ ] Unit tests user-profile-service (target ≥ 90%) — belum ada test file
 - [ ] Unit tests bff-service (target ≥ 90%)
 - [ ] SonarQube analysis pass untuk semua service
 
@@ -122,9 +141,9 @@ applyTo: "**"
 
 ## Known Issues
 
-- identity-service menggunakan `net/http` bukan gRPC aktif — perlu diaktifkan gRPC server untuk BFF
-- user-profile-service hanya REST — perlu ditambah gRPC layer
-- identity-service masih punya best-effort HTTP call ke profile service (`createBankingProfile`) — harus dihapus setelah BFF jadi orchestrator
+- identity-service: perlu verifikasi port 9301 gRPC listener benar-benar di-expose dari `server/main.go` (handler sudah ada di `identity_grpc_api.go`)
+- user-profile-service: belum ada unit tests
+- Kedua services belum melalui SonarQube analysis
 
 ## Architecture Decisions Log
 

@@ -92,15 +92,15 @@ func (r *ProfileRepository) CreateProfile(ctx context.Context, req models.Create
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	query := `INSERT INTO profile (user_id, bank, branch, name, card_number, card_provider, balance, currency, account_type)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+	query := `INSERT INTO profile (user_id, bank, branch, name, card_number, card_provider, balance, currency, account_type, image)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 		RETURNING id, user_id, bank, branch, name, card_number, card_provider, balance, currency, account_type, image`
 
 	var p models.Profile
 	err := r.DB.QueryRowContext(ctx, query,
 		req.UserID, req.Bank, req.Branch, req.Name,
 		req.CardNumber, req.CardProvider, req.Balance,
-		req.Currency, req.AccountType,
+		req.Currency, req.AccountType, req.Image,
 	).Scan(
 		&p.ID, &p.UserID, &p.Bank, &p.Branch, &p.Name,
 		&p.CardNumber, &p.CardProvider, &p.Balance,

@@ -34,6 +34,7 @@ type CreateProfileRequest struct {
 	Balance      int64  `json:"balance"`
 	Currency     string `json:"currency"`
 	AccountType  string `json:"accountType"`
+	Image		 string `json:"image"`
 }
 
 // StandardResponse is the consistent response format for success/error.
