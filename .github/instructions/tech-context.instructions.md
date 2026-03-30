@@ -6,17 +6,17 @@ applyTo: "**"
 
 ## Tech Stack
 
-| Komponen     | identity-service               | user-profile-service        | bff-service (planned)       |
-| ------------ | ------------------------------ | --------------------------- | --------------------------- |
-| Language     | Go 1.24                        | Go 1.24                     | Go 1.24                     |
-| Transport    | HTTP (`net/http`) + gRPC handler | REST (`chi` router) + gRPC  | gRPC + grpc-gateway         |
-| Database     | PostgreSQL (custom wrapper)    | PostgreSQL (`database/sql`) | Tidak ada (stateless)       |
-| Auth         | JWT HS256 (`dgrijalva/jwt-go`) | JWT parse di handler        | JWT verify lokal            |
-| Config       | `godotenv` + `os.LookupEnv`    | `godotenv` + `os.Getenv`    | `godotenv` + `os.LookupEnv` |
-| Logger       | Zap + FluentBit                | stdlib `log`                | Zap + FluentBit             |
-| CLI          | `urfave/cli`                   | Tidak ada                   | `urfave/cli`                |
-| Container    | Docker + Docker Compose        | Docker + Docker Compose     | Docker + Docker Compose     |
-| Code Quality | SonarQube                      | —                           | SonarQube                   |
+| Komponen     | identity-service               | user-profile-service          | bff-service                 |
+| ------------ | ------------------------------ | ----------------------------- | --------------------------- |
+| Language     | Go 1.24                        | Go 1.24                       | Go 1.24                     |
+| Transport    | HTTP (`net/http`) + gRPC handler | REST (`chi` router) + gRPC    | gRPC + grpc-gateway         |
+| Database     | PostgreSQL (custom wrapper)    | PostgreSQL (`database/sql`)   | Tidak ada (stateless)       |
+| Auth         | JWT HS256 (`dgrijalva/jwt-go`) | JWT parse di handler          | JWT verify lokal            |
+| Config       | `godotenv` + `os.LookupEnv`    | `godotenv` + `os.LookupEnv`   | `godotenv` + `os.LookupEnv` |
+| Logger       | Zap + FluentBit                | stdlib `log`                  | Zap + FluentBit             |
+| CLI          | `urfave/cli`                   | Tidak ada                     | `urfave/cli`                |
+| Container    | Docker + Docker Compose        | Docker + Docker Compose       | Docker + Docker Compose     |
+| Code Quality | SonarQube                      | —                             | SonarQube                   |
 
 ## identity-service
 
@@ -115,44 +115,50 @@ CREATE TABLE users (
 
 ```
 user-profile-service/
-├── cmd/server/main.go              # Entrypoint: load env, DB connection, start REST + gRPC
-├── internal/
+├── server/
+│   ├── main.go                         # Entry point + HTTP chi router + gRPC server + graceful shutdown
+│   ├── core_config.go                  # Config struct + initConfig (godotenv + os.LookupEnv)
+│   ├── core_db.go                      # DB connection lifecycle + runMigration (embed.FS)
+│   ├── api/
+│   │   ├── api.go                      # Server struct + constructor + pb.UserProfileServiceServer check
+│   │   ├── profile_auth_api.go         # HTTP: GetMyProfile (JWT), GetProfile, UpdateProfile, CreateProfile, GetProfileByUserID
+│   │   ├── profile_grpc_api.go         # gRPC: CreateProfile, GetProfileByID, GetProfileByUserID, UpdateProfile
+│   │   ├── menu_api.go                 # HTTP: GetAllMenus, GetMenusByAccountType
+│   │   ├── menu_grpc_api.go            # gRPC: GetAllMenus, GetMenusByAccountType
+│   │   ├── search_api.go               # HTTP: GetExchangeRates, GetInterestRates, GetBranches
+│   │   ├── search_grpc_api.go          # gRPC: GetExchangeRates, GetInterestRates, GetBranches
+│   │   ├── upload_api.go               # HTTP: UploadImage (Azure Blob)
+│   │   ├── converter.go                # Model ↔ proto conversion helpers
+│   │   └── error.go                    # writeJSON, writeError, StandardResponse, UploadResponse
 │   ├── db/
-│   │   ├── db.go                   # Setup *sql.DB dari DATABASE_URL
-│   │   ├── migrate.go              # Auto-run migration (embed.FS)
-│   │   └── migrations/
-│   │       ├── 001_init.sql        # DDL: profile, menu
-│   │       ├── 002_add_image_to_profile.sql
-│   │       └── 003_add_user_id_to_profile.sql
-│   ├── grpchandler/
-│   │   ├── converter.go            # Model ↔ proto conversion helpers
-│   │   ├── profile.go              # gRPC: CreateProfile, GetProfileByID, GetProfileByUserID, UpdateProfile
-│   │   └── menu.go                 # gRPC: GetAllMenus, GetMenusByAccountType
-│   ├── handlers/
-│   │   ├── profile.go              # CRUD /api/profile + GetMyProfile (JWT)
-│   │   ├── menu.go                 # GET /api/menu, /api/menu/{accountType}
-│   │   └── upload.go               # POST /api/upload/image (Azure Blob)
-│   ├── models/
-│   │   ├── profile.go              # Profile, EditProfileRequest, CreateProfileRequest, StandardResponse
-│   │   └── menu.go                 # Menu, MenuResponse
-│   ├── repository/
-│   │   ├── profile.go              # DB queries: GetByID, GetByUserID, Create, Update
-│   │   └── menu.go                 # DB queries: GetAll, GetByAccountType
-│   └── server/
-│       ├── router.go               # Routes + middleware (CORS, logging)
-│       └── server.go               # Server struct + StartGRPC() (port 9302)
+│   │   ├── provider.go                 # Provider struct + constructor
+│   │   ├── profile_provider.go         # Queries: GetByID, GetByUserID, Create, Update + domain types
+│   │   ├── menu_provider.go            # Queries: GetAll, GetByAccountType + Menu/MenuResponse types
+│   │   └── search_provider.go          # Queries: ExchangeRates, InterestRates, Branches + domain types
+│   ├── constant/
+│   │   └── constant.go                 # Response codes, date format
+│   └── utils/
+│       └── utils.go                    # GetEnv helper
+├── migrations/
+│   ├── embed.go                        # embed.FS for SQL migration files
+│   ├── 001_init.sql                    # DDL: profile, menu
+│   ├── 002_add_image_to_profile.sql
+│   ├── 003_add_user_id_to_profile.sql
+│   ├── 004_add_exchange_rates.sql
+│   ├── 005_add_interest_rates.sql
+│   └── 006_add_branches.sql
 ├── proto/
-│   ├── user_profile_api.proto      # Service definition (6 RPC methods)
-│   └── user_profile_payload.proto  # Request/response messages
+│   ├── user_profile_api.proto          # Service definition (9 RPC methods)
+│   └── user_profile_payload.proto      # Request/response messages
 ├── protogen/user-profile-service/
-│   ├── codec.go                    # JSON codec helper
-│   ├── user_profile_api_grpc.pb.go # Hand-written gRPC service interface
-│   └── user_profile_payload.pb.go  # Hand-written message structs
-├── docs/                           # Swagger generated docs
-├── Dockerfile                      # Multi-stage (golang:1.24 → alpine:3.20)
-├── docker-compose.yml              # PostgreSQL 17 + app
-├── docker-compose.local.yml        # Dev local compose
-├── seed.sql                        # 1 profile + 9 menu items
+│   ├── codec.go                        # JSON codec for gRPC
+│   ├── user_profile_api_grpc.pb.go     # Hand-written gRPC service interface
+│   └── user_profile_payload.pb.go      # Hand-written message structs
+├── docs/                               # Swagger generated docs
+├── Dockerfile                          # Multi-stage (golang:1.24-alpine → alpine:3.20)
+├── docker-compose.yml                  # PostgreSQL 17 + app
+├── docker-compose.local.yml            # Dev local compose
+├── seed.sql                            # 1 profile + 9 menu items
 └── .env.example
 ```
 
@@ -190,9 +196,9 @@ CREATE TABLE IF NOT EXISTS menu (
 - HTTP: 8080
 - gRPC: 9302
 
-## bff-service (Planned)
+## bff-service
 
-### Dependencies (planned)
+### Dependencies
 
 - **`google.golang.org/grpc`**: gRPC server
 - **`grpc-gateway/v2`**: REST → gRPC gateway

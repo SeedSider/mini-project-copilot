@@ -1,4 +1,4 @@
-package grpchandler
+package api
 
 import (
 	"context"
@@ -10,8 +10,8 @@ import (
 )
 
 // GetAllMenus implements the gRPC GetAllMenus RPC.
-func (s *GrpcServer) GetAllMenus(ctx context.Context, _ *pb.GetAllMenusRequest) (*pb.MenuListResponse, error) {
-	menus, err := s.MenuRepo.GetAllMenus(ctx)
+func (s *Server) GetAllMenus(ctx context.Context, _ *pb.GetAllMenusRequest) (*pb.MenuListResponse, error) {
+	menus, err := s.provider.GetAllMenus(ctx)
 	if err != nil {
 		log.Printf("gRPC GetAllMenus error: %v", err)
 		return nil, status.Errorf(codes.Internal, "internal server error")
@@ -23,12 +23,12 @@ func (s *GrpcServer) GetAllMenus(ctx context.Context, _ *pb.GetAllMenusRequest) 
 }
 
 // GetMenusByAccountType implements the gRPC GetMenusByAccountType RPC.
-func (s *GrpcServer) GetMenusByAccountType(ctx context.Context, req *pb.GetMenusByAccountTypeRequest) (*pb.MenuListResponse, error) {
+func (s *Server) GetMenusByAccountType(ctx context.Context, req *pb.GetMenusByAccountTypeRequest) (*pb.MenuListResponse, error) {
 	if req.GetAccountType() == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "account_type is required")
 	}
 
-	menus, err := s.MenuRepo.GetMenusByAccountType(ctx, req.GetAccountType())
+	menus, err := s.provider.GetMenusByAccountType(ctx, req.GetAccountType())
 	if err != nil {
 		log.Printf("gRPC GetMenusByAccountType error: %v", err)
 		return nil, status.Errorf(codes.Internal, "internal server error")
