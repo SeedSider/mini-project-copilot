@@ -8,18 +8,31 @@ applyTo: "**"
 
 - `identity-service` — **SELESAI** (Tahap 1-3 + unit tests + gRPC server). Dikembangkan di project terpisah (`mini-project-copilot-identity/`), kemudian disatukan ke monorepo ini.
 - `user-profile-service` — **SELESAI** termasuk gRPC layer (port 9302). Docker Compose running, semua endpoint (REST + gRPC) siap dipanggil BFF.
-- `bff-service` — **SPEC SELESAI** (`backend-spec-bff-service.md`), belum implementasi.
+- `bff-service` — **IMPLEMENTASI SELESAI**. Compile pass, semua 11 endpoint diimplementasi (auth, profile, menu, upload). Docker Compose full stack ready.
 
 ## Recent Changes
 
+- **bff-service DIIMPLEMENTASI** — 11 endpoint (3 auth, 5 profile, 2 menu, 1 upload), gRPC + HTTP gateway, hand-written protogen, interceptor chain, ServiceConnection, JWT local verify, Azure Blob upload
+- **Docker Compose full stack** dibuat di root project (`docker-compose.yml`) — 5 containers (BFF + identity + profile + 2x PostgreSQL)
 - **user-profile-service gRPC layer ditambahkan** — proto files, hand-written protogen, `internal/grpchandler/` (6 RPC), `StartGRPC()` di server, port 9302
 - **identity-service gRPC server diimplementasi** — `identity_grpc_api.go` (SignUp, SignIn, GetMe via gRPC; tanpa best-effort HTTP ke profile — BFF jadi orchestrator)
 - **identity-service unit tests ditambahkan** — 7 file test (api, interceptor, provider, constant, jwt, utils, database); menggunakan `go-sqlmock` + `testify`
-- **identity-service dan user-profile-service** masing-masing punya `docker-compose.local.yml` untuk dev lokal
-- Backend spec BFF service ditulis lengkap (`backend-spec-bff-service.md`) — 11 endpoint, proto definitions, orchestration flows, Docker Compose full stack
 - Memory bank files `.identity-service/instructions/` tersedia sebagai referensi history identity-service
 
 ## What's Working
+
+### bff-service
+
+- `go build ./server/` — compile pass ✅
+- 11 gRPC handlers: SignUp (orchestrated), SignIn, GetMe, GetMyProfile, GetProfileByID, GetProfileByUserID, CreateProfile, UpdateProfile, GetAllMenus, GetMenusByAccountType, Upload (HTTP direct)
+- HTTP REST gateway on port 3000 (manual routes, no protoc codegen needed)
+- gRPC server on port 9090
+- Interceptor chain: ProcessId → Logging → Auth (JWT local verify)
+- ServiceConnection: gRPC clients to identity-service (9301) + user-profile-service (9302)
+- SignUp orchestration: identity.SignUp → profile.CreateProfile (best-effort)
+- Upload image: multipart/form-data → Azure Blob Storage direct
+- CORS + security headers middleware
+- Docker Compose full stack (`docker-compose.yml` di root): 5 containers
 
 ### identity-service
 
@@ -42,11 +55,13 @@ applyTo: "**"
 
 ## Next Steps
 
-1. **Implementasi bff-service** — berdasarkan `backend-spec-bff-service.md`; downstream services sudah siap (identity gRPC 9301, profile gRPC 9302)
-2. **Aktifkan gRPC listener identity-service** — `identity_grpc_api.go` sudah ada, perlu pastikan server.go meng-expose port 9301
-3. **Unit tests coverage** — verifikasi coverage ≥ 90% untuk identity-service (go test -coverprofile)
-4. **Unit tests user-profile-service** — belum ada test file
-5. **SonarQube** — static analysis pass untuk semua service
+1. **Aktifkan gRPC listener identity-service** — `identity_grpc_api.go` sudah ada, perlu pastikan server.go meng-expose port 9301
+2. **Docker Compose full stack test** — jalankan `docker compose up --build` dari root, verifikasi semua 5 containers UP
+3. **Functional testing BFF** — test 30+ test cases dari testing checklist di `backend-spec-bff-service.md`
+4. **Unit tests bff-service** — target ≥ 90% coverage
+5. **Unit tests user-profile-service** — belum ada test file
+6. **Unit tests identity-service coverage** — verifikasi coverage ≥ 90% (go test -coverprofile)
+7. **SonarQube** — static analysis pass untuk semua service
 
 ## Active Decisions
 

@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package bff;
+
+option go_package = "protogen/bff-service";
+
+import "google/api/annotations.proto";
+
+service BffService {
+    rpc SignUp(SignUpRequest) returns (SignUpResponse) {
+        option (google.api.http) = {
+            post: "/api/auth/signup"
+            body: "*"
+        };
+    }
+
+    rpc SignIn(SignInRequest) returns (SignInResponse) {
+        option (google.api.http) = {
+            post: "/api/auth/signin"
+            body: "*"
+        };
+    }
+
+    rpc GetMe(GetMeRequest) returns (GetMeResponse) {
+        option (google.api.http) = {
+            get: "/api/auth/me"
+        };
+    }
+
+    rpc GetMyProfile(GetMyProfileRequest) returns (ProfileResponse) {
+        option (google.api.http) = {
+            get: "/api/profile"
+        };
+    }
+
+    rpc GetProfileByID(GetProfileByIDRequest) returns (ProfileResponse) {
+        option (google.api.http) = {
+            get: "/api/profile/{id}"
+        };
+    }
+
+    rpc GetProfileByUserID(GetProfileByUserIDRequest) returns (ProfileResponse) {
+        option (google.api.http) = {
+            get: "/api/profile/user/{user_id}"
+        };
+    }
+
+    rpc CreateProfile(CreateProfileRequest) returns (ProfileResponse) {
+        option (google.api.http) = {
+            post: "/api/profile"
+            body: "*"
+        };
+    }
+
+    rpc UpdateProfile(UpdateProfileRequest) returns (StandardResponse) {
+        option (google.api.http) = {
+            put: "/api/profile/{id}"
+            body: "*"
+        };
+    }
+
+    rpc GetAllMenus(GetAllMenusRequest) returns (MenuListResponse) {
+        option (google.api.http) = {
+            get: "/api/menu"
+        };
+    }
+
+    rpc GetMenusByAccountType(GetMenusByAccountTypeRequest) returns (MenuListResponse) {
+        option (google.api.http) = {
+            get: "/api/menu/{account_type}"
+        };
+    }
+
+    // POST /api/upload/image (multipart/form-data)
+    // Registered as custom HTTP handler in gateway_http_handler.go
+}

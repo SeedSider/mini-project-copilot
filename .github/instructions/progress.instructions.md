@@ -87,6 +87,32 @@ applyTo: "**"
 - [x] `var _ pb.IdentityServiceServer = (*Server)(nil)` compile-time check
 - [x] SignUp gRPC TIDAK melakukan best-effort HTTP ke profile (BFF orchestrates)
 
+### BFF Service — SELESAI ✅
+
+- [x] Backend spec BFF service (`backend-spec-bff-service.md`) — 11 endpoint lengkap
+- [x] Go project scaffolding (`bff-service/`, `go.mod`, folder structure)
+- [x] Proto definitions (`bff_api.proto`, `bff_payload.proto`)
+- [x] Protogen — hand-written gRPC stubs (BFF server, identity client, profile client)
+- [x] Server entry point + CLI (`server/main.go`) — `grpc-gw-server` command
+- [x] Config loading (`server/core_config.go`) — godotenv + os.LookupEnv
+- [x] JWT Manager (`server/jwt/manager.go`) — Verify only (HS256, local verification)
+- [x] ServiceConnection (`server/services/service.go`) — gRPC clients to identity + profile
+- [x] Interceptor chain (`server/api/bff_interceptor.go`) — ProcessId → Logging → Auth
+- [x] Auth interceptor (`server/api/bff_authInterceptor.go`) — JWT verify for GetMe, GetMyProfile
+- [x] Auth handlers (`server/api/bff_auth_api.go`) — SignUp (orchestrated), SignIn (proxy), GetMe
+- [x] Profile handlers (`server/api/bff_profile_api.go`) — GetMyProfile, GetProfileByID, GetProfileByUserID, CreateProfile, UpdateProfile
+- [x] Menu handlers (`server/api/bff_menu_api.go`) — GetAllMenus, GetMenusByAccountType
+- [x] HTTP gateway + routes (`server/http_routes.go`) — manual REST→gRPC bridge
+- [x] Upload handler (`server/gateway_http_handler.go`) — multipart/form-data → Azure Blob direct
+- [x] CORS + security headers middleware
+- [x] Error helpers + gRPC→HTTP status code mapping
+- [x] Logger (`server/lib/logger/`) — Zap structured logger
+- [x] Utils, Constants
+- [x] Dockerfile (multi-stage: golang:1.24-alpine → alpine:3.20)
+- [x] Docker Compose full stack (`docker-compose.yml` di root) — 5 containers
+- [x] `.env.example`, `Makefile`, `sonar-project.properties`, `.dockerignore`
+- [x] `go build ./server/` — compile pass ✅
+
 ### BFF Service Spec — SELESAI ✅
 
 - [x] Backend spec BFF service (`backend-spec-bff-service.md`) — 11 endpoint lengkap
@@ -107,29 +133,16 @@ applyTo: "**"
 
 ## Not Started
 
-### Implementasi bff-service
+### Docker Compose Full Stack Test
 
-- [ ] Go project scaffolding (`bff-service/`)
-- [ ] Proto code generation (BFF, identity client, profile client)
-- [ ] gRPC server + grpc-gateway setup
-- [ ] ServiceConnection (identity + profile gRPC clients)
-- [ ] Auth handlers (SignUp orchestration, SignIn proxy, GetMe)
-- [ ] Profile handlers (proxy to user-profile-service)
-- [ ] Menu handlers (proxy to user-profile-service)
-- [ ] Upload handler (direct to Azure Blob)
-- [ ] JWT verify (lokal, secret sama dgn identity)
-- [ ] Interceptor chain (ProcessId → Logging → Auth)
-- [ ] Docker Compose full stack integration
-
-### Prerequisite: Aktifkan gRPC listener identity-service
-
-- [ ] Pastikan gRPC server listener di-expose di port 9301 dari `server/main.go`
+- [ ] Jalankan `docker compose up --build` dari root, verifikasi semua 5 containers UP
+- [ ] Functional testing BFF — 30+ test cases dari testing checklist
 
 ### Unit Tests & Quality
 
-- [ ] Unit tests identity-service coverage ≥ 90% (test files sudah ada, perlu verifikasi coverage)
-- [ ] Unit tests user-profile-service (target ≥ 90%) — belum ada test file
 - [ ] Unit tests bff-service (target ≥ 90%)
+- [ ] Unit tests user-profile-service (target ≥ 90%) — belum ada test file
+- [ ] Unit tests identity-service coverage ≥ 90% (test files sudah ada, perlu verifikasi coverage)
 - [ ] SonarQube analysis pass untuk semua service
 
 ### Future Enhancements
