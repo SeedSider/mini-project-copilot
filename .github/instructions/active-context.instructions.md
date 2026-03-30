@@ -8,10 +8,20 @@ applyTo: "**"
 
 - `identity-service` — **SELESAI** (Tahap 1-3 + unit tests + gRPC server + codec fix). Dikembangkan di project terpisah (`mini-project-copilot-identity/`), kemudian disatukan ke monorepo ini.
 - `user-profile-service` — **SELESAI + REFACTORED**. Folder structure di-refactor agar sama dengan identity-service: `cmd/server/` + `internal/` → `server/` (main.go, core_config.go, core_db.go, api/, db/, constant/, utils/). `migrations/` dipindah ke root. Semua 11 endpoint (REST + gRPC) tetap aktif, compile pass.
-- `bff-service` — **SELESAI + RUNNING**. Compile pass, semua 11 endpoint diimplementasi. JWT auth fix applied. Docker Compose full stack UP dan terverifikasi end-to-end.
+- `bff-service` — **SELESAI + RUNNING + SWAGGER**. Compile pass, semua 11 endpoint diimplementasi. JWT auth fix applied. Swagger UI di `/swagger/bff/`. Docker Compose full stack UP dan terverifikasi end-to-end.
 
 ## Recent Changes
 
+- **bff-service SWAGGER DITAMBAHKAN** — Swagger UI + OpenAPI spec untuk semua 11 endpoint:
+  - Dependencies: `swaggo/swag@v1.16.6` + `swaggo/http-swagger@v1.3.4`
+  - Generated docs: `docs/docs.go`, `docs/swagger.json`, `docs/swagger.yaml`
+  - Swagger UI route: `http://localhost:3000/swagger/bff/`
+  - Annotations pada `server/http_routes.go` (Auth, Menu, Profile/user/{id})
+  - Doc stubs pada `server/swagger_docs.go` (Profile GET/POST, Profile/{id} GET/PUT, Upload)
+  - Type reference import via `bff_service` alias di swagger_docs.go, `pb` alias di http_routes.go
+  - `@securityDefinitions.apikey BearerAuth` untuk protected endpoints
+  - 11 operasi di 5 tags: Auth (3), Profile (5), Menu (2), Upload (1)
+  - `go build ./server/` + `go vet ./server/` — pass ✅
 - **user-profile-service REFACTORED** — folder structure dirombak agar konsisten dengan identity-service:
   - `cmd/server/main.go` → `server/main.go` (dengan graceful shutdown, signal handling)
   - `internal/handlers/` + `internal/grpchandler/` → `server/api/` (semua HTTP + gRPC handlers di `*Server` struct)
@@ -41,6 +51,7 @@ applyTo: "**"
 - SignUp orchestration: identity.SignUp → profile.CreateProfile (best-effort) ✅ VERIFIED
 - GET /api/profile with JWT token ✅ VERIFIED
 - Upload image: multipart/form-data → Azure Blob Storage direct
+- **Swagger UI** di `/swagger/bff/` — 11 operasi, 5 tags (Auth, Profile, Menu, Upload), BearerAuth security definition
 - CORS + security headers middleware
 - Docker Compose full stack (`docker-compose.yml` di root): 5 containers
 
@@ -106,4 +117,4 @@ applyTo: "**"
 - **WAJIB: setiap gRPC service yg menggunakan hand-written protogen HARUS punya `codec.go`** di package protogennya yang mendaftarkan JSONCodec via `encoding.RegisterCodec` dalam `init()`. Tanpa ini, server gRPC akan fallback ke proto codec dan gagal unmarshal.
 - **BFF HTTP gateway pattern**: `contextFromHTTPRequest` HARUS verify JWT dan inject `user_claims` ke context. gRPC interceptor chain TIDAK berjalan untuk direct function calls dari HTTP gateway. Simpan `jwtMgr` sebagai package-level var, inisialisasi di `startHTTPServer`.
 - **Verifikasi file.go setelah `create_file`**: selalu cek `Get-Item <path>` setelah membuat file baru untuk memastikan file benar-benar ada di disk.
-- **user-profile-service refactored ke identity-service pattern**: `server/main.go` (entry + graceful shutdown), `server/core_config.go` (Config struct + initConfig), `server/core_db.go` (startDBConnection + runMigration via embed.FS), `server/api/` (api.go Server struct + *_api.go HTTP + *_grpc_api.go gRPC), `server/db/` (Provider pattern), `migrations/embed.go` (embed.FS). Semua 3 service sekarang menggunakan folder structure yang konsisten.
+- **Swagger pattern BFF**: swaggo annotations di HTTP handler files. Untuk multi-method handlers (handleProfile, handleProfileByID), gunakan doc stub functions di `swagger_docs.go`. Type references harus sesuai import alias (`pb.*` di http_routes.go, `bff_service.*` di swagger_docs.go). Swagger UI route: `http.StripPrefix` + `httpSwagger.Handler(httpSwagger.URL(...))`.

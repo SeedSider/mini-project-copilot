@@ -140,6 +140,14 @@ applyTo: "**"
 - [x] **JWT fix** — `contextFromHTTPRequest` verify JWT + inject `user_claims`; `jwtMgr` package-level var ✅
 - [x] **`protogen/identity-service/codec.go`** — JSONCodec registered, gRPC server handle JSON requests ✅
 - [x] **Docker Compose full stack RUNNING & VERIFIED** — SignUp → SignIn → GET /api/profile end-to-end ✅
+- [x] **Swagger UI DITAMBAHKAN** — 11 operasi, 5 tags (Auth, Profile, Menu, Upload)
+  - [x] Dependencies: `swaggo/swag@v1.16.6` + `swaggo/http-swagger@v1.3.4`
+  - [x] Generated docs: `docs/docs.go`, `docs/swagger.json`, `docs/swagger.yaml`
+  - [x] Swagger UI route: `http://localhost:3000/swagger/bff/`
+  - [x] Annotations pada `server/http_routes.go` (Auth 3, Menu 2, Profile/user/{id} 1)
+  - [x] Doc stubs pada `server/swagger_docs.go` (Profile GET/POST, Profile/{id} GET/PUT, Upload)
+  - [x] `@securityDefinitions.apikey BearerAuth` untuk protected endpoints
+  - [x] `go build ./server/` + `go vet ./server/` — pass ✅
 
 ### BFF Service Spec — SELESAI ✅
 
@@ -210,3 +218,4 @@ _(tidak ada item in progress saat ini)_
 | BFF JWT fix via contextFromHTTPRequest  | HTTP gateway calls gRPC handlers directly — interceptor chain tidak jalan | 2026-03-30 |
 | codec.go wajib di setiap protogen pkg   | Hand-written types tidak implement proto.Message; gRPC fallback ke proto codec | 2026-03-30 |
 | user-profile-service refactor ke server/ | Konsistensi folder structure dengan identity-service & BFF | 2026-03-30 |
+| BFF Swagger via swaggo                  | Konsisten dengan user-profile-service; swaggo annotation-based doc gen | 2026-03-30 |

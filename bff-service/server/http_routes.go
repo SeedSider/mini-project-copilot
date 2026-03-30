@@ -14,6 +14,18 @@ import (
 
 // ── Auth endpoints ──
 
+// handleAuthSignUp godoc
+// @Summary Register a new user
+// @Description Orchestrates identity-service SignUp followed by best-effort profile creation in user-profile-service
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param request body pb.SignUpRequest true "SignUp request body"
+// @Success 201 {object} pb.SignUpResponse
+// @Failure 400 {object} pb.ErrorBodyResponse
+// @Failure 409 {object} pb.ErrorBodyResponse "Username already exists"
+// @Failure 500 {object} pb.ErrorBodyResponse
+// @Router /api/auth/signup [post]
 func (s *gatewayServer) handleAuthSignUp(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "OPTIONS" {
 		return
@@ -39,6 +51,18 @@ func (s *gatewayServer) handleAuthSignUp(w http.ResponseWriter, r *http.Request)
 	writeJSON(w, http.StatusCreated, resp)
 }
 
+// handleAuthSignIn godoc
+// @Summary Sign in user
+// @Description Authenticate user with username and password, returns JWT token
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param request body pb.SignInRequest true "SignIn request body"
+// @Success 200 {object} pb.SignInResponse
+// @Failure 400 {object} pb.ErrorBodyResponse
+// @Failure 401 {object} pb.ErrorBodyResponse "Invalid credentials"
+// @Failure 500 {object} pb.ErrorBodyResponse
+// @Router /api/auth/signin [post]
 func (s *gatewayServer) handleAuthSignIn(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "OPTIONS" {
 		return
@@ -64,6 +88,16 @@ func (s *gatewayServer) handleAuthSignIn(w http.ResponseWriter, r *http.Request)
 	writeJSON(w, http.StatusOK, resp)
 }
 
+// handleAuthGetMe godoc
+// @Summary Get current user
+// @Description Retrieve current authenticated user information from JWT token
+// @Tags Auth
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} pb.GetMeResponse
+// @Failure 401 {object} pb.ErrorBodyResponse
+// @Failure 500 {object} pb.ErrorBodyResponse
+// @Router /api/auth/me [get]
 func (s *gatewayServer) handleAuthGetMe(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "OPTIONS" {
 		return
@@ -165,6 +199,17 @@ func (s *gatewayServer) handleProfileByID(w http.ResponseWriter, r *http.Request
 	}
 }
 
+// handleProfileByUserID godoc
+// @Summary Get profile by user ID
+// @Description Retrieve a user profile by the user's UUID
+// @Tags Profile
+// @Produce json
+// @Param user_id path string true "User ID (UUID)"
+// @Success 200 {object} pb.ProfileResponse
+// @Failure 400 {object} pb.ErrorBodyResponse
+// @Failure 404 {object} pb.ErrorBodyResponse
+// @Failure 500 {object} pb.ErrorBodyResponse
+// @Router /api/profile/user/{user_id} [get]
 func (s *gatewayServer) handleProfileByUserID(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "OPTIONS" {
 		return
@@ -193,6 +238,14 @@ func (s *gatewayServer) handleProfileByUserID(w http.ResponseWriter, r *http.Req
 
 // ── Menu endpoints ──
 
+// handleMenuAll godoc
+// @Summary Get all menus
+// @Description Retrieve all homepage menu items
+// @Tags Menu
+// @Produce json
+// @Success 200 {object} pb.MenuListResponse
+// @Failure 500 {object} pb.ErrorBodyResponse
+// @Router /api/menu [get]
 func (s *gatewayServer) handleMenuAll(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "OPTIONS" {
 		return
@@ -212,6 +265,16 @@ func (s *gatewayServer) handleMenuAll(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, resp)
 }
 
+// handleMenuByAccountType godoc
+// @Summary Get menus by account type
+// @Description Retrieve menus filtered by account type. PREMIUM gets all menus, REGULAR gets only REGULAR menus.
+// @Tags Menu
+// @Produce json
+// @Param account_type path string true "Account type (REGULAR or PREMIUM)"
+// @Success 200 {object} pb.MenuListResponse
+// @Failure 400 {object} pb.ErrorBodyResponse
+// @Failure 500 {object} pb.ErrorBodyResponse
+// @Router /api/menu/{account_type} [get]
 func (s *gatewayServer) handleMenuByAccountType(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "OPTIONS" {
 		return

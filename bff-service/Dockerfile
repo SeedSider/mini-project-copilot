@@ -7,18 +7,16 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -o /server ./server/
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /bff-service ./server/
-
-# Run stage
+# Runtime stage
 FROM alpine:3.20
 
-RUN apk --no-cache add ca-certificates
+RUN apk --no-cache add ca-certificates tzdata
 
 WORKDIR /app
-
-COPY --from=builder /bff-service .
+COPY --from=builder /server .
 
 EXPOSE 3000 9090
 
-ENTRYPOINT ["./bff-service", "grpc-gw-server"]
+CMD ["./server", "grpc-gw-server"]

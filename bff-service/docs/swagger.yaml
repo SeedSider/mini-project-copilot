@@ -1,0 +1,494 @@
+basePath: /
+definitions:
+  github_com_bankease_bff-service_protogen_bff-service.CreateProfileRequest:
+    properties:
+      account_type:
+        type: string
+      balance:
+        type: integer
+      bank:
+        type: string
+      branch:
+        type: string
+      card_number:
+        type: string
+      card_provider:
+        type: string
+      currency:
+        type: string
+      name:
+        type: string
+      user_id:
+        type: string
+    type: object
+  github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse:
+    properties:
+      code:
+        type: integer
+      error:
+        type: boolean
+      message:
+        type: string
+    type: object
+  github_com_bankease_bff-service_protogen_bff-service.GetMeResponse:
+    properties:
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
+  github_com_bankease_bff-service_protogen_bff-service.MenuItem:
+    properties:
+      icon_url:
+        type: string
+      id:
+        type: string
+      index:
+        type: integer
+      is_active:
+        type: boolean
+      title:
+        type: string
+      type:
+        type: string
+    type: object
+  github_com_bankease_bff-service_protogen_bff-service.MenuListResponse:
+    properties:
+      menus:
+        items:
+          $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.MenuItem'
+        type: array
+    type: object
+  github_com_bankease_bff-service_protogen_bff-service.ProfileResponse:
+    properties:
+      account_type:
+        type: string
+      balance:
+        type: integer
+      bank:
+        type: string
+      branch:
+        type: string
+      card_number:
+        type: string
+      card_provider:
+        type: string
+      currency:
+        type: string
+      id:
+        type: string
+      image:
+        type: string
+      name:
+        type: string
+      user_id:
+        type: string
+    type: object
+  github_com_bankease_bff-service_protogen_bff-service.SignInRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  github_com_bankease_bff-service_protogen_bff-service.SignInResponse:
+    properties:
+      token:
+        type: string
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
+  github_com_bankease_bff-service_protogen_bff-service.SignUpRequest:
+    properties:
+      password:
+        type: string
+      phone:
+        type: string
+      username:
+        type: string
+    type: object
+  github_com_bankease_bff-service_protogen_bff-service.SignUpResponse:
+    properties:
+      user_id:
+        type: string
+      username:
+        type: string
+    type: object
+  github_com_bankease_bff-service_protogen_bff-service.StandardResponse:
+    properties:
+      code:
+        type: integer
+      description:
+        type: string
+    type: object
+  github_com_bankease_bff-service_protogen_bff-service.UpdateProfileRequest:
+    properties:
+      bank:
+        type: string
+      branch:
+        type: string
+      card_number:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  server.uploadResponse:
+    properties:
+      code:
+        type: integer
+      description:
+        type: string
+      url:
+        type: string
+    type: object
+host: localhost:3000
+info:
+  contact: {}
+  description: Backend for Frontend (BFF) service for BankEase mobile banking application.
+    Single entry point for the mobile app, orchestrating calls to identity-service
+    and user-profile-service.
+  title: BFF Service API
+  version: "1.0"
+paths:
+  /api/auth/me:
+    get:
+      description: Retrieve current authenticated user information from JWT token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.GetMeResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+      security:
+      - BearerAuth: []
+      summary: Get current user
+      tags:
+      - Auth
+  /api/auth/signin:
+    post:
+      consumes:
+      - application/json
+      description: Authenticate user with username and password, returns JWT token
+      parameters:
+      - description: SignIn request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.SignInRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.SignInResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+        "401":
+          description: Invalid credentials
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+      summary: Sign in user
+      tags:
+      - Auth
+  /api/auth/signup:
+    post:
+      consumes:
+      - application/json
+      description: Orchestrates identity-service SignUp followed by best-effort profile
+        creation in user-profile-service
+      parameters:
+      - description: SignUp request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.SignUpRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.SignUpResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+        "409":
+          description: Username already exists
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+      summary: Register a new user
+      tags:
+      - Auth
+  /api/menu:
+    get:
+      description: Retrieve all homepage menu items
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.MenuListResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+      summary: Get all menus
+      tags:
+      - Menu
+  /api/menu/{account_type}:
+    get:
+      description: Retrieve menus filtered by account type. PREMIUM gets all menus,
+        REGULAR gets only REGULAR menus.
+      parameters:
+      - description: Account type (REGULAR or PREMIUM)
+        in: path
+        name: account_type
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.MenuListResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+      summary: Get menus by account type
+      tags:
+      - Menu
+  /api/profile:
+    get:
+      description: Retrieve the authenticated user's banking profile using JWT token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ProfileResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+      security:
+      - BearerAuth: []
+      summary: Get my profile
+      tags:
+      - Profile
+    post:
+      consumes:
+      - application/json
+      description: Create a new user banking profile
+      parameters:
+      - description: Create profile request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.CreateProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ProfileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+      summary: Create a new profile
+      tags:
+      - Profile
+  /api/profile/{id}:
+    get:
+      description: Retrieve a user profile by its UUID
+      parameters:
+      - description: Profile ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ProfileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+      summary: Get profile by ID
+      tags:
+      - Profile
+    put:
+      consumes:
+      - application/json
+      description: Update an existing user profile by ID
+      parameters:
+      - description: Profile ID (UUID)
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Update profile request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.UpdateProfileRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.StandardResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+      summary: Update a profile
+      tags:
+      - Profile
+  /api/profile/user/{user_id}:
+    get:
+      description: Retrieve a user profile by the user's UUID
+      parameters:
+      - description: User ID (UUID)
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ProfileResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+      summary: Get profile by user ID
+      tags:
+      - Profile
+  /api/upload/image:
+    post:
+      consumes:
+      - multipart/form-data
+      description: 'Upload an image file to Azure Blob Storage (max 5MB). Supported
+        formats: JPEG, PNG, GIF, WebP, SVG.'
+      parameters:
+      - description: Image file (max 5MB)
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/server.uploadResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+        "413":
+          description: File too large
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+        "503":
+          description: Azure not configured
+          schema:
+            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+      summary: Upload image
+      tags:
+      - Upload
+securityDefinitions:
+  BearerAuth:
+    description: Enter your JWT token with the `Bearer ` prefix, e.g. "Bearer eyJhbGciOi..."
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

@@ -8,12 +8,14 @@ import (
 	"os"
 	"os/signal"
 
+	_ "github.com/bankease/bff-service/docs"
 	pb "github.com/bankease/bff-service/protogen/bff-service"
 	"github.com/bankease/bff-service/server/api"
 	jwts "github.com/bankease/bff-service/server/jwt"
 	"github.com/bankease/bff-service/server/lib/logger"
 	"github.com/bankease/bff-service/server/services"
 
+	httpSwagger "github.com/swaggo/http-swagger"
 	"github.com/urfave/cli"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
@@ -44,6 +46,15 @@ func init() {
 	})
 }
 
+// @title BFF Service API
+// @version 1.0
+// @description Backend for Frontend (BFF) service for BankEase mobile banking application. Single entry point for the mobile app, orchestrating calls to identity-service and user-profile-service.
+// @host localhost:3000
+// @BasePath /
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Enter your JWT token with the `Bearer ` prefix, e.g. "Bearer eyJhbGciOi..."
 func main() {
 	initConfig()
 
@@ -143,6 +154,11 @@ func startHTTPServer(port string, apiServer *api.Server) error {
 
 	// Custom HTTP handler for upload (multipart/form-data, not through grpc-gateway)
 	mux.HandleFunc("/api/upload/image", gwServer.HandleUploadImage)
+
+	// Swagger UI
+	mux.Handle("/swagger/bff/", httpSwagger.Handler(
+		httpSwagger.URL("/swagger/bff/doc.json"),
+	))
 
 	// Health check
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
