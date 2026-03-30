@@ -17,6 +17,8 @@ jobs:
           host: ${{ vars.REMOTE_HOST }}
           username: ${{ vars.REMOTE_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          command_timeout: 30m
+          timeout: 30m
           envs: UPS_DATABASE_URL,UPS_JWT_SECRET,UPS_AZURE_STORAGE_SAS_URL,UPS_AZURE_STORAGE_CONTAINER,IS_JWT_SECRET,IS_DB_HOST,IS_DB_PORT,IS_DB_USER,IS_DB_PASSWORD,IS_DB_NAME,BFF_JWT_SECRET,BFF_IDENTITY_SERVICE_ADDR,BFF_PROFILE_SERVICE_ADDR,BFF_AZURE_SAS_URL,BFF_AZURE_CONTAINER
           script: |
             set -e
