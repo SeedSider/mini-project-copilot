@@ -242,10 +242,22 @@ func (s *gatewayServer) handleMenuByAccountType(w http.ResponseWriter, r *http.R
 
 func contextFromHTTPRequest(r *http.Request) context.Context {
 	md := metadata.New(nil)
-	if auth := r.Header.Get("Authorization"); auth != "" {
-		md.Set("authorization", auth)
+	authHeader := r.Header.Get("Authorization")
+	if authHeader != "" {
+		md.Set("authorization", authHeader)
 	}
 	ctx := metadata.NewIncomingContext(r.Context(), md)
+
+	// Inject user_claims into context so protected gRPC handlers can read them.
+	// The gRPC auth interceptor only fires for gRPC transport connections, not
+	// for direct handler calls made by this HTTP gateway.
+	if jwtMgr != nil && strings.HasPrefix(authHeader, "Bearer ") {
+		token := strings.TrimPrefix(authHeader, "Bearer ")
+		if claims, err := jwtMgr.Verify(token); err == nil {
+			ctx = context.WithValue(ctx, "user_claims", claims)
+		}
+	}
+
 	return ctx
 }
 

@@ -10,6 +10,7 @@ import (
 
 	pb "github.com/bankease/bff-service/protogen/bff-service"
 	"github.com/bankease/bff-service/server/api"
+	jwts "github.com/bankease/bff-service/server/jwt"
 	"github.com/bankease/bff-service/server/lib/logger"
 	"github.com/bankease/bff-service/server/services"
 
@@ -24,6 +25,7 @@ const serviceName = "bff"
 var (
 	log        *logger.Logger
 	grpcServer *grpc.Server
+	jwtMgr     *jwts.JWTManager
 )
 
 type gatewayServer struct {
@@ -134,6 +136,7 @@ func startGrpcServer(port string, apiServer *api.Server) error {
 func startHTTPServer(port string, apiServer *api.Server) error {
 	log.Info("", "startHTTPServer", fmt.Sprintf("Starting %s HTTP gateway on port %s...", serviceName, port), nil, nil, nil, nil)
 
+	jwtMgr = apiServer.GetManager()
 	gwServer := &gatewayServer{apiServer: apiServer}
 
 	mux := http.NewServeMux()
