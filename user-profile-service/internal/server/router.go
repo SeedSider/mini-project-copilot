@@ -11,7 +11,7 @@ import (
 
 // setupRoutes configures all routes and middleware.
 // Pattern from: addons-issuance-lc-service/server/gateway_http_handler.go
-func setupRoutes(profileHandler *handlers.ProfileHandler, menuHandler *handlers.MenuHandler, uploadHandler *handlers.UploadHandler) chi.Router {
+func setupRoutes(profileHandler *handlers.ProfileHandler, menuHandler *handlers.MenuHandler, uploadHandler *handlers.UploadHandler, searchHandler *handlers.SearchHandler) chi.Router {
 	r := chi.NewRouter()
 
 	// Middleware stack
@@ -32,6 +32,11 @@ func setupRoutes(profileHandler *handlers.ProfileHandler, menuHandler *handlers.
 
 	// Upload routes
 	r.Post("/api/upload/image", uploadHandler.UploadImage)
+
+	// Search / rates / branches routes
+	r.Get("/api/exchange-rates", searchHandler.GetExchangeRates)
+	r.Get("/api/interest-rates", searchHandler.GetInterestRates)
+	r.Get("/api/branches", searchHandler.GetBranches)
 
 	// Swagger UI — host is omitted from the spec so Swagger UI automatically
 	// uses whatever host the browser is currently on (localhost, VM IP, etc.)

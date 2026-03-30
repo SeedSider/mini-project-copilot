@@ -56,6 +56,45 @@ definitions:
       name:
         type: string
     type: object
+  models.Branch:
+    properties:
+      distance:
+        type: string
+      id:
+        type: string
+      latitude:
+        type: number
+      longitude:
+        type: number
+      name:
+        type: string
+    type: object
+  models.ExchangeRate:
+    properties:
+      buy:
+        type: number
+      country:
+        type: string
+      countryCode:
+        type: string
+      currency:
+        type: string
+      id:
+        type: string
+      sell:
+        type: number
+    type: object
+  models.InterestRate:
+    properties:
+      deposit:
+        type: string
+      id:
+        type: string
+      kind:
+        type: string
+      rate:
+        type: number
+    type: object
   models.StandardResponse:
     properties:
       code:
@@ -230,6 +269,68 @@ paths:
       summary: Update user profile
       tags:
         - Profile
+  /api/branches:
+    get:
+      description: Retrieve a list of BRI branches. Optionally filter by name using the q query parameter (case-insensitive partial match).
+      parameters:
+        - description: "Search query \u2014 filters by branch name"
+          in: query
+          name: q
+          type: string
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: "#/definitions/models.Branch"
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/models.StandardResponse"
+      summary: Get branches
+      tags:
+        - Search
+  /api/exchange-rates:
+    get:
+      description: Retrieve a list of currency exchange rates
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: "#/definitions/models.ExchangeRate"
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/models.StandardResponse"
+      summary: Get exchange rates
+      tags:
+        - Search
+  /api/interest-rates:
+    get:
+      description: Retrieve a list of deposit interest rates
+      produces:
+        - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: "#/definitions/models.InterestRate"
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: "#/definitions/models.StandardResponse"
+      summary: Get interest rates
+      tags:
+        - Search
   /api/upload/image:
     post:
       consumes:

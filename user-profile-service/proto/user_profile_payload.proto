@@ -70,6 +70,46 @@ message MenuListResponse {
     repeated MenuItem menus = 1;
 }
 
+// ── Search Messages ──
+
+message GetExchangeRatesRequest {}
+message ExchangeRateItem {
+    string id           = 1;
+    string country      = 2;
+    string currency     = 3;
+    string country_code = 4;
+    double buy          = 5;
+    double sell         = 6;
+}
+message ExchangeRateListResponse {
+    repeated ExchangeRateItem exchange_rates = 1;
+}
+
+message GetInterestRatesRequest {}
+message InterestRateItem {
+    string id      = 1;
+    string kind    = 2;
+    string deposit = 3;
+    double rate    = 4;
+}
+message InterestRateListResponse {
+    repeated InterestRateItem interest_rates = 1;
+}
+
+message GetBranchesRequest {
+    string query = 1;
+}
+message BranchItem {
+    string id        = 1;
+    string name      = 2;
+    string distance  = 3;
+    double latitude  = 4;
+    double longitude = 5;
+}
+message BranchListResponse {
+    repeated BranchItem branches = 1;
+}
+
 // ── Common ──
 
 message StandardResponse {

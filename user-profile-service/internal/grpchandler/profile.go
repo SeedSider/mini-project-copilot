@@ -16,8 +16,11 @@ import (
 // GrpcServer implements the UserProfileServiceServer interface.
 type GrpcServer struct {
 	pb.UnimplementedUserProfileServiceServer
-	ProfileRepo *repository.ProfileRepository
-	MenuRepo    *repository.MenuRepository
+	ProfileRepo      *repository.ProfileRepository
+	MenuRepo         *repository.MenuRepository
+	ExchangeRateRepo *repository.ExchangeRateRepository
+	InterestRateRepo *repository.InterestRateRepository
+	BranchRepo       *repository.BranchRepository
 }
 
 // CreateProfile implements the gRPC CreateProfile RPC.

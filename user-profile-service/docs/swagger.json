@@ -205,6 +205,77 @@
         }
       }
     },
+    "/api/branches": {
+      "get": {
+        "description": "Retrieve a list of BRI branches. Optionally filter by name using the q query parameter (case-insensitive partial match).",
+        "produces": ["application/json"],
+        "tags": ["Search"],
+        "summary": "Get branches",
+        "parameters": [
+          {
+            "type": "string",
+            "description": "Search query \u2014 filters by branch name",
+            "name": "q",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/models.Branch" }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": { "$ref": "#/definitions/models.StandardResponse" }
+          }
+        }
+      }
+    },
+    "/api/exchange-rates": {
+      "get": {
+        "description": "Retrieve a list of currency exchange rates",
+        "produces": ["application/json"],
+        "tags": ["Search"],
+        "summary": "Get exchange rates",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/models.ExchangeRate" }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": { "$ref": "#/definitions/models.StandardResponse" }
+          }
+        }
+      }
+    },
+    "/api/interest-rates": {
+      "get": {
+        "description": "Retrieve a list of deposit interest rates",
+        "produces": ["application/json"],
+        "tags": ["Search"],
+        "summary": "Get interest rates",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "schema": {
+              "type": "array",
+              "items": { "$ref": "#/definitions/models.InterestRate" }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "schema": { "$ref": "#/definitions/models.StandardResponse" }
+          }
+        }
+      }
+    },
     "/api/upload/image": {
       "post": {
         "description": "Upload an image file to Azure Blob Storage. Returns the URL of the uploaded image.",
@@ -342,6 +413,36 @@
         "name": {
           "type": "string"
         }
+      }
+    },
+    "models.Branch": {
+      "type": "object",
+      "properties": {
+        "distance": { "type": "string" },
+        "id": { "type": "string" },
+        "latitude": { "type": "number" },
+        "longitude": { "type": "number" },
+        "name": { "type": "string" }
+      }
+    },
+    "models.ExchangeRate": {
+      "type": "object",
+      "properties": {
+        "buy": { "type": "number" },
+        "country": { "type": "string" },
+        "countryCode": { "type": "string" },
+        "currency": { "type": "string" },
+        "id": { "type": "string" },
+        "sell": { "type": "number" }
+      }
+    },
+    "models.InterestRate": {
+      "type": "object",
+      "properties": {
+        "deposit": { "type": "string" },
+        "id": { "type": "string" },
+        "kind": { "type": "string" },
+        "rate": { "type": "number" }
       }
     },
     "models.StandardResponse": {

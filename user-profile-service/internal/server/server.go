@@ -23,14 +23,20 @@ type Server struct {
 	Router      chi.Router
 	Port        string
 	GRPCPort    string
-	profileRepo *repository.ProfileRepository
-	menuRepo    *repository.MenuRepository
+	profileRepo      *repository.ProfileRepository
+	menuRepo         *repository.MenuRepository
+	exchangeRateRepo *repository.ExchangeRateRepository
+	interestRateRepo *repository.InterestRateRepository
+	branchRepo       *repository.BranchRepository
 }
 
 // NewServer creates a new Server with all dependencies wired up.
 func NewServer(db *sql.DB, port string, azureSASURL string, azureContainer string, jwtSecret string, grpcPort string) *Server {
 	profileRepo := &repository.ProfileRepository{DB: db}
 	menuRepo := &repository.MenuRepository{DB: db}
+	exchangeRateRepo := &repository.ExchangeRateRepository{DB: db}
+	interestRateRepo := &repository.InterestRateRepository{DB: db}
+	branchRepo := &repository.BranchRepository{DB: db}
 
 	profileHandler := &handlers.ProfileHandler{Repo: profileRepo, JWTSecret: jwtSecret}
 	menuHandler := &handlers.MenuHandler{Repo: menuRepo}
@@ -38,16 +44,24 @@ func NewServer(db *sql.DB, port string, azureSASURL string, azureContainer strin
 		AzureSASURL:    azureSASURL,
 		AzureContainer: azureContainer,
 	}
-
-	s := &Server{
-		DB:          db,
-		Port:        port,
-		GRPCPort:    grpcPort,
-		profileRepo: profileRepo,
-		menuRepo:    menuRepo,
+	searchHandler := &handlers.SearchHandler{
+		ExchangeRateRepo: exchangeRateRepo,
+		InterestRateRepo: interestRateRepo,
+		BranchRepo:       branchRepo,
 	}
 
-	s.Router = setupRoutes(profileHandler, menuHandler, uploadHandler)
+	s := &Server{
+		DB:               db,
+		Port:             port,
+		GRPCPort:         grpcPort,
+		profileRepo:      profileRepo,
+		menuRepo:         menuRepo,
+		exchangeRateRepo: exchangeRateRepo,
+		interestRateRepo: interestRateRepo,
+		branchRepo:       branchRepo,
+	}
+
+	s.Router = setupRoutes(profileHandler, menuHandler, uploadHandler, searchHandler)
 	return s
 }
 
@@ -66,8 +80,11 @@ func (s *Server) StartGRPC() error {
 	grpcServer := grpc.NewServer()
 
 	grpcHandler := &grpchandler.GrpcServer{
-		ProfileRepo: s.profileRepo,
-		MenuRepo:    s.menuRepo,
+		ProfileRepo:      s.profileRepo,
+		MenuRepo:         s.menuRepo,
+		ExchangeRateRepo: s.exchangeRateRepo,
+		InterestRateRepo: s.interestRateRepo,
+		BranchRepo:       s.branchRepo,
 	}
 
 	pb.RegisterUserProfileServiceServer(grpcServer, grpcHandler)
