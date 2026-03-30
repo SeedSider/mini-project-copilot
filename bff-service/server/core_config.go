@@ -19,10 +19,10 @@ type Config struct {
 	AzureSASURL    string
 	AzureContainer string
 
-	Env         string
-	AppName     string
-	ProductName string
-	LoggerLevel string
+	Env          string
+	AppName      string
+	ProductName  string
+	LoggerLevel  string
 	LoggerOutput string
 
 	CorsAllowedHeaders []string
