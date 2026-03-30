@@ -1,8 +1,8 @@
 package api
 
 import (
-	"github.com/bankease/user-profile-service/server/db"
 	pb "github.com/bankease/user-profile-service/protogen/user-profile-service"
+	"github.com/bankease/user-profile-service/server/db"
 )
 
 // Compile-time check that *Server implements pb.UserProfileServiceServer.
