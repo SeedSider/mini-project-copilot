@@ -123,6 +123,9 @@ applyTo: "**"
 - [x] Docker Compose full stack (`docker-compose.yml` di root) — 5 containers
 - [x] `.env.example`, `Makefile`, `sonar-project.properties`, `.dockerignore`
 - [x] `go build ./server/` — compile pass ✅
+- [x] **JWT fix** — `contextFromHTTPRequest` verify JWT + inject `user_claims`; `jwtMgr` package-level var ✅
+- [x] **`protogen/identity-service/codec.go`** — JSONCodec registered, gRPC server handle JSON requests ✅
+- [x] **Docker Compose full stack RUNNING & VERIFIED** — SignUp → SignIn → GET /api/profile end-to-end ✅
 
 ### BFF Service Spec — SELESAI ✅
 
@@ -136,18 +139,20 @@ applyTo: "**"
 
 - [x] Memory Bank initialized dan updated (semua core files)
 - [x] identity-service disatukan ke monorepo
+- [x] Docker Compose full stack UP (5 containers) ✅ VERIFIED 2026-03-30
+- [x] End-to-end flow verified: POST /signup → POST /signin → GET /api/profile ✅
 
 ## In Progress
 
-- [ ] Verifikasi gRPC listener identity-service aktif di port 9301 (identity_grpc_api.go sudah ada, perlu cek server.go expose port)
-- [ ] Unit tests coverage ≥ 90% identity-service (go test -coverprofile)
+_(tidak ada item in progress saat ini)_
 
 ## Not Started
 
 ### Docker Compose Full Stack Test
 
-- [ ] Jalankan `docker compose up --build` dari root, verifikasi semua 5 containers UP
-- [ ] Functional testing BFF — 30+ test cases dari testing checklist
+- [x] Jalankan `docker compose up --build` dari root, verifikasi semua 5 containers UP ✅
+- [x] Functional testing BFF (partial) — signup, signin, GET /api/profile ✅
+- [ ] Functional testing BFF lanjutan — 30+ test cases dari testing checklist
 
 ### Unit Tests & Quality
 
@@ -165,10 +170,10 @@ applyTo: "**"
 
 ## Known Issues
 
-- identity-service: perlu verifikasi port 9301 gRPC listener benar-benar di-expose dari `server/main.go` (handler sudah ada di `identity_grpc_api.go`)
 - user-profile-service: belum ada unit tests
 - Kedua services belum melalui SonarQube analysis
 - **Seed data caveat**: `docker-entrypoint-initdb.d` hanya jalan saat volume fresh; new tables (004-006) tidak otomatis ter-seed; gunakan `docker cp + psql -f` untuk re-seed
+- **`create_file` tool caveat**: tool bisa melaporkan sukses tapi file tidak terbuat di disk. SELALU verifikasi dengan `Get-Item <path>` setelah membuat file baru.
 
 ## Architecture Decisions Log
 
@@ -188,3 +193,5 @@ applyTo: "**"
 | Search endpoints — raw array response   | Sesuai api.txt spec; tidak perlu wrapper envelope  | 2026-03-30 |
 | Branch search — ILIKE SQL               | Case-insensitive partial match sesuai api.txt spec | 2026-03-30 |
 | Re-seed via docker cp + psql            | docker-entrypoint-initdb.d tidak re-run jika volume sudah ada | 2026-03-30 |
+| BFF JWT fix via contextFromHTTPRequest  | HTTP gateway calls gRPC handlers directly — interceptor chain tidak jalan | 2026-03-30 |
+| codec.go wajib di setiap protogen pkg   | Hand-written types tidak implement proto.Message; gRPC fallback ke proto codec | 2026-03-30 |
