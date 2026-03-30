@@ -14,9 +14,10 @@ jobs:
       - name: Deploy to server via SSH
         uses: appleboy/ssh-action@v1.2.0
         with:
-          host: ${{ secrets.REMOTE_HOST }}
-          username: ${{ secrets.REMOTE_USER }}
+          host: ${{ vars.REMOTE_HOST }}
+          username: ${{ vars.REMOTE_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: UPS_DATABASE_URL,UPS_JWT_SECRET,UPS_AZURE_STORAGE_SAS_URL,UPS_AZURE_STORAGE_CONTAINER,IS_JWT_SECRET,IS_DB_HOST,IS_DB_PORT,IS_DB_USER,IS_DB_PASSWORD,IS_DB_NAME,BFF_JWT_SECRET,BFF_IDENTITY_SERVICE_ADDR,BFF_PROFILE_SERVICE_ADDR,BFF_AZURE_SAS_URL,BFF_AZURE_CONTAINER
           script: |
             set -e
 
@@ -30,6 +31,57 @@ jobs:
               git pull origin master
             fi
 
+            # Write .env for user-profile-service (no leading spaces)
+            {
+              echo "DATABASE_URL=$UPS_DATABASE_URL"
+              echo "PORT=8080"
+              echo "JWT_SECRET=$UPS_JWT_SECRET"
+              echo "AZURE_STORAGE_SAS_URL=$UPS_AZURE_STORAGE_SAS_URL"
+              echo "AZURE_STORAGE_CONTAINER=$UPS_AZURE_STORAGE_CONTAINER"
+            } > "$REPO_DIR/user-profile-service/.env"
+
+            # Write .env for identity-service
+            {
+              echo "JWT_SECRET=$IS_JWT_SECRET"
+              echo "JWT_DURATION=24h"
+              echo "DB_HOST=$IS_DB_HOST"
+              echo "DB_PORT=$IS_DB_PORT"
+              echo "DB_USER=$IS_DB_USER"
+              echo "DB_PASSWORD=$IS_DB_PASSWORD"
+              echo "DB_NAME=$IS_DB_NAME"
+              echo "DB_SSLMODE=disable"
+              echo "DB_TIMEZONE=Asia/Jakarta"
+              echo "DB_MAX_RETRY=3"
+              echo "DB_TIMEOUT=300"
+              echo "ENV=DEV"
+              echo "APP_NAME=identity-service"
+              echo "PRODUCT_NAME=BRICaMS"
+              echo "LOGGER_TAG=identity.dev"
+              echo "LOGGER_OUTPUT=stdout"
+              echo "LOGGER_LEVEL=debug"
+              echo "FLUENTBIT_HOST=0.0.0.0"
+              echo "FLUENTBIT_PORT=24223"
+              echo "GRPC_MAX_CALL_SEND_MESSAGE=400000000"
+              echo "GRPC_MAX_CALL_RECEIVE_MESSAGE=400000000"
+            } > "$REPO_DIR/identity-service/.env"
+
+            # Write .env for bff-service
+            {
+              echo "BFF_GRPC_PORT=9090"
+              echo "BFF_HTTP_PORT=3000"
+              echo "IDENTITY_SERVICE_ADDR=$BFF_IDENTITY_SERVICE_ADDR"
+              echo "PROFILE_SERVICE_ADDR=$BFF_PROFILE_SERVICE_ADDR"
+              echo "JWT_SECRET=$BFF_JWT_SECRET"
+              echo "JWT_DURATION=24h"
+              echo "AZURE_SAS_URL=$BFF_AZURE_SAS_URL"
+              echo "AZURE_CONTAINER=$BFF_AZURE_CONTAINER"
+              echo "ENV=DEV"
+              echo "APP_NAME=bff-service"
+              echo "PRODUCT_NAME=BankEase"
+              echo "LOGGER_OUTPUT=stdout"
+              echo "LOGGER_LEVEL=debug"
+            } > "$REPO_DIR/bff-service/.env"
+
             # Deploy user-profile-service
             cd "$REPO_DIR/user-profile-service"
             docker compose up --build -d
@@ -38,5 +90,10 @@ jobs:
             cd "$REPO_DIR/identity-service"
             docker compose up --build -d
 
+            # Deploy bff-service
+            cd "$REPO_DIR/bff-service"
+            docker compose up --build -d
+
             # Remove dangling images from previous builds
             docker image prune -f
+
