@@ -57,15 +57,18 @@ BankEase adalah platform backend microservices yang menyediakan layanan identita
 
 - Profil pengguna: CRUD + image upload
 - Menu homepage: filter by accountType
-- PostgreSQL (tabel `profile`, `menu`)
-- REST API via chi router
+- Search: exchange rates, interest rates, branches
+- PostgreSQL (tabel `profile`, `menu`, `exchange_rate`, `interest_rate`, `branch`)
+- REST API (chi router) + gRPC (port 9302)
+- Folder structure: `server/` pattern (sama dengan identity-service)
 
-### 3. bff-service (SPEC SELESAI, BELUM IMPLEMENTASI)
+### 3. bff-service (SELESAI)
 
-- Single entry point untuk mobile app (REST via grpc-gateway)
+- Single entry point untuk mobile app (REST via manual gateway)
 - Orchestrate calls ke identity-service + user-profile-service via gRPC
 - JWT verification lokal
 - Upload image langsung ke Azure Blob Storage
+- Docker Compose full stack (5 containers) running & verified
 
 ## Referensi Arsitektur
 

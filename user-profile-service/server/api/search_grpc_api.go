@@ -1,4 +1,4 @@
-package grpchandler
+package api
 
 import (
 	"context"
@@ -10,8 +10,8 @@ import (
 )
 
 // GetExchangeRates implements the gRPC GetExchangeRates RPC.
-func (s *GrpcServer) GetExchangeRates(ctx context.Context, _ *pb.GetExchangeRatesRequest) (*pb.ExchangeRateListResponse, error) {
-	rates, err := s.ExchangeRateRepo.GetAll(ctx)
+func (s *Server) GetExchangeRates(ctx context.Context, _ *pb.GetExchangeRatesRequest) (*pb.ExchangeRateListResponse, error) {
+	rates, err := s.provider.GetAllExchangeRates(ctx)
 	if err != nil {
 		log.Printf("gRPC GetExchangeRates error: %v", err)
 		return nil, status.Errorf(codes.Internal, "internal server error")
@@ -23,8 +23,8 @@ func (s *GrpcServer) GetExchangeRates(ctx context.Context, _ *pb.GetExchangeRate
 }
 
 // GetInterestRates implements the gRPC GetInterestRates RPC.
-func (s *GrpcServer) GetInterestRates(ctx context.Context, _ *pb.GetInterestRatesRequest) (*pb.InterestRateListResponse, error) {
-	rates, err := s.InterestRateRepo.GetAll(ctx)
+func (s *Server) GetInterestRates(ctx context.Context, _ *pb.GetInterestRatesRequest) (*pb.InterestRateListResponse, error) {
+	rates, err := s.provider.GetAllInterestRates(ctx)
 	if err != nil {
 		log.Printf("gRPC GetInterestRates error: %v", err)
 		return nil, status.Errorf(codes.Internal, "internal server error")
@@ -36,12 +36,11 @@ func (s *GrpcServer) GetInterestRates(ctx context.Context, _ *pb.GetInterestRate
 }
 
 // GetBranches implements the gRPC GetBranches RPC.
-// If req.Query is empty, returns all branches; otherwise filters by name.
-func (s *GrpcServer) GetBranches(ctx context.Context, req *pb.GetBranchesRequest) (*pb.BranchListResponse, error) {
+func (s *Server) GetBranches(ctx context.Context, req *pb.GetBranchesRequest) (*pb.BranchListResponse, error) {
 	q := req.GetQuery()
 
 	if q == "" {
-		items, err := s.BranchRepo.GetAll(ctx)
+		items, err := s.provider.GetAllBranches(ctx)
 		if err != nil {
 			log.Printf("gRPC GetBranches error: %v", err)
 			return nil, status.Errorf(codes.Internal, "internal server error")
@@ -49,7 +48,7 @@ func (s *GrpcServer) GetBranches(ctx context.Context, req *pb.GetBranchesRequest
 		return &pb.BranchListResponse{Branches: branchesToProto(items)}, nil
 	}
 
-	items, err := s.BranchRepo.SearchByName(ctx, q)
+	items, err := s.provider.SearchBranchesByName(ctx, q)
 	if err != nil {
 		log.Printf("gRPC GetBranches error: %v", err)
 		return nil, status.Errorf(codes.Internal, "internal server error")

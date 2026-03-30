@@ -7,18 +7,25 @@ applyTo: "**"
 ## Current Focus
 
 - `identity-service` — **SELESAI** (Tahap 1-3 + unit tests + gRPC server + codec fix). Dikembangkan di project terpisah (`mini-project-copilot-identity/`), kemudian disatukan ke monorepo ini.
-- `user-profile-service` — **SELESAI** termasuk gRPC layer (port 9302) + Search Feature API (exchange-rates, interest-rates, branches). Docker Compose running, semua 11 endpoint (REST + gRPC) siap dipanggil BFF.
+- `user-profile-service` — **SELESAI + REFACTORED**. Folder structure di-refactor agar sama dengan identity-service: `cmd/server/` + `internal/` → `server/` (main.go, core_config.go, core_db.go, api/, db/, constant/, utils/). `migrations/` dipindah ke root. Semua 11 endpoint (REST + gRPC) tetap aktif, compile pass.
 - `bff-service` — **SELESAI + RUNNING**. Compile pass, semua 11 endpoint diimplementasi. JWT auth fix applied. Docker Compose full stack UP dan terverifikasi end-to-end.
 
 ## Recent Changes
 
+- **user-profile-service REFACTORED** — folder structure dirombak agar konsisten dengan identity-service:
+  - `cmd/server/main.go` → `server/main.go` (dengan graceful shutdown, signal handling)
+  - `internal/handlers/` + `internal/grpchandler/` → `server/api/` (semua HTTP + gRPC handlers di `*Server` struct)
+  - `internal/repository/` → `server/db/` (Provider pattern; profile_provider.go, menu_provider.go, search_provider.go)
+  - `internal/models/` → types di-embed ke `server/db/` (domain) dan `server/api/` (response wrappers)
+  - `internal/server/` (router.go, server.go) → di-absorb ke `server/main.go`
+  - `internal/db/` (db.go, migrate.go, migrations/) → `server/core_db.go` + `migrations/embed.go`
+  - Ditambahkan: `server/core_config.go`, `server/constant/`, `server/utils/`
+  - Dockerfile diperbarui: build `./server` (bukan `./cmd/server`)
+  - `go build ./server/` dan BFF cross-compile **pass** ✅
+  - Direktori lama `cmd/` dan `internal/` sudah dihapus
 - **Docker Compose full stack UP & VERIFIED** — semua 5 containers running, end-to-end flow terverifikasi: SignUp → SignIn → GET /api/profile
-- **BFF JWT fix** — `contextFromHTTPRequest` sekarang verify JWT dan inject `user_claims` ke context langsung, karena HTTP gateway memanggil gRPC handler secara langsung (bukan via gRPC transport), sehingga gRPC auth interceptor tidak pernah jalan
-- **identity-service codec.go DIBUAT** — `protogen/identity-service/codec.go` yang mendaftarkan JSONCodec via `init()` agar gRPC server bisa menerima JSON-encoded request dari BFF. File ini sebelumnya gagal dibuat meski tool melaporkan sukses.
-- **BFF `jwtMgr` package-level var** — ditambahkan di `server/main.go`, diinisialisasi di `startHTTPServer`, digunakan di `contextFromHTTPRequest`
-- **user-profile-service Search Feature API DIIMPLEMENTASI** — 3 endpoint baru (GET /api/exchange-rates, GET /api/interest-rates, GET /api/branches?q=), REST + gRPC, migration 004-006, seed data, swagger docs updated
-- **bff-service DIIMPLEMENTASI** — 11 endpoint (3 auth, 5 profile, 2 menu, 1 upload), gRPC + HTTP gateway, hand-written protogen, interceptor chain, ServiceConnection, JWT local verify, Azure Blob upload
-- **Docker Compose full stack** dibuat di root project (`docker-compose.yml`) — 5 containers (BFF + identity + profile + 2x PostgreSQL)
+- **BFF JWT fix** — `contextFromHTTPRequest` sekarang verify JWT dan inject `user_claims` ke context langsung
+- **identity-service codec.go DIBUAT** — `protogen/identity-service/codec.go` yang mendaftarkan JSONCodec via `init()`
 
 ## What's Working
 
@@ -50,13 +57,17 @@ applyTo: "**"
 
 ### user-profile-service
 
+- **REFACTORED** ke identity-service folder structure pattern ✅
+- Folder structure: `server/` (main.go, core_config.go, core_db.go, api/, db/, constant/, utils/), `migrations/`, `proto/`, `protogen/`
 - Docker Compose running (PostgreSQL 17 + app di localhost:8080, gRPC 9302)
 - **11 REST endpoint aktif**: Profile CRUD (5), Menu (2), Upload (1), Exchange Rates (1), Interest Rates (1), Branches (1)
 - **9 gRPC endpoint aktif**: CreateProfile, GetProfileByID, GetProfileByUserID, UpdateProfile, GetAllMenus, GetMenusByAccountType, GetExchangeRates, GetInterestRates, GetBranches
+- `server/api/` — semua HTTP + gRPC handlers pada `*Server` struct (`var _ pb.UserProfileServiceServer = (*Server)(nil)` compile-time check)
+- `server/db/` — Provider pattern (provider.go, profile_provider.go, menu_provider.go, search_provider.go)
+- `migrations/` — di root, dengan `embed.go` untuk embed.FS
 - Seed data loaded: 1 profile + 9 menu + 4 exchange rates + 4 interest rates + 5 branches
 - Business logic menu filter (PREMIUM → semua, REGULAR → hanya REGULAR) terverifikasi
-- `StartGRPC()` melayani port 9302 bersamaan dengan REST port 8080
-- Swagger docs updated (swagger.json, swagger.yaml, docs.go) dengan 3 endpoint baru tag "Search"
+- Swagger docs (docs/) tetap ada
 - **Catatan seed data**: `docker-entrypoint-initdb.d` hanya jalan sekali saat volume fresh; untuk re-seed gunakan `docker cp seed.sql container:/tmp/ && docker exec psql -f /tmp/seed.sql`
 
 ## Next Steps
@@ -70,7 +81,7 @@ applyTo: "**"
 ## Active Decisions
 
 - identity-service: HTTP handler aktif (port 3031), gRPC aktif (port 9301) ✅
-- user-profile-service: REST (chi, port 8080) + gRPC (port 9302) berjalan bersamaan ✅
+- user-profile-service: REST (chi, port 8080) + gRPC (port 9302) berjalan bersamaan ✅ — **refactored to `server/` pattern**
 - BFF menggunakan manual REST→gRPC bridge (bukan grpc-gateway codegen)
 - JWT secret key harus sama di identity-service dan BFF (lokal verification)
 - Upload image di BFF langsung ke Azure Blob (tidak lewat user-profile-service)
@@ -95,3 +106,4 @@ applyTo: "**"
 - **WAJIB: setiap gRPC service yg menggunakan hand-written protogen HARUS punya `codec.go`** di package protogennya yang mendaftarkan JSONCodec via `encoding.RegisterCodec` dalam `init()`. Tanpa ini, server gRPC akan fallback ke proto codec dan gagal unmarshal.
 - **BFF HTTP gateway pattern**: `contextFromHTTPRequest` HARUS verify JWT dan inject `user_claims` ke context. gRPC interceptor chain TIDAK berjalan untuk direct function calls dari HTTP gateway. Simpan `jwtMgr` sebagai package-level var, inisialisasi di `startHTTPServer`.
 - **Verifikasi file.go setelah `create_file`**: selalu cek `Get-Item <path>` setelah membuat file baru untuk memastikan file benar-benar ada di disk.
+- **user-profile-service refactored ke identity-service pattern**: `server/main.go` (entry + graceful shutdown), `server/core_config.go` (Config struct + initConfig), `server/core_db.go` (startDBConnection + runMigration via embed.FS), `server/api/` (api.go Server struct + *_api.go HTTP + *_grpc_api.go gRPC), `server/db/` (Provider pattern), `migrations/embed.go` (embed.FS). Semua 3 service sekarang menggunakan folder structure yang konsisten.

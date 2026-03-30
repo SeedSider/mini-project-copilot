@@ -34,29 +34,39 @@ BankEase menggunakan arsitektur microservices dengan BFF pattern. Mobile app ber
 
 ## Per-Service Architecture
 
-### user-profile-service (Layered / Clean Architecture Simplified)
+### user-profile-service (BRICaMS Pattern — same as identity-service)
 
 ```
 ┌─────────────────────────────────────────┐
-│  cmd/server/main.go (entrypoint)        │
+│  server/main.go (entry + HTTP + gRPC)  │
+│    graceful shutdown, signal handling  │
 ├─────────────────────────────────────────┤
-│  internal/server/ (router + server)     │
-│    - router.go  → route + middleware    │
-│    - server.go  → dependency injection  │
+│  server/core_config.go → Config struct │
+│  server/core_db.go → DB + migrations   │
 ├─────────────────────────────────────────┤
-│  internal/handlers/ (HTTP handlers)     │
-│    - profile.go → CRUD /api/profile     │
-│    - menu.go    → GET /api/menu         │
-│    - upload.go  → POST /api/upload      │
+│  server/api/ (HTTP + gRPC handlers)    │
+│    - api.go           → Server struct  │
+│    - profile_auth_api.go → HTTP CRUD   │
+│    - profile_grpc_api.go → gRPC CRUD   │
+│    - menu_api.go      → HTTP menus     │
+│    - menu_grpc_api.go → gRPC menus     │
+│    - search_api.go    → HTTP search    │
+│    - search_grpc_api.go → gRPC search  │
+│    - upload_api.go    → HTTP upload    │
+│    - converter.go     → model↔proto    │
+│    - error.go         → error helpers  │
 ├─────────────────────────────────────────┤
-│  internal/repository/ (data access)     │
-│    - profile.go → query profile         │
-│    - menu.go    → query menu            │
+│  server/db/ (Provider pattern)         │
+│    - provider.go      → Provider struct│
+│    - profile_provider.go → CRUD queries│
+│    - menu_provider.go → menu queries   │
+│    - search_provider.go → rates/branch │
 ├─────────────────────────────────────────┤
-│  internal/models/ (domain structs)      │
+│  server/constant/, server/utils/       │
 ├─────────────────────────────────────────┤
-│  internal/db/ (database layer)          │
-│    - db.go, migrate.go, migrations/     │
+│  migrations/ (SQL DDL + embed.go)      │
+│  proto/ (gRPC definitions)             │
+│  protogen/ (hand-written gRPC code)    │
 └─────────────────────────────────────────┘
 ```
 
@@ -116,15 +126,16 @@ BankEase menggunakan arsitektur microservices dengan BFF pattern. Mobile app ber
 
 ## Referensi Pattern dari addons-issuance-lc-service
 
-| Aspek             | addons-issuance-lc-service | identity-service             | user-profile-service   | bff-service (planned)   |
-| ----------------- | -------------------------- | ---------------------------- | ---------------------- | ----------------------- |
-| Transport         | gRPC + HTTP Gateway        | HTTP (net/http) + gRPC ready | REST (chi router)      | gRPC + HTTP Gateway     |
-| Config management | Viper + godotenv           | godotenv + os.LookupEnv      | godotenv / os.Getenv   | godotenv + os.LookupEnv |
-| Database          | GORM + protoc-gen-gorm     | database/sql (wrapper)       | database/sql (stdlib)  | Tidak ada (stateless)   |
-| Auth              | JWT interceptor            | JWT interceptor              | JWT parse di handler   | JWT verify lokal        |
-| Logging           | Logrus + Fluent            | Zap + FluentBit              | stdlib log             | Zap + FluentBit         |
-| DI Pattern        | Manual (Server struct)     | Manual (Server struct)       | Manual (Server struct) | Manual (Server struct)  |
-| External services | 15+ gRPC clients           | 1 HTTP call (profile)        | Tidak ada              | 2 gRPC clients          |
+| Aspek             | addons-issuance-lc-service | identity-service             | user-profile-service         | bff-service                   |
+| ----------------- | -------------------------- | ---------------------------- | ---------------------------- | ----------------------------- |
+| Transport         | gRPC + HTTP Gateway        | HTTP (net/http) + gRPC ready | REST (chi router) + gRPC     | gRPC + HTTP Gateway           |
+| Config management | Viper + godotenv           | godotenv + os.LookupEnv      | godotenv + os.LookupEnv      | godotenv + os.LookupEnv       |
+| Database          | GORM + protoc-gen-gorm     | database/sql (wrapper)       | database/sql (stdlib)        | Tidak ada (stateless)         |
+| Auth              | JWT interceptor            | JWT interceptor              | JWT parse di handler         | JWT verify lokal              |
+| Logging           | Logrus + Fluent            | Zap + FluentBit              | stdlib log                   | Zap + FluentBit               |
+| DI Pattern        | Manual (Server struct)     | Manual (Server struct)       | Manual (Server struct)       | Manual (Server struct)        |
+| Folder structure  | server/ pattern            | server/ pattern              | server/ pattern (refactored) | server/ pattern               |
+| External services | 15+ gRPC clients           | 1 HTTP call (profile)        | Tidak ada                    | 2 gRPC clients                |
 
 ## Key Design Decisions
 

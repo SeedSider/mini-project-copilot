@@ -22,19 +22,33 @@ applyTo: "**"
 - [x] Docker setup (`Dockerfile`, `docker-compose.yml`, `.dockerignore`)
 - [x] Additional features: CreateProfile, GetProfileByUserID, GetMyProfile (JWT), Upload Image (Azure Blob)
 - [x] All 8 endpoints verified (Profile CRUD 5 + Menu 2 + Upload 1)
-- [x] gRPC layer added: proto files, hand-written protogen, `internal/grpchandler/` (6 RPC)
-- [x] `StartGRPC()` melayani port 9302 bersamaan dengan REST port 8080
+- [x] gRPC layer added: proto files, hand-written protogen, gRPC handlers (9 RPC)
+- [x] gRPC server melayani port 9302 bersamaan dengan REST port 8080
 - [x] **Search Feature API**: 3 endpoint baru (GET /api/exchange-rates, GET /api/interest-rates, GET /api/branches?q=)
   - [x] Migrations 004-006 (exchange_rate, interest_rate, branch tables)
   - [x] Models: ExchangeRate, InterestRate, Branch (raw array response, no wrapper)
   - [x] Repositories: ExchangeRateRepository, InterestRateRepository, BranchRepository (branch: GetAll + SearchByName ILIKE)
-  - [x] HTTP handler: SearchHandler (internal/handlers/search.go)
-  - [x] gRPC handler: GetExchangeRates, GetInterestRates, GetBranches (internal/grpchandler/search.go)
+  - [x] HTTP handler: SearchHandler
+  - [x] gRPC handler: GetExchangeRates, GetInterestRates, GetBranches
   - [x] Proto + protogen updated (3 new RPCs + 6 new messages, hand-written)
   - [x] Swagger docs updated (swagger.json, swagger.yaml, docs.go) — tag "Search"
   - [x] Seed data loaded into DB (4 exchange rates, 4 interest rates, 5 branches)
   - [x] `go build ./...` — compile pass ✅
 - [x] **implementation-search-feature.md** — implementation plan markdown di root project
+- [x] **REFACTORED ke identity-service folder structure** (2026-03-30):
+  - [x] `cmd/server/main.go` → `server/main.go` (graceful shutdown, signal handling)
+  - [x] `internal/handlers/` + `internal/grpchandler/` → `server/api/` (HTTP + gRPC handlers pada `*Server` struct)
+  - [x] `internal/repository/` → `server/db/` (Provider pattern: provider.go, profile_provider.go, menu_provider.go, search_provider.go)
+  - [x] `internal/models/` → types di-embed ke `server/db/` + `server/api/`
+  - [x] `internal/server/` → di-absorb ke `server/main.go` (routes + cors inlined)
+  - [x] `internal/db/` → `server/core_db.go` + `migrations/embed.go`
+  - [x] Ditambahkan: `server/core_config.go`, `server/constant/constant.go`, `server/utils/utils.go`
+  - [x] `server/api/api.go` — Server struct + `var _ pb.UserProfileServiceServer = (*Server)(nil)` compile-time check
+  - [x] `server/api/converter.go` — model ↔ proto conversion helpers
+  - [x] Dockerfile updated: `go build -o /server ./server`
+  - [x] `go build ./server/` — compile pass ✅
+  - [x] BFF cross-compile pass ✅
+  - [x] Old `cmd/` dan `internal/` directories dihapus
 
 ### identity-service — SELESAI ✅ (dari project terpisah)
 
@@ -195,3 +209,4 @@ _(tidak ada item in progress saat ini)_
 | Re-seed via docker cp + psql            | docker-entrypoint-initdb.d tidak re-run jika volume sudah ada | 2026-03-30 |
 | BFF JWT fix via contextFromHTTPRequest  | HTTP gateway calls gRPC handlers directly — interceptor chain tidak jalan | 2026-03-30 |
 | codec.go wajib di setiap protogen pkg   | Hand-written types tidak implement proto.Message; gRPC fallback ke proto codec | 2026-03-30 |
+| user-profile-service refactor ke server/ | Konsistensi folder structure dengan identity-service & BFF | 2026-03-30 |

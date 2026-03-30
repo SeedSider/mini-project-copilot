@@ -1,11 +1,11 @@
-package grpchandler
+package api
 
 import (
-	"github.com/bankease/user-profile-service/internal/models"
+	"github.com/bankease/user-profile-service/server/db"
 	pb "github.com/bankease/user-profile-service/protogen/user-profile-service"
 )
 
-func profileToProto(p *models.Profile) *pb.ProfileResponse {
+func profileToProto(p *db.Profile) *pb.ProfileResponse {
 	userId := ""
 	if p.UserID != nil {
 		userId = *p.UserID
@@ -25,7 +25,7 @@ func profileToProto(p *models.Profile) *pb.ProfileResponse {
 	}
 }
 
-func menusToProto(menus []models.Menu) []*pb.MenuItem {
+func menusToProto(menus []db.Menu) []*pb.MenuItem {
 	items := make([]*pb.MenuItem, len(menus))
 	for i, m := range menus {
 		items[i] = &pb.MenuItem{
@@ -40,8 +40,8 @@ func menusToProto(menus []models.Menu) []*pb.MenuItem {
 	return items
 }
 
-func createReqToModel(req *pb.CreateProfileRequest) models.CreateProfileRequest {
-	return models.CreateProfileRequest{
+func createReqToModel(req *pb.CreateProfileRequest) db.CreateProfileRequest {
+	return db.CreateProfileRequest{
 		UserID:       req.GetUserId(),
 		Bank:         req.GetBank(),
 		Branch:       req.GetBranch(),
@@ -55,8 +55,8 @@ func createReqToModel(req *pb.CreateProfileRequest) models.CreateProfileRequest 
 	}
 }
 
-func updateReqToModel(req *pb.UpdateProfileRequest) (string, models.EditProfileRequest) {
-	return req.GetId(), models.EditProfileRequest{
+func updateReqToModel(req *pb.UpdateProfileRequest) (string, db.EditProfileRequest) {
+	return req.GetId(), db.EditProfileRequest{
 		Bank:       req.GetBank(),
 		Branch:     req.GetBranch(),
 		Name:       req.GetName(),
@@ -64,7 +64,7 @@ func updateReqToModel(req *pb.UpdateProfileRequest) (string, models.EditProfileR
 	}
 }
 
-func exchangeRatesToProto(items []models.ExchangeRate) []*pb.ExchangeRateItem {
+func exchangeRatesToProto(items []db.ExchangeRate) []*pb.ExchangeRateItem {
 	result := make([]*pb.ExchangeRateItem, len(items))
 	for i, e := range items {
 		result[i] = &pb.ExchangeRateItem{
@@ -79,7 +79,7 @@ func exchangeRatesToProto(items []models.ExchangeRate) []*pb.ExchangeRateItem {
 	return result
 }
 
-func interestRatesToProto(items []models.InterestRate) []*pb.InterestRateItem {
+func interestRatesToProto(items []db.InterestRate) []*pb.InterestRateItem {
 	result := make([]*pb.InterestRateItem, len(items))
 	for i, ir := range items {
 		result[i] = &pb.InterestRateItem{
@@ -92,7 +92,7 @@ func interestRatesToProto(items []models.InterestRate) []*pb.InterestRateItem {
 	return result
 }
 
-func branchesToProto(items []models.Branch) []*pb.BranchItem {
+func branchesToProto(items []db.Branch) []*pb.BranchItem {
 	result := make([]*pb.BranchItem, len(items))
 	for i, b := range items {
 		result[i] = &pb.BranchItem{
