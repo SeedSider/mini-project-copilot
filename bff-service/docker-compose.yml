@@ -4,6 +4,11 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: bff-service
+    command:
+      [
+        "./server",
+        "grpc-gw-server",
+      ]
     ports:
       - "3000:3000"
       - "9090:9090"

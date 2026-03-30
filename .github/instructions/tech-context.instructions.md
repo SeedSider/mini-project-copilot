@@ -204,6 +204,8 @@ CREATE TABLE IF NOT EXISTS menu (
 - **`grpc-gateway/v2`**: REST → gRPC gateway
 - **`dgrijalva/jwt-go`**: JWT verify lokal
 - **`urfave/cli`**: CLI commands
+- **`swaggo/swag@v1.16.6`**: Swagger annotation parser + doc generator
+- **`swaggo/http-swagger@v1.3.4`**: Swagger UI HTTP handler
 
 ### Struktur Folder
 
@@ -211,10 +213,13 @@ CREATE TABLE IF NOT EXISTS menu (
 bff-service/
 ├── proto/                          # BFF proto definitions
 ├── protogen/                       # Generated Go code (BFF + downstream clients)
+├── docs/                           # Swagger generated docs (docs.go, swagger.json, swagger.yaml)
 ├── server/
-│   ├── main.go                     # Entry + CLI (grpc-server, gw-server, grpc-gw-server)
+│   ├── main.go                     # Entry + CLI (grpc-server, gw-server, grpc-gw-server) + Swagger UI route
 │   ├── core_config.go              # Config loader
 │   ├── gateway_http_handler.go     # HTTP gateway + custom upload handler
+│   ├── http_routes.go              # REST→gRPC bridge handlers + swagger annotations
+│   ├── swagger_docs.go             # Swagger doc stubs for multi-method endpoints
 │   ├── api/                        # gRPC handlers (auth, profile, menu orchestration)
 │   ├── services/service.go         # ServiceConnection (identity + profile gRPC clients)
 │   ├── jwt/manager.go              # JWT Verify only (lokal)

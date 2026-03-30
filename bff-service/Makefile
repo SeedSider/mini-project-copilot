@@ -1,26 +1,45 @@
-.PHONY: build run clean docker-build docker-up docker-down
+DOCKERCMD=docker
 
-APP_NAME=bff-service
-BUILD_DIR=.
+DOCKER_CONTAINER_NAME?=bff-service
+DOCKER_CONTAINER_IMAGE?=bff-service:latest
+DOCKER_BUILD_ARGS?=
+
+BUILD_DATE?=$(shell date -u +'%Y-%m-%dT00:00:00Z')
+BUILD_VERSION?=0.1.0
+
+BINARY=bff-service
+
+.PHONY: build vet unit-test run depend docker-build clean
 
 build:
-	go build -o $(APP_NAME) ./server/
+	@echo "Executing go build"
+	go build -v -buildmode=pie -ldflags "-X main.version=$(BUILD_VERSION)" -o app ./server/
+	@echo "Binary ready"
 
-run: build
-	./$(APP_NAME) grpc-gw-server
-
-clean:
-	rm -f $(APP_NAME)
+vet:
+	@echo "Running Go static code analysis with go vet"
+	go vet ./...
+	@echo "go vet complete"
 
 unit-test:
-	go test -v -coverprofile=coverage/coverage.out ./server/...
-	go tool cover -html=coverage/coverage.out -o coverage/coverage.html
+	@echo "Executing go unit test"
+	go test -v -json -count=1 -parallel=4 ./...
+	@echo "Unit test done"
+
+run:
+	go run ./server/ grpc-gw-server
+
+depend:
+	@echo "Pulling all Go dependencies"
+	go mod download
+	go mod verify
+	go mod tidy
+	@echo "You can now run 'make build' to compile all packages"
 
 docker-build:
-	docker build -t $(APP_NAME) .
+	$(DOCKERCMD) build -t $(DOCKER_CONTAINER_IMAGE) --build-arg BUILD_VERSION=$(BUILD_VERSION) $(DOCKER_BUILD_ARGS) .
 
-docker-up:
-	docker compose up --build
-
-docker-down:
-	docker compose down -v
+clean:
+	rm -f $(BINARY)
+	rm -f $(BINARY).exe
+	rm -f app
