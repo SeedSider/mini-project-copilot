@@ -9,7 +9,7 @@ applyTo: "**"
 | Komponen     | identity-service               | user-profile-service        | bff-service (planned)       |
 | ------------ | ------------------------------ | --------------------------- | --------------------------- |
 | Language     | Go 1.24                        | Go 1.24                     | Go 1.24                     |
-| Transport    | HTTP (`net/http`) + gRPC ready | REST (`chi` router)         | gRPC + grpc-gateway         |
+| Transport    | HTTP (`net/http`) + gRPC handler | REST (`chi` router) + gRPC  | gRPC + grpc-gateway         |
 | Database     | PostgreSQL (custom wrapper)    | PostgreSQL (`database/sql`) | Tidak ada (stateless)       |
 | Auth         | JWT HS256 (`dgrijalva/jwt-go`) | JWT parse di handler        | JWT verify lokal            |
 | Config       | `godotenv` + `os.LookupEnv`    | `godotenv` + `os.Getenv`    | `godotenv` + `os.LookupEnv` |
@@ -43,19 +43,30 @@ identity-service/
 │   ├── api/
 │   │   ├── api.go                      # Server struct + constructor
 │   │   ├── identity_auth_api.go        # Handler: SignUp, SignIn, GetMe + HTTP handlers
+│   │   ├── identity_auth_api_test.go   # Unit tests: SignUp, SignIn, GetMe (HTTP + gRPC)
+│   │   ├── identity_grpc_api.go        # gRPC handler: SignUp, SignIn, GetMe via gRPC
 │   │   ├── identity_authInterceptor.go # JWT auth interceptor
 │   │   ├── identity_interceptor.go     # Chain: ProcessId → Logging → Errors → Auth
+│   │   ├── identity_interceptor_test.go# Unit tests: interceptor chain
 │   │   └── error.go                    # Error helpers (badRequest, unauthorized, conflict)
 │   ├── db/
 │   │   ├── provider.go                 # Provider struct + constructor
 │   │   ├── identity_provider.go        # Queries: CreateUser, GetUserByUsername, CheckUsernameExists
+│   │   ├── identity_provider_test.go   # Unit tests: DB queries (sqlmock)
 │   │   └── error.go                    # NotFoundErr type
-│   ├── jwt/manager.go                  # JWT Generate + Verify (HS256)
+│   ├── jwt/
+│   │   ├── manager.go                  # JWT Generate + Verify (HS256)
+│   │   └── manager_test.go             # Unit tests: JWT generate + verify
 │   ├── lib/
 │   │   ├── database/                   # DB wrapper (connect, retry, interface, mock)
+│   │   │   └── database_test.go        # Unit tests: DB wrapper
 │   │   └── logger/                     # Zap structured logger + FluentBit
-│   ├── utils/utils.go                  # GetProcessIdFromCtx, GetEnv, GenerateProcessId
-│   └── constant/                       # Response codes, date format, process_id key
+│   ├── utils/
+│   │   ├── utils.go                    # GetProcessIdFromCtx, GetEnv, GenerateProcessId
+│   │   └── utils_test.go               # Unit tests: utility functions
+│   └── constant/
+│       ├── constant.go                 # Response codes, date format, process_id key
+│       └── constant_test.go            # Unit tests: constants
 ├── migrations/
 │   ├── 001_init.sql                    # DDL: users, profiles
 │   └── 002_rename_email_to_username.sql
@@ -65,6 +76,7 @@ identity-service/
 ├── www/swagger.json                    # Swagger API docs
 ├── Dockerfile                          # Multi-stage (golang:1.24-alpine → alpine:3.19)
 ├── docker-compose.yml                  # PostgreSQL 15 + identity-service
+├── docker-compose.local.yml            # Dev local compose
 ├── Makefile                            # build, run, unit-test, docker-build
 ├── sonar-project.properties            # SonarQube: bricams-addons-identity-service:project
 └── .env.example
@@ -86,7 +98,7 @@ CREATE TABLE users (
 ### Port
 
 - HTTP: 3031
-- gRPC: 9301 (CLI ready, HTTP handler aktif)
+- gRPC: 9301 (handler implemented in `identity_grpc_api.go`, perlu verifikasi listener exposed)
 
 ## user-profile-service
 
@@ -97,12 +109,13 @@ CREATE TABLE users (
 - **`github.com/joho/godotenv`**: .env file loading
 - **`github.com/dgrijalva/jwt-go`**: JWT parsing (untuk GetMyProfile)
 - **`github.com/swaggo/http-swagger`**: Swagger UI
+- **`google.golang.org/grpc`**: gRPC server (port 9302)
 
 ### Struktur Folder
 
 ```
 user-profile-service/
-├── cmd/server/main.go              # Entrypoint: load env, DB connection, start server
+├── cmd/server/main.go              # Entrypoint: load env, DB connection, start REST + gRPC
 ├── internal/
 │   ├── db/
 │   │   ├── db.go                   # Setup *sql.DB dari DATABASE_URL
@@ -111,6 +124,10 @@ user-profile-service/
 │   │       ├── 001_init.sql        # DDL: profile, menu
 │   │       ├── 002_add_image_to_profile.sql
 │   │       └── 003_add_user_id_to_profile.sql
+│   ├── grpchandler/
+│   │   ├── converter.go            # Model ↔ proto conversion helpers
+│   │   ├── profile.go              # gRPC: CreateProfile, GetProfileByID, GetProfileByUserID, UpdateProfile
+│   │   └── menu.go                 # gRPC: GetAllMenus, GetMenusByAccountType
 │   ├── handlers/
 │   │   ├── profile.go              # CRUD /api/profile + GetMyProfile (JWT)
 │   │   ├── menu.go                 # GET /api/menu, /api/menu/{accountType}
@@ -123,10 +140,18 @@ user-profile-service/
 │   │   └── menu.go                 # DB queries: GetAll, GetByAccountType
 │   └── server/
 │       ├── router.go               # Routes + middleware (CORS, logging)
-│       └── server.go               # Server struct, dependency injection
+│       └── server.go               # Server struct + StartGRPC() (port 9302)
+├── proto/
+│   ├── user_profile_api.proto      # Service definition (6 RPC methods)
+│   └── user_profile_payload.proto  # Request/response messages
+├── protogen/user-profile-service/
+│   ├── codec.go                    # JSON codec helper
+│   ├── user_profile_api_grpc.pb.go # Hand-written gRPC service interface
+│   └── user_profile_payload.pb.go  # Hand-written message structs
 ├── docs/                           # Swagger generated docs
 ├── Dockerfile                      # Multi-stage (golang:1.24 → alpine:3.20)
 ├── docker-compose.yml              # PostgreSQL 17 + app
+├── docker-compose.local.yml        # Dev local compose
 ├── seed.sql                        # 1 profile + 9 menu items
 └── .env.example
 ```
@@ -163,6 +188,7 @@ CREATE TABLE IF NOT EXISTS menu (
 ### Port
 
 - HTTP: 8080
+- gRPC: 9302
 
 ## bff-service (Planned)
 

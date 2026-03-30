@@ -25,9 +25,11 @@ services:
     container_name: bankease-app
     ports:
       - "8080:8080"
+      - "9302:9302"
     environment:
       DATABASE_URL: postgres://bankease:bankease123@db:5432/bankease_db?sslmode=disable
       PORT: "8080"
+      GRPC_PORT: "9302"
       AZURE_STORAGE_SAS_URL: https://plnsa.blob.core.windows.net/?sv=2025-11-05&ss=bfqt&srt=sco&sp=rwdlacupiytfx&se=2026-04-11T14:56:36Z&st=2026-03-26T06:41:36Z&spr=https&sig=uqbKbqKFLDkoZX%2FxLosVhIardyUGotShuDGtHWv9yjE%3D
       AZURE_STORAGE_CONTAINER: images
       JWT_SECRET: secret

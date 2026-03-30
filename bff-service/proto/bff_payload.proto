@@ -1,0 +1,110 @@
+syntax = "proto3";
+
+package bff;
+
+option go_package = "protogen/bff-service";
+
+// ── Auth Messages ──
+
+message SignUpRequest {
+    string username = 1;
+    string password = 2;
+    string phone    = 3;
+}
+
+message SignUpResponse {
+    string user_id  = 1;
+    string username = 2;
+}
+
+message SignInRequest {
+    string username = 1;
+    string password = 2;
+}
+
+message SignInResponse {
+    string user_id  = 1;
+    string username = 2;
+    string token    = 3;
+}
+
+message GetMeRequest {}
+
+message GetMeResponse {
+    string user_id  = 1;
+    string username = 2;
+}
+
+// ── Profile Messages ──
+
+message GetMyProfileRequest {}
+
+message GetProfileByIDRequest {
+    string id = 1;
+}
+
+message GetProfileByUserIDRequest {
+    string user_id = 1;
+}
+
+message CreateProfileRequest {
+    string user_id       = 1;
+    string bank          = 2;
+    string branch        = 3;
+    string name          = 4;
+    string card_number   = 5;
+    string card_provider = 6;
+    int64  balance       = 7;
+    string currency      = 8;
+    string account_type  = 9;
+}
+
+message UpdateProfileRequest {
+    string id          = 1;
+    string bank        = 2;
+    string branch      = 3;
+    string name        = 4;
+    string card_number = 5;
+}
+
+message ProfileResponse {
+    string id            = 1;
+    string user_id       = 2;
+    string bank          = 3;
+    string branch        = 4;
+    string name          = 5;
+    string card_number   = 6;
+    string card_provider = 7;
+    int64  balance       = 8;
+    string currency      = 9;
+    string account_type  = 10;
+    string image         = 11;
+}
+
+// ── Menu Messages ──
+
+message GetAllMenusRequest {}
+
+message GetMenusByAccountTypeRequest {
+    string account_type = 1;
+}
+
+message MenuItem {
+    string id        = 1;
+    int32  index     = 2;
+    string type      = 3;
+    string title     = 4;
+    string icon_url  = 5;
+    bool   is_active = 6;
+}
+
+message MenuListResponse {
+    repeated MenuItem menus = 1;
+}
+
+// ── Common Messages ──
+
+message StandardResponse {
+    int32  code        = 1;
+    string description = 2;
+}

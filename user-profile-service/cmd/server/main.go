@@ -56,9 +56,17 @@ func main() {
 	}
 
 	// Create and start server
-	srv := server.NewServer(database, port, azureSASURL, azureContainer, jwtSecret)
+	grpcPort := GetEnv("GRPC_PORT", "9302")
+	srv := server.NewServer(database, port, azureSASURL, azureContainer, jwtSecret, grpcPort)
 
-	log.Printf("Server started on :%s", port)
+	// Start gRPC server in background goroutine
+	go func() {
+		if err := srv.StartGRPC(); err != nil {
+			log.Fatalf("gRPC server failed: %v", err)
+		}
+	}()
+
+	log.Printf("HTTP server started on :%s", port)
 	if err := srv.Start(); err != nil {
 		log.Fatalf("Server failed: %v", err)
 	}

@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package userprofile;
+
+option go_package = "protogen/user-profile-service";
+
+import "user_profile_payload.proto";
+
+service UserProfileService {
+    rpc CreateProfile(CreateProfileRequest) returns (ProfileResponse);
+    rpc GetProfileByID(GetProfileByIDRequest) returns (ProfileResponse);
+    rpc GetProfileByUserID(GetProfileByUserIDRequest) returns (ProfileResponse);
+    rpc UpdateProfile(UpdateProfileRequest) returns (StandardResponse);
+    rpc GetAllMenus(GetAllMenusRequest) returns (MenuListResponse);
+    rpc GetMenusByAccountType(GetMenusByAccountTypeRequest) returns (MenuListResponse);
+    rpc GetExchangeRates(GetExchangeRatesRequest) returns (ExchangeRateListResponse);
+    rpc GetInterestRates(GetInterestRatesRequest) returns (InterestRateListResponse);
+    rpc GetBranches(GetBranchesRequest) returns (BranchListResponse);
+}

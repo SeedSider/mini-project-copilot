@@ -22,6 +22,19 @@ applyTo: "**"
 - [x] Docker setup (`Dockerfile`, `docker-compose.yml`, `.dockerignore`)
 - [x] Additional features: CreateProfile, GetProfileByUserID, GetMyProfile (JWT), Upload Image (Azure Blob)
 - [x] All 8 endpoints verified (Profile CRUD 5 + Menu 2 + Upload 1)
+- [x] gRPC layer added: proto files, hand-written protogen, `internal/grpchandler/` (6 RPC)
+- [x] `StartGRPC()` melayani port 9302 bersamaan dengan REST port 8080
+- [x] **Search Feature API**: 3 endpoint baru (GET /api/exchange-rates, GET /api/interest-rates, GET /api/branches?q=)
+  - [x] Migrations 004-006 (exchange_rate, interest_rate, branch tables)
+  - [x] Models: ExchangeRate, InterestRate, Branch (raw array response, no wrapper)
+  - [x] Repositories: ExchangeRateRepository, InterestRateRepository, BranchRepository (branch: GetAll + SearchByName ILIKE)
+  - [x] HTTP handler: SearchHandler (internal/handlers/search.go)
+  - [x] gRPC handler: GetExchangeRates, GetInterestRates, GetBranches (internal/grpchandler/search.go)
+  - [x] Proto + protogen updated (3 new RPCs + 6 new messages, hand-written)
+  - [x] Swagger docs updated (swagger.json, swagger.yaml, docs.go) — tag "Search"
+  - [x] Seed data loaded into DB (4 exchange rates, 4 interest rates, 5 branches)
+  - [x] `go build ./...` — compile pass ✅
+- [x] **implementation-search-feature.md** — implementation plan markdown di root project
 
 ### identity-service — SELESAI ✅ (dari project terpisah)
 
@@ -68,6 +81,49 @@ applyTo: "**"
 
 - [x] Health check, SignUp (success + 3 error cases), SignIn (success + 2 error cases), GetMe (success + 2 error cases)
 
+**Unit Tests: DITAMBAHKAN ✅**
+
+- [x] `server/api/identity_auth_api_test.go` — SignUp, SignIn, GetMe (HTTP + gRPC)
+- [x] `server/api/identity_interceptor_test.go` — interceptor chain
+- [x] `server/db/identity_provider_test.go` — DB queries (sqlmock)
+- [x] `server/constant/constant_test.go` — constants
+- [x] `server/jwt/manager_test.go` — JWT generate + verify
+- [x] `server/utils/utils_test.go` — utility functions
+- [x] `server/lib/database/database_test.go` — DB wrapper
+- [x] Pattern: `newTestServer(t)` → `sqlmock.New()` + `testify/assert`
+
+**gRPC Server Handler: DITAMBAHKAN ✅**
+
+- [x] `server/api/identity_grpc_api.go` — SignUp, SignIn, GetMe via gRPC
+- [x] `var _ pb.IdentityServiceServer = (*Server)(nil)` compile-time check
+- [x] SignUp gRPC TIDAK melakukan best-effort HTTP ke profile (BFF orchestrates)
+
+### BFF Service — SELESAI ✅
+
+- [x] Backend spec BFF service (`backend-spec-bff-service.md`) — 11 endpoint lengkap
+- [x] Go project scaffolding (`bff-service/`, `go.mod`, folder structure)
+- [x] Proto definitions (`bff_api.proto`, `bff_payload.proto`)
+- [x] Protogen — hand-written gRPC stubs (BFF server, identity client, profile client)
+- [x] Server entry point + CLI (`server/main.go`) — `grpc-gw-server` command
+- [x] Config loading (`server/core_config.go`) — godotenv + os.LookupEnv
+- [x] JWT Manager (`server/jwt/manager.go`) — Verify only (HS256, local verification)
+- [x] ServiceConnection (`server/services/service.go`) — gRPC clients to identity + profile
+- [x] Interceptor chain (`server/api/bff_interceptor.go`) — ProcessId → Logging → Auth
+- [x] Auth interceptor (`server/api/bff_authInterceptor.go`) — JWT verify for GetMe, GetMyProfile
+- [x] Auth handlers (`server/api/bff_auth_api.go`) — SignUp (orchestrated), SignIn (proxy), GetMe
+- [x] Profile handlers (`server/api/bff_profile_api.go`) — GetMyProfile, GetProfileByID, GetProfileByUserID, CreateProfile, UpdateProfile
+- [x] Menu handlers (`server/api/bff_menu_api.go`) — GetAllMenus, GetMenusByAccountType
+- [x] HTTP gateway + routes (`server/http_routes.go`) — manual REST→gRPC bridge
+- [x] Upload handler (`server/gateway_http_handler.go`) — multipart/form-data → Azure Blob direct
+- [x] CORS + security headers middleware
+- [x] Error helpers + gRPC→HTTP status code mapping
+- [x] Logger (`server/lib/logger/`) — Zap structured logger
+- [x] Utils, Constants
+- [x] Dockerfile (multi-stage: golang:1.24-alpine → alpine:3.20)
+- [x] Docker Compose full stack (`docker-compose.yml` di root) — 5 containers
+- [x] `.env.example`, `Makefile`, `sonar-project.properties`, `.dockerignore`
+- [x] `go build ./server/` — compile pass ✅
+
 ### BFF Service Spec — SELESAI ✅
 
 - [x] Backend spec BFF service (`backend-spec-bff-service.md`) — 11 endpoint lengkap
@@ -83,34 +139,21 @@ applyTo: "**"
 
 ## In Progress
 
-- Tidak ada — menunggu keputusan next step
+- [ ] Verifikasi gRPC listener identity-service aktif di port 9301 (identity_grpc_api.go sudah ada, perlu cek server.go expose port)
+- [ ] Unit tests coverage ≥ 90% identity-service (go test -coverprofile)
 
 ## Not Started
 
-### Implementasi bff-service
+### Docker Compose Full Stack Test
 
-- [ ] Go project scaffolding (`bff-service/`)
-- [ ] Proto code generation (BFF, identity client, profile client)
-- [ ] gRPC server + grpc-gateway setup
-- [ ] ServiceConnection (identity + profile gRPC clients)
-- [ ] Auth handlers (SignUp orchestration, SignIn proxy, GetMe)
-- [ ] Profile handlers (proxy to user-profile-service)
-- [ ] Menu handlers (proxy to user-profile-service)
-- [ ] Upload handler (direct to Azure Blob)
-- [ ] JWT verify (lokal, secret sama dgn identity)
-- [ ] Interceptor chain (ProcessId → Logging → Auth)
-- [ ] Docker Compose full stack integration
-
-### Prerequisite: Tambah gRPC ke Downstream Services
-
-- [ ] user-profile-service: Proto files + gRPC server layer (port 9302)
-- [ ] identity-service: Aktifkan gRPC server (port 9301), hapus best-effort HTTP call ke profile
+- [ ] Jalankan `docker compose up --build` dari root, verifikasi semua 5 containers UP
+- [ ] Functional testing BFF — 30+ test cases dari testing checklist
 
 ### Unit Tests & Quality
 
-- [ ] Unit tests identity-service (target ≥ 90%)
-- [ ] Unit tests user-profile-service (target ≥ 90%)
 - [ ] Unit tests bff-service (target ≥ 90%)
+- [ ] Unit tests user-profile-service (target ≥ 90%) — belum ada test file
+- [ ] Unit tests identity-service coverage ≥ 90% (test files sudah ada, perlu verifikasi coverage)
 - [ ] SonarQube analysis pass untuk semua service
 
 ### Future Enhancements
@@ -122,9 +165,10 @@ applyTo: "**"
 
 ## Known Issues
 
-- identity-service menggunakan `net/http` bukan gRPC aktif — perlu diaktifkan gRPC server untuk BFF
-- user-profile-service hanya REST — perlu ditambah gRPC layer
-- identity-service masih punya best-effort HTTP call ke profile service (`createBankingProfile`) — harus dihapus setelah BFF jadi orchestrator
+- identity-service: perlu verifikasi port 9301 gRPC listener benar-benar di-expose dari `server/main.go` (handler sudah ada di `identity_grpc_api.go`)
+- user-profile-service: belum ada unit tests
+- Kedua services belum melalui SonarQube analysis
+- **Seed data caveat**: `docker-entrypoint-initdb.d` hanya jalan saat volume fresh; new tables (004-006) tidak otomatis ter-seed; gunakan `docker cp + psql -f` untuk re-seed
 
 ## Architecture Decisions Log
 
@@ -141,3 +185,6 @@ applyTo: "**"
 | JWT local verification di BFF           | Tidak perlu call identity utk setiap request       | 2026-03-27 |
 | Upload langsung di BFF ke Azure Blob    | Tidak perlu forward file besar via gRPC            | 2026-03-27 |
 | identity-service dari project terpisah  | Dikembangkan paralel, disatukan ke monorepo        | 2026-03-27 |
+| Search endpoints — raw array response   | Sesuai api.txt spec; tidak perlu wrapper envelope  | 2026-03-30 |
+| Branch search — ILIKE SQL               | Case-insensitive partial match sesuai api.txt spec | 2026-03-30 |
+| Re-seed via docker cp + psql            | docker-entrypoint-initdb.d tidak re-run jika volume sudah ada | 2026-03-30 |
