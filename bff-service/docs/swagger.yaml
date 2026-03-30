@@ -145,7 +145,6 @@ definitions:
       url:
         type: string
     type: object
-host: localhost:3000
 info:
   contact: {}
   description: Backend for Frontend (BFF) service for BankEase mobile banking application.

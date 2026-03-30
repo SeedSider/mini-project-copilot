@@ -49,7 +49,6 @@ func init() {
 // @title BFF Service API
 // @version 1.0
 // @description Backend for Frontend (BFF) service for BankEase mobile banking application. Single entry point for the mobile app, orchestrating calls to identity-service and user-profile-service.
-// @host localhost:3000
 // @BasePath /
 // @securityDefinitions.apikey BearerAuth
 // @in header
