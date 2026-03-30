@@ -24,6 +24,17 @@ applyTo: "**"
 - [x] All 8 endpoints verified (Profile CRUD 5 + Menu 2 + Upload 1)
 - [x] gRPC layer added: proto files, hand-written protogen, `internal/grpchandler/` (6 RPC)
 - [x] `StartGRPC()` melayani port 9302 bersamaan dengan REST port 8080
+- [x] **Search Feature API**: 3 endpoint baru (GET /api/exchange-rates, GET /api/interest-rates, GET /api/branches?q=)
+  - [x] Migrations 004-006 (exchange_rate, interest_rate, branch tables)
+  - [x] Models: ExchangeRate, InterestRate, Branch (raw array response, no wrapper)
+  - [x] Repositories: ExchangeRateRepository, InterestRateRepository, BranchRepository (branch: GetAll + SearchByName ILIKE)
+  - [x] HTTP handler: SearchHandler (internal/handlers/search.go)
+  - [x] gRPC handler: GetExchangeRates, GetInterestRates, GetBranches (internal/grpchandler/search.go)
+  - [x] Proto + protogen updated (3 new RPCs + 6 new messages, hand-written)
+  - [x] Swagger docs updated (swagger.json, swagger.yaml, docs.go) — tag "Search"
+  - [x] Seed data loaded into DB (4 exchange rates, 4 interest rates, 5 branches)
+  - [x] `go build ./...` — compile pass ✅
+- [x] **implementation-search-feature.md** — implementation plan markdown di root project
 
 ### identity-service — SELESAI ✅ (dari project terpisah)
 
@@ -157,6 +168,7 @@ applyTo: "**"
 - identity-service: perlu verifikasi port 9301 gRPC listener benar-benar di-expose dari `server/main.go` (handler sudah ada di `identity_grpc_api.go`)
 - user-profile-service: belum ada unit tests
 - Kedua services belum melalui SonarQube analysis
+- **Seed data caveat**: `docker-entrypoint-initdb.d` hanya jalan saat volume fresh; new tables (004-006) tidak otomatis ter-seed; gunakan `docker cp + psql -f` untuk re-seed
 
 ## Architecture Decisions Log
 
@@ -173,3 +185,6 @@ applyTo: "**"
 | JWT local verification di BFF           | Tidak perlu call identity utk setiap request       | 2026-03-27 |
 | Upload langsung di BFF ke Azure Blob    | Tidak perlu forward file besar via gRPC            | 2026-03-27 |
 | identity-service dari project terpisah  | Dikembangkan paralel, disatukan ke monorepo        | 2026-03-27 |
+| Search endpoints — raw array response   | Sesuai api.txt spec; tidak perlu wrapper envelope  | 2026-03-30 |
+| Branch search — ILIKE SQL               | Case-insensitive partial match sesuai api.txt spec | 2026-03-30 |
+| Re-seed via docker cp + psql            | docker-entrypoint-initdb.d tidak re-run jika volume sudah ada | 2026-03-30 |

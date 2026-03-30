@@ -7,17 +7,19 @@ applyTo: "**"
 ## Current Focus
 
 - `identity-service` — **SELESAI** (Tahap 1-3 + unit tests + gRPC server). Dikembangkan di project terpisah (`mini-project-copilot-identity/`), kemudian disatukan ke monorepo ini.
-- `user-profile-service` — **SELESAI** termasuk gRPC layer (port 9302). Docker Compose running, semua endpoint (REST + gRPC) siap dipanggil BFF.
+- `user-profile-service` — **SELESAI** termasuk gRPC layer (port 9302) + Search Feature API (exchange-rates, interest-rates, branches). Docker Compose running, semua 11 endpoint (REST + gRPC) siap dipanggil BFF.
 - `bff-service` — **IMPLEMENTASI SELESAI**. Compile pass, semua 11 endpoint diimplementasi (auth, profile, menu, upload). Docker Compose full stack ready.
 
 ## Recent Changes
 
+- **user-profile-service Search Feature API DIIMPLEMENTASI** — 3 endpoint baru (GET /api/exchange-rates, GET /api/interest-rates, GET /api/branches?q=), REST + gRPC, migration 004-006, seed data, swagger docs updated
+- **implementation-search-feature.md** — implementation plan markdown dibuat di root project
+- **Seed data berhasil dimuat** ke database via `docker cp` + `psql -f` (bukan via docker-entrypoint-initdb.d karena volume sudah ada)
 - **bff-service DIIMPLEMENTASI** — 11 endpoint (3 auth, 5 profile, 2 menu, 1 upload), gRPC + HTTP gateway, hand-written protogen, interceptor chain, ServiceConnection, JWT local verify, Azure Blob upload
 - **Docker Compose full stack** dibuat di root project (`docker-compose.yml`) — 5 containers (BFF + identity + profile + 2x PostgreSQL)
 - **user-profile-service gRPC layer ditambahkan** — proto files, hand-written protogen, `internal/grpchandler/` (6 RPC), `StartGRPC()` di server, port 9302
 - **identity-service gRPC server diimplementasi** — `identity_grpc_api.go` (SignUp, SignIn, GetMe via gRPC; tanpa best-effort HTTP ke profile — BFF jadi orchestrator)
 - **identity-service unit tests ditambahkan** — 7 file test (api, interceptor, provider, constant, jwt, utils, database); menggunakan `go-sqlmock` + `testify`
-- Memory bank files `.identity-service/instructions/` tersedia sebagai referensi history identity-service
 
 ## What's Working
 
@@ -47,11 +49,13 @@ applyTo: "**"
 ### user-profile-service
 
 - Docker Compose running (PostgreSQL 17 + app di localhost:8080, gRPC 9302)
-- 8 REST endpoint aktif: Profile CRUD (5), Menu (2), Upload (1)
-- **6 gRPC endpoint aktif**: CreateProfile, GetProfileByID, GetProfileByUserID, UpdateProfile, GetAllMenus, GetMenusByAccountType
-- Seed data auto-loaded (1 profile + 9 menu items)
+- **11 REST endpoint aktif**: Profile CRUD (5), Menu (2), Upload (1), Exchange Rates (1), Interest Rates (1), Branches (1)
+- **9 gRPC endpoint aktif**: CreateProfile, GetProfileByID, GetProfileByUserID, UpdateProfile, GetAllMenus, GetMenusByAccountType, GetExchangeRates, GetInterestRates, GetBranches
+- Seed data loaded: 1 profile + 9 menu + 4 exchange rates + 4 interest rates + 5 branches
 - Business logic menu filter (PREMIUM → semua, REGULAR → hanya REGULAR) terverifikasi
 - `StartGRPC()` melayani port 9302 bersamaan dengan REST port 8080
+- Swagger docs updated (swagger.json, swagger.yaml, docs.go) dengan 3 endpoint baru tag "Search"
+- **Catatan seed data**: `docker-entrypoint-initdb.d` hanya jalan sekali saat volume fresh; untuk re-seed gunakan `docker cp seed.sql container:/tmp/ && docker exec psql -f /tmp/seed.sql`
 
 ## Next Steps
 
@@ -76,8 +80,11 @@ applyTo: "**"
 
 ## Important Patterns
 
-- Semua user-profile-service response: `{code, description}`
+- Semua user-profile-service response: raw JSON arrays untuk Search endpoints; `{code, description}` untuk Profile/Menu
 - Semua identity-service error response: `{error, code, message}`
+- Search endpoints (exchange-rates, interest-rates, branches) — no auth required, public
+- Branch search: `ILIKE '%' || $1 || '%'` (case-insensitive partial match)
+- Seed data pattern: `docker-entrypoint-initdb.d` hanya jalan saat volume fresh; gunakan `docker cp` + `psql -f` untuk re-seed
 - Menu filter: PREMIUM → semua menu, REGULAR → hanya menu REGULAR
 - Balance dalam minor unit (cents/pence)
 - SignUp orchestration (BFF): identity.SignUp → profile.CreateProfile (best-effort)

@@ -7,8 +7,8 @@ import (
 	"log"
 	"net/http"
 
-	pb "github.com/bankease/user-profile-service/protogen/user-profile-service"
 	"github.com/bankease/user-profile-service/internal/repository"
+	pb "github.com/bankease/user-profile-service/protogen/user-profile-service"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

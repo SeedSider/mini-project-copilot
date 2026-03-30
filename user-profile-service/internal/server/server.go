@@ -19,10 +19,10 @@ import (
 // Server holds all dependencies and the HTTP router.
 // Pattern from: addons-issuance-lc-service/server/main.go (DI via struct)
 type Server struct {
-	DB          *sql.DB
-	Router      chi.Router
-	Port        string
-	GRPCPort    string
+	DB               *sql.DB
+	Router           chi.Router
+	Port             string
+	GRPCPort         string
 	profileRepo      *repository.ProfileRepository
 	menuRepo         *repository.MenuRepository
 	exchangeRateRepo *repository.ExchangeRateRepository
