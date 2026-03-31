@@ -1,123 +1,28 @@
 # Github Copilot Memory Bank
 
-I am Github Copilot, an expert software engineer with a unique characteristic: my memory resets completely between sessions. This isn't a limitation - it's what drives me to maintain perfect documentation. After each reset, I rely ENTIRELY on my Memory Bank to understand the project and continue work effectively. I MUST read ALL memory bank files at the start of EVERY task - this is not optional.
+Memory resets between sessions. Rely on Memory Bank files in `.github/instructions/` to understand the project.
 
-## Memory Bank Structure
+## File Structure
 
-The Memory Bank consists of core files and optional context files, all in Markdown format. They are located in ".github/instructions". Files build upon each other in a clear hierarchy:
+**Global** (`applyTo: "**"` — loaded every prompt):
+- `project-overview.instructions.md` — what the project is, 4 services, ports, scope
+- `active-context.instructions.md` — current focus, decisions, patterns, next steps
 
-```mermaid
-flowchart TD
-   PB[project-brief.instructions.md] --> PC[product-context.instructions.md]
-   PB --> SP[system-patterns.instructions.md]
-   PB --> TC[tech-context.instructions.md]
+**Per-service** (loaded only when editing that service):
+- `identity-service.instructions.md` — folder structure, DB schema, dependencies, patterns
+- `user-profile-service.instructions.md` — same
+- `saving-service.instructions.md` — same
+- `bff-service.instructions.md` — same
 
-   PC --> AC[active-context.md]
-   SP --> AC
-   TC --> AC
+**Skills** (loaded on demand):
+- `go-unit-test` — unit test patterns, harness, coverage
+- `bankease-architecture` — cross-service architecture, Docker Compose, routing, design decisions
+- `project-progress` — completed items, remaining work, known issues, decisions log
 
-   AC --> P[progress.md]
-```
+## Workflows
 
-### Core Files (Required)
-1. `project-brief.instructions.md`
-   - Foundation document that shapes all other files
-   - Created at project start if it doesn't exist
-   - Defines core requirements and goals
-   - Source of truth for project scope
+- **Start of task**: instructions are auto-loaded based on `applyTo` scope. No manual read needed.
+- **update memory bank**: Update `active-context.instructions.md`. For progress updates, edit `.github/skills/project-progress/SKILL.md`.
+- **After significant changes**: Update relevant instruction files (per-service or global).
 
-2. `product-context.instructions.md`
-   - Why this project exists
-   - Problems it solves
-   - How it should work
-   - User experience goals
-
-3. `active-context.instructions.md`
-   - Current work focus
-   - Recent changes
-   - Next steps
-   - Active decisions and considerations
-   - Important patterns and preferences
-   - Learnings and project insights
-
-4. `system-patterns.instructions.md`
-   - System architecture
-   - Key technical decisions
-   - Design patterns in use
-   - Component relationships
-   - Critical implementation paths
-
-5. `tech-context.instructions.md`
-   - Technologies used
-   - Development setup
-   - Technical constraints
-   - Dependencies
-   - Tool usage patterns
-
-6. `progress.instructions.md`
-   - What works
-   - What's left to build
-   - Current status
-   - Known issues
-   - Evolution of project decisions
-
-### Additional Context
-Create additional files/folders within ".github/instructions/" when they help organize:
-- Complex feature documentation
-- Integration specifications
-- API documentation
-- Testing strategies
-- Deployment procedures
-
-## Core Workflows
-
-### Plan Mode
-```mermaid
-flowchart TD
-    Start[Start] --> ReadFiles[Read Memory Bank]
-    ReadFiles --> CheckFiles{Files Complete?}
-
-    CheckFiles -->|No| Plan[Create Plan]
-    Plan --> Document[Document in Chat]
-
-    CheckFiles -->|Yes| Verify[Verify Context]
-    Verify --> Strategy[Develop Strategy]
-    Strategy --> Present[Present Approach]
-```
-
-### Agent Mode
-```mermaid
-flowchart TD
-    Start[Start] --> Context[Check Memory Bank]
-    Context --> Update[Update Documentation]
-    Update --> Execute[Execute Task]
-    Execute --> Document[Document Changes]
-```
-
-## Documentation Updates
-
-Memory Bank updates occur when:
-1. Discovering new project patterns
-2. After implementing significant changes
-3. When user requests with **update memory bank** (MUST review ALL files)
-4. When context needs clarification
-
-```mermaid
-flowchart TD
-    Start[Update Process]
-
-    subgraph Process
-        P1[Review ALL Files]
-        P2[Document Current State]
-        P3[Clarify Next Steps]
-        P4[Document Insights & Patterns]
-
-        P1 --> P2 --> P3 --> P4
-    end
-
-    Start --> Process
-```
-
-Note: When triggered by **update memory bank**, I MUST review every memory bank file, even if some don't require updates. Focus particularly on active-context.instructions.md and progress.instructions.md as they track current state.
-
-REMEMBER: After every memory reset, I begin completely fresh. The Memory Bank is my only link to previous work. It must be maintained with precision and clarity, as my effectiveness depends entirely on its accuracy.
+**Legacy files** (still present, will be removed): `product-context`, `project-brief`, `system-patterns`, `tech-context`, `progress` — content migrated to new files above.
