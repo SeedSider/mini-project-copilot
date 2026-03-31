@@ -12,6 +12,11 @@ import (
 	"github.com/bankease/saving-service/server/lib/logger"
 )
 
+const (
+	testDBError    = "db error"
+	testBRIJakarta = "BRI Jakarta Pusat"
+)
+
 func newTestProvider(t *testing.T) (*Provider, sqlmock.Sqlmock) {
 	t.Helper()
 	dbConn, mock, err := sqlmock.New()
@@ -35,7 +40,7 @@ var branchCols = []string{"id", "name", "distance", "latitude", "longitude"}
 
 // ── GetAllExchangeRates ──
 
-func TestGetAllExchangeRates_Success(t *testing.T) {
+func TestGetAllExchangeRatesSuccess(t *testing.T) {
 	p, mock := newTestProvider(t)
 
 	mock.ExpectQuery(`FROM exchange_rate`).
@@ -51,7 +56,7 @@ func TestGetAllExchangeRates_Success(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestGetAllExchangeRates_Empty(t *testing.T) {
+func TestGetAllExchangeRatesEmpty(t *testing.T) {
 	p, mock := newTestProvider(t)
 
 	mock.ExpectQuery(`FROM exchange_rate`).
@@ -62,11 +67,11 @@ func TestGetAllExchangeRates_Empty(t *testing.T) {
 	assert.Empty(t, rates)
 }
 
-func TestGetAllExchangeRates_DBError(t *testing.T) {
+func TestGetAllExchangeRatesDBError(t *testing.T) {
 	p, mock := newTestProvider(t)
 
 	mock.ExpectQuery(`FROM exchange_rate`).
-		WillReturnError(fmt.Errorf("db error"))
+		WillReturnError(fmt.Errorf(testDBError))
 
 	rates, err := p.GetAllExchangeRates(context.Background())
 	assert.Error(t, err)
@@ -75,7 +80,7 @@ func TestGetAllExchangeRates_DBError(t *testing.T) {
 
 // ── GetAllInterestRates ──
 
-func TestGetAllInterestRates_Success(t *testing.T) {
+func TestGetAllInterestRatesSuccess(t *testing.T) {
 	p, mock := newTestProvider(t)
 
 	mock.ExpectQuery(`FROM interest_rate`).
@@ -91,7 +96,7 @@ func TestGetAllInterestRates_Success(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestGetAllInterestRates_Empty(t *testing.T) {
+func TestGetAllInterestRatesEmpty(t *testing.T) {
 	p, mock := newTestProvider(t)
 
 	mock.ExpectQuery(`FROM interest_rate`).
@@ -102,11 +107,11 @@ func TestGetAllInterestRates_Empty(t *testing.T) {
 	assert.Empty(t, rates)
 }
 
-func TestGetAllInterestRates_DBError(t *testing.T) {
+func TestGetAllInterestRatesDBError(t *testing.T) {
 	p, mock := newTestProvider(t)
 
 	mock.ExpectQuery(`FROM interest_rate`).
-		WillReturnError(fmt.Errorf("db error"))
+		WillReturnError(fmt.Errorf(testDBError))
 
 	rates, err := p.GetAllInterestRates(context.Background())
 	assert.Error(t, err)
@@ -115,22 +120,22 @@ func TestGetAllInterestRates_DBError(t *testing.T) {
 
 // ── GetAllBranches ──
 
-func TestGetAllBranches_Success(t *testing.T) {
+func TestGetAllBranchesSuccess(t *testing.T) {
 	p, mock := newTestProvider(t)
 
 	mock.ExpectQuery(`FROM branch`).
 		WillReturnRows(sqlmock.NewRows(branchCols).
-			AddRow("br-1", "BRI Jakarta Pusat", "1.2 km", -6.2088, 106.8456).
+			AddRow("br-1", testBRIJakarta, "1.2 km", -6.2088, 106.8456).
 			AddRow("br-2", "BRI Bandung", "5.0 km", -6.9175, 107.6191))
 
 	branches, err := p.GetAllBranches(context.Background())
 	require.NoError(t, err)
 	assert.Len(t, branches, 2)
-	assert.Equal(t, "BRI Jakarta Pusat", branches[0].Name)
+	assert.Equal(t, testBRIJakarta, branches[0].Name)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestGetAllBranches_Empty(t *testing.T) {
+func TestGetAllBranchesEmpty(t *testing.T) {
 	p, mock := newTestProvider(t)
 
 	mock.ExpectQuery(`FROM branch`).
@@ -141,11 +146,11 @@ func TestGetAllBranches_Empty(t *testing.T) {
 	assert.Empty(t, branches)
 }
 
-func TestGetAllBranches_DBError(t *testing.T) {
+func TestGetAllBranchesDBError(t *testing.T) {
 	p, mock := newTestProvider(t)
 
 	mock.ExpectQuery(`FROM branch`).
-		WillReturnError(fmt.Errorf("db error"))
+		WillReturnError(fmt.Errorf(testDBError))
 
 	branches, err := p.GetAllBranches(context.Background())
 	assert.Error(t, err)
@@ -154,22 +159,22 @@ func TestGetAllBranches_DBError(t *testing.T) {
 
 // ── SearchBranchesByName ──
 
-func TestSearchBranchesByName_Found(t *testing.T) {
+func TestSearchBranchesByNameFound(t *testing.T) {
 	p, mock := newTestProvider(t)
 
 	mock.ExpectQuery(`FROM branch WHERE name ILIKE`).
 		WithArgs("jakarta").
 		WillReturnRows(sqlmock.NewRows(branchCols).
-			AddRow("br-1", "BRI Jakarta Pusat", "1.2 km", -6.2088, 106.8456))
+			AddRow("br-1", testBRIJakarta, "1.2 km", -6.2088, 106.8456))
 
 	branches, err := p.SearchBranchesByName(context.Background(), "jakarta")
 	require.NoError(t, err)
 	assert.Len(t, branches, 1)
-	assert.Equal(t, "BRI Jakarta Pusat", branches[0].Name)
+	assert.Equal(t, testBRIJakarta, branches[0].Name)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestSearchBranchesByName_NotFound(t *testing.T) {
+func TestSearchBranchesByNameNotFound(t *testing.T) {
 	p, mock := newTestProvider(t)
 
 	mock.ExpectQuery(`FROM branch WHERE name ILIKE`).
@@ -182,11 +187,11 @@ func TestSearchBranchesByName_NotFound(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestSearchBranchesByName_DBError(t *testing.T) {
+func TestSearchBranchesByNameDBError(t *testing.T) {
 	p, mock := newTestProvider(t)
 
 	mock.ExpectQuery(`FROM branch WHERE name ILIKE`).
-		WillReturnError(fmt.Errorf("db error"))
+		WillReturnError(fmt.Errorf(testDBError))
 
 	branches, err := p.SearchBranchesByName(context.Background(), "any")
 	assert.Error(t, err)

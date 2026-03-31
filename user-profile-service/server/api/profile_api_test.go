@@ -24,7 +24,19 @@ import (
 	"github.com/bankease/user-profile-service/server/db"
 )
 
-const testJWTSecret = "test-secret-key-for-unit-tests"
+const (
+	testJWTSecret    		= "test-secret-key-for-unit-tests"
+	testProfileUUID  		= "profile-uuid-1"
+	testUserUUID     		= "user-uuid-1"
+	testProfileName  		= "John Doe"
+	testAPIProfile   		= "/api/profile"
+	testBearerPrefix 		= "Bearer "
+	testAnyUUID      		= "any-uuid"
+	testHeaderContentType	= "Content-Type"
+	testApplicationJSON		= "application/json"
+	testDbError				= "db error"
+	testNewUUID				= "new-uuid"
+)
 
 func newTestServer(t *testing.T) (*Server, sqlmock.Sqlmock) {
 	t.Helper()
@@ -62,7 +74,7 @@ var testProfileCols = []string{
 func testProfileRow(id, userID string) *sqlmock.Rows {
 	uid := userID
 	return sqlmock.NewRows(testProfileCols).AddRow(
-		id, &uid, "BRI", "Jakarta", "John Doe",
+		id, &uid, "BRI", "Jakarta", testProfileName,
 		"4111111111111111", "VISA", int64(1_000_000), "IDR", "REGULAR", "",
 	)
 }
@@ -71,16 +83,16 @@ func testProfileRow(id, userID string) *sqlmock.Rows {
 // HTTP HandleGetMyProfile
 // ═══════════════════════════════════════════
 
-func TestHandleGetMyProfile_Success(t *testing.T) {
+func TestHandleGetMyProfileSuccess(t *testing.T) {
 	srv, mock := newTestServer(t)
-	userID := "user-uuid-1"
+	userID := testUserUUID
 	mock.ExpectQuery(`SELECT id, user_id`).
 		WithArgs(userID).
-		WillReturnRows(testProfileRow("profile-uuid-1", userID))
+		WillReturnRows(testProfileRow(testProfileUUID, userID))
 
 	token := makeTestJWT(t, userID)
-	r := httptest.NewRequest(http.MethodGet, "/api/profile", nil)
-	r.Header.Set("Authorization", "Bearer "+token)
+	r := httptest.NewRequest(http.MethodGet, testAPIProfile, nil)
+	r.Header.Set("Authorization", testBearerPrefix+token)
 	w := httptest.NewRecorder()
 
 	srv.HandleGetMyProfile(w, r)
@@ -89,9 +101,9 @@ func TestHandleGetMyProfile_Success(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestHandleGetMyProfile_MissingAuthHeader(t *testing.T) {
+func TestHandleGetMyProfileMissingAuthHeader(t *testing.T) {
 	srv, _ := newTestServer(t)
-	r := httptest.NewRequest(http.MethodGet, "/api/profile", nil)
+	r := httptest.NewRequest(http.MethodGet, testAPIProfile, nil)
 	w := httptest.NewRecorder()
 
 	srv.HandleGetMyProfile(w, r)
@@ -99,10 +111,10 @@ func TestHandleGetMyProfile_MissingAuthHeader(t *testing.T) {
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
 }
 
-func TestHandleGetMyProfile_InvalidToken(t *testing.T) {
+func TestHandleGetMyProfileInvalidToken(t *testing.T) {
 	srv, _ := newTestServer(t)
-	r := httptest.NewRequest(http.MethodGet, "/api/profile", nil)
-	r.Header.Set("Authorization", "Bearer invalid.token.here")
+	r := httptest.NewRequest(http.MethodGet, testAPIProfile, nil)
+	r.Header.Set("Authorization", testBearerPrefix+"invalid.token.here")
 	w := httptest.NewRecorder()
 
 	srv.HandleGetMyProfile(w, r)
@@ -110,7 +122,7 @@ func TestHandleGetMyProfile_InvalidToken(t *testing.T) {
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
 }
 
-func TestHandleGetMyProfile_ProfileNotFound(t *testing.T) {
+func TestHandleGetMyProfileProfileNotFound(t *testing.T) {
 	srv, mock := newTestServer(t)
 	userID := "user-uuid-missing"
 	mock.ExpectQuery(`SELECT id, user_id`).
@@ -118,8 +130,8 @@ func TestHandleGetMyProfile_ProfileNotFound(t *testing.T) {
 		WillReturnError(sql.ErrNoRows)
 
 	token := makeTestJWT(t, userID)
-	r := httptest.NewRequest(http.MethodGet, "/api/profile", nil)
-	r.Header.Set("Authorization", "Bearer "+token)
+	r := httptest.NewRequest(http.MethodGet, testAPIProfile, nil)
+	r.Header.Set("Authorization", testBearerPrefix+token)
 	w := httptest.NewRecorder()
 
 	srv.HandleGetMyProfile(w, r)
@@ -127,16 +139,16 @@ func TestHandleGetMyProfile_ProfileNotFound(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, w.Code)
 }
 
-func TestHandleGetMyProfile_InternalError(t *testing.T) {
+func TestHandleGetMyProfileInternalError(t *testing.T) {
 	srv, mock := newTestServer(t)
-	userID := "user-uuid-1"
+	userID := testUserUUID
 	mock.ExpectQuery(`SELECT id, user_id`).
 		WithArgs(userID).
 		WillReturnError(fmt.Errorf("connection refused"))
 
 	token := makeTestJWT(t, userID)
-	r := httptest.NewRequest(http.MethodGet, "/api/profile", nil)
-	r.Header.Set("Authorization", "Bearer "+token)
+	r := httptest.NewRequest(http.MethodGet, testAPIProfile, nil)
+	r.Header.Set("Authorization", testBearerPrefix+token)
 	w := httptest.NewRecorder()
 
 	srv.HandleGetMyProfile(w, r)
@@ -144,7 +156,7 @@ func TestHandleGetMyProfile_InternalError(t *testing.T) {
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
 }
 
-func TestHandleGetMyProfile_MissingUserIDClaim(t *testing.T) {
+func TestHandleGetMyProfileMissingUserIDClaim(t *testing.T) {
 	srv, _ := newTestServer(t)
 	// JWT with no user_id claim
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -153,8 +165,8 @@ func TestHandleGetMyProfile_MissingUserIDClaim(t *testing.T) {
 	tokenStr, err := token.SignedString([]byte(testJWTSecret))
 	require.NoError(t, err)
 
-	r := httptest.NewRequest(http.MethodGet, "/api/profile", nil)
-	r.Header.Set("Authorization", "Bearer "+tokenStr)
+	r := httptest.NewRequest(http.MethodGet, testAPIProfile, nil)
+	r.Header.Set("Authorization", testBearerPrefix+tokenStr)
 	w := httptest.NewRecorder()
 
 	srv.HandleGetMyProfile(w, r)
@@ -162,7 +174,7 @@ func TestHandleGetMyProfile_MissingUserIDClaim(t *testing.T) {
 	assert.Equal(t, http.StatusUnauthorized, w.Code)
 }
 
-func TestHandleGetMyProfile_EmptyUserIDClaim(t *testing.T) {
+func TestHandleGetMyProfileEmptyUserIDClaim(t *testing.T) {
 	srv, _ := newTestServer(t)
 	// JWT with user_id = "" (empty string)
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -172,8 +184,8 @@ func TestHandleGetMyProfile_EmptyUserIDClaim(t *testing.T) {
 	tokenStr, err := token.SignedString([]byte(testJWTSecret))
 	require.NoError(t, err)
 
-	r := httptest.NewRequest(http.MethodGet, "/api/profile", nil)
-	r.Header.Set("Authorization", "Bearer "+tokenStr)
+	r := httptest.NewRequest(http.MethodGet, testAPIProfile, nil)
+	r.Header.Set("Authorization", testBearerPrefix+tokenStr)
 	w := httptest.NewRecorder()
 
 	srv.HandleGetMyProfile(w, r)
@@ -185,13 +197,13 @@ func TestHandleGetMyProfile_EmptyUserIDClaim(t *testing.T) {
 // HTTP HandleGetProfile
 // ═══════════════════════════════════════════
 
-func TestHandleGetProfile_Success(t *testing.T) {
+func TestHandleGetProfileSuccess(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`SELECT id, user_id`).
-		WithArgs("profile-uuid-1").
-		WillReturnRows(testProfileRow("profile-uuid-1", "user-uuid-1"))
+		WithArgs(testProfileUUID).
+		WillReturnRows(testProfileRow(testProfileUUID, testUserUUID))
 
-	r := withURLParam(httptest.NewRequest(http.MethodGet, "/", nil), "id", "profile-uuid-1")
+	r := withURLParam(httptest.NewRequest(http.MethodGet, "/", nil), "id", testProfileUUID)
 	w := httptest.NewRecorder()
 
 	srv.HandleGetProfile(w, r)
@@ -200,7 +212,7 @@ func TestHandleGetProfile_Success(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestHandleGetProfile_NotFound(t *testing.T) {
+func TestHandleGetProfileNotFound(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`SELECT id, user_id`).
 		WithArgs("nonexistent").
@@ -214,9 +226,9 @@ func TestHandleGetProfile_NotFound(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, w.Code)
 }
 
-func TestHandleGetProfile_MissingID(t *testing.T) {
+func TestHandleGetProfileMissingID(t *testing.T) {
 	srv, _ := newTestServer(t)
-	r := httptest.NewRequest(http.MethodGet, "/api/profile/", nil)
+	r := httptest.NewRequest(http.MethodGet, testAPIProfile+"/", nil)
 	w := httptest.NewRecorder()
 
 	srv.HandleGetProfile(w, r)
@@ -224,13 +236,13 @@ func TestHandleGetProfile_MissingID(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
-func TestHandleGetProfile_DBError(t *testing.T) {
+func TestHandleGetProfileDBError(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`SELECT id, user_id`).
-		WithArgs("any-uuid").
+		WithArgs(testAnyUUID).
 		WillReturnError(fmt.Errorf("connection refused"))
 
-	r := withURLParam(httptest.NewRequest(http.MethodGet, "/", nil), "id", "any-uuid")
+	r := withURLParam(httptest.NewRequest(http.MethodGet, "/", nil), "id", testAnyUUID)
 	w := httptest.NewRecorder()
 
 	srv.HandleGetProfile(w, r)
@@ -242,14 +254,14 @@ func TestHandleGetProfile_DBError(t *testing.T) {
 // HTTP HandleUpdateProfile
 // ═══════════════════════════════════════════
 
-func TestHandleUpdateProfile_Success(t *testing.T) {
+func TestHandleUpdateProfileSuccess(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectExec(`UPDATE profile`).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	body, _ := json.Marshal(db.EditProfileRequest{Bank: "BRI", Branch: "Jakarta", Name: "Jane", CardNumber: "1234"})
-	r := withURLParam(httptest.NewRequest(http.MethodPut, "/", bytes.NewReader(body)), "id", "profile-uuid-1")
-	r.Header.Set("Content-Type", "application/json")
+	r := withURLParam(httptest.NewRequest(http.MethodPut, "/", bytes.NewReader(body)), "id", testProfileUUID)
+	r.Header.Set(testHeaderContentType, testApplicationJSON)
 	w := httptest.NewRecorder()
 
 	srv.HandleUpdateProfile(w, r)
@@ -258,7 +270,7 @@ func TestHandleUpdateProfile_Success(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestHandleUpdateProfile_NotFound(t *testing.T) {
+func TestHandleUpdateProfileNotFound(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectExec(`UPDATE profile`).
 		WillReturnResult(sqlmock.NewResult(0, 0))
@@ -272,9 +284,9 @@ func TestHandleUpdateProfile_NotFound(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, w.Code)
 }
 
-func TestHandleUpdateProfile_InvalidBody(t *testing.T) {
+func TestHandleUpdateProfileInvalidBody(t *testing.T) {
 	srv, _ := newTestServer(t)
-	r := withURLParam(httptest.NewRequest(http.MethodPut, "/", strings.NewReader("not json")), "id", "profile-uuid-1")
+	r := withURLParam(httptest.NewRequest(http.MethodPut, "/", strings.NewReader("not json")), "id", testProfileUUID)
 	w := httptest.NewRecorder()
 
 	srv.HandleUpdateProfile(w, r)
@@ -282,7 +294,7 @@ func TestHandleUpdateProfile_InvalidBody(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
-func TestHandleUpdateProfile_MissingID(t *testing.T) {
+func TestHandleUpdateProfileMissingID(t *testing.T) {
 	srv, _ := newTestServer(t)
 	body, _ := json.Marshal(db.EditProfileRequest{})
 	r := httptest.NewRequest(http.MethodPut, "/", bytes.NewReader(body))
@@ -293,13 +305,13 @@ func TestHandleUpdateProfile_MissingID(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
-func TestHandleUpdateProfile_DBError(t *testing.T) {
+func TestHandleUpdateProfileDBError(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectExec(`UPDATE profile`).
-		WillReturnError(fmt.Errorf("db error"))
+		WillReturnError(fmt.Errorf(testDbError))
 
 	body, _ := json.Marshal(db.EditProfileRequest{Bank: "BRI", Branch: "Jakarta", Name: "Test", CardNumber: "1234"})
-	r := withURLParam(httptest.NewRequest(http.MethodPut, "/", bytes.NewReader(body)), "id", "profile-uuid-1")
+	r := withURLParam(httptest.NewRequest(http.MethodPut, "/", bytes.NewReader(body)), "id", testProfileUUID)
 	w := httptest.NewRecorder()
 
 	srv.HandleUpdateProfile(w, r)
@@ -311,13 +323,13 @@ func TestHandleUpdateProfile_DBError(t *testing.T) {
 // HTTP HandleGetProfileByUserID
 // ═══════════════════════════════════════════
 
-func TestHandleGetProfileByUserID_Success(t *testing.T) {
+func TestHandleGetProfileByUserIDSuccess(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`SELECT id, user_id`).
-		WithArgs("user-uuid-1").
-		WillReturnRows(testProfileRow("profile-uuid-1", "user-uuid-1"))
+		WithArgs(testUserUUID).
+		WillReturnRows(testProfileRow(testProfileUUID, testUserUUID))
 
-	r := withURLParam(httptest.NewRequest(http.MethodGet, "/", nil), "user_id", "user-uuid-1")
+	r := withURLParam(httptest.NewRequest(http.MethodGet, "/", nil), "user_id", testUserUUID)
 	w := httptest.NewRecorder()
 
 	srv.HandleGetProfileByUserID(w, r)
@@ -326,7 +338,7 @@ func TestHandleGetProfileByUserID_Success(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestHandleGetProfileByUserID_MissingUserID(t *testing.T) {
+func TestHandleGetProfileByUserIDMissingUserID(t *testing.T) {
 	srv, _ := newTestServer(t)
 	r := httptest.NewRequest(http.MethodGet, "/", nil)
 	w := httptest.NewRecorder()
@@ -336,7 +348,7 @@ func TestHandleGetProfileByUserID_MissingUserID(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
-func TestHandleGetProfileByUserID_NotFound(t *testing.T) {
+func TestHandleGetProfileByUserIDNotFound(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`SELECT id, user_id`).
 		WithArgs("user-nonexistent").
@@ -350,13 +362,13 @@ func TestHandleGetProfileByUserID_NotFound(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, w.Code)
 }
 
-func TestHandleGetProfileByUserID_DBError(t *testing.T) {
+func TestHandleGetProfileByUserIDDBError(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`SELECT id, user_id`).
-		WithArgs("user-uuid-1").
-		WillReturnError(fmt.Errorf("db error"))
+		WithArgs(testUserUUID).
+		WillReturnError(fmt.Errorf(testDbError))
 
-	r := withURLParam(httptest.NewRequest(http.MethodGet, "/", nil), "user_id", "user-uuid-1")
+	r := withURLParam(httptest.NewRequest(http.MethodGet, "/", nil), "user_id", testUserUUID)
 	w := httptest.NewRecorder()
 
 	srv.HandleGetProfileByUserID(w, r)
@@ -368,21 +380,21 @@ func TestHandleGetProfileByUserID_DBError(t *testing.T) {
 // HTTP HandleCreateProfile
 // ═══════════════════════════════════════════
 
-func TestHandleCreateProfile_Success(t *testing.T) {
+func TestHandleCreateProfileSuccess(t *testing.T) {
 	srv, mock := newTestServer(t)
-	uid := "user-uuid-1"
+	uid := testUserUUID
 	mock.ExpectQuery(`INSERT INTO profile`).
 		WillReturnRows(sqlmock.NewRows(testProfileCols).AddRow(
-			"new-uuid", &uid, "BRI", "Jakarta", "John Doe",
+			testNewUUID, &uid, "BRI", "Jakarta", testProfileName,
 			"1234", "VISA", int64(0), "IDR", "REGULAR", "",
 		))
 
 	body, _ := json.Marshal(db.CreateProfileRequest{
-		UserID: "user-uuid-1", Bank: "BRI", Branch: "Jakarta", Name: "John Doe",
+		UserID: testUserUUID, Bank: "BRI", Branch: "Jakarta", Name: testProfileName,
 		CardNumber: "1234", CardProvider: "VISA", Currency: "IDR", AccountType: "REGULAR",
 	})
-	r := httptest.NewRequest(http.MethodPost, "/api/profile", bytes.NewReader(body))
-	r.Header.Set("Content-Type", "application/json")
+	r := httptest.NewRequest(http.MethodPost, testAPIProfile, bytes.NewReader(body))
+	r.Header.Set(testHeaderContentType, testApplicationJSON)
 	w := httptest.NewRecorder()
 
 	srv.HandleCreateProfile(w, r)
@@ -391,10 +403,10 @@ func TestHandleCreateProfile_Success(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestHandleCreateProfile_MissingUserID(t *testing.T) {
+func TestHandleCreateProfileMissingUserID(t *testing.T) {
 	srv, _ := newTestServer(t)
 	body, _ := json.Marshal(db.CreateProfileRequest{Bank: "BRI"})
-	r := httptest.NewRequest(http.MethodPost, "/api/profile", bytes.NewReader(body))
+	r := httptest.NewRequest(http.MethodPost, testAPIProfile, bytes.NewReader(body))
 	w := httptest.NewRecorder()
 
 	srv.HandleCreateProfile(w, r)
@@ -402,9 +414,9 @@ func TestHandleCreateProfile_MissingUserID(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
-func TestHandleCreateProfile_InvalidBody(t *testing.T) {
+func TestHandleCreateProfileInvalidBody(t *testing.T) {
 	srv, _ := newTestServer(t)
-	r := httptest.NewRequest(http.MethodPost, "/api/profile", strings.NewReader("not json"))
+	r := httptest.NewRequest(http.MethodPost, testAPIProfile, strings.NewReader("not json"))
 	w := httptest.NewRecorder()
 
 	srv.HandleCreateProfile(w, r)
@@ -412,14 +424,14 @@ func TestHandleCreateProfile_InvalidBody(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
-func TestHandleCreateProfile_DBError(t *testing.T) {
+func TestHandleCreateProfileDBError(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`INSERT INTO profile`).
-		WillReturnError(fmt.Errorf("db error"))
+		WillReturnError(fmt.Errorf(testDbError))
 
-	body, _ := json.Marshal(db.CreateProfileRequest{UserID: "user-uuid-1", Bank: "BRI"})
-	r := httptest.NewRequest(http.MethodPost, "/api/profile", bytes.NewReader(body))
-	r.Header.Set("Content-Type", "application/json")
+	body, _ := json.Marshal(db.CreateProfileRequest{UserID: testUserUUID, Bank: "BRI"})
+	r := httptest.NewRequest(http.MethodPost, testAPIProfile, bytes.NewReader(body))
+	r.Header.Set(testHeaderContentType, testApplicationJSON)
 	w := httptest.NewRecorder()
 
 	srv.HandleCreateProfile(w, r)
@@ -431,37 +443,37 @@ func TestHandleCreateProfile_DBError(t *testing.T) {
 // gRPC: CreateProfile
 // ═══════════════════════════════════════════
 
-func TestCreateProfileGRPC_Success(t *testing.T) {
+func TestCreateProfileGRPCSuccess(t *testing.T) {
 	srv, mock := newTestServer(t)
-	uid := "user-uuid-1"
+	uid := testUserUUID
 	mock.ExpectQuery(`INSERT INTO profile`).
 		WillReturnRows(sqlmock.NewRows(testProfileCols).AddRow(
-			"new-uuid", &uid, "BRI", "Jakarta", "John Doe",
+			testNewUUID, &uid, "BRI", "Jakarta", testProfileName,
 			"1234", "VISA", int64(0), "IDR", "REGULAR", "",
 		))
 
 	resp, err := srv.CreateProfile(context.Background(), &pb.CreateProfileRequest{
-		UserId: "user-uuid-1", Bank: "BRI", Branch: "Jakarta", Name: "John Doe",
+		UserId: testUserUUID, Bank: "BRI", Branch: "Jakarta", Name: testProfileName,
 		CardNumber: "1234", CardProvider: "VISA", Currency: "IDR", AccountType: "REGULAR",
 	})
 	require.NoError(t, err)
-	assert.Equal(t, "new-uuid", resp.Id)
+	assert.Equal(t, testNewUUID, resp.Id)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestCreateProfileGRPC_EmptyUserID(t *testing.T) {
+func TestCreateProfileGRPCEmptyUserID(t *testing.T) {
 	srv, _ := newTestServer(t)
 	_, err := srv.CreateProfile(context.Background(), &pb.CreateProfileRequest{})
 	st, _ := status.FromError(err)
 	assert.Equal(t, codes.InvalidArgument, st.Code())
 }
 
-func TestCreateProfileGRPC_DBError(t *testing.T) {
+func TestCreateProfileGRPCDBError(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`INSERT INTO profile`).
-		WillReturnError(fmt.Errorf("db error"))
+		WillReturnError(fmt.Errorf(testDbError))
 
-	_, err := srv.CreateProfile(context.Background(), &pb.CreateProfileRequest{UserId: "user-uuid-1"})
+	_, err := srv.CreateProfile(context.Background(), &pb.CreateProfileRequest{UserId: testUserUUID})
 	st, _ := status.FromError(err)
 	assert.Equal(t, codes.Internal, st.Code())
 }
@@ -470,26 +482,26 @@ func TestCreateProfileGRPC_DBError(t *testing.T) {
 // gRPC: GetProfileByID
 // ═══════════════════════════════════════════
 
-func TestGetProfileByIDGRPC_Success(t *testing.T) {
+func TestGetProfileByIDGRPCSuccess(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`SELECT id, user_id`).
-		WithArgs("profile-uuid-1").
-		WillReturnRows(testProfileRow("profile-uuid-1", "user-uuid-1"))
+		WithArgs(testProfileUUID).
+		WillReturnRows(testProfileRow(testProfileUUID, testUserUUID))
 
-	resp, err := srv.GetProfileByID(context.Background(), &pb.GetProfileByIDRequest{Id: "profile-uuid-1"})
+	resp, err := srv.GetProfileByID(context.Background(), &pb.GetProfileByIDRequest{Id: testProfileUUID})
 	require.NoError(t, err)
-	assert.Equal(t, "profile-uuid-1", resp.Id)
+	assert.Equal(t, testProfileUUID, resp.Id)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestGetProfileByIDGRPC_EmptyID(t *testing.T) {
+func TestGetProfileByIDGRPCEmptyID(t *testing.T) {
 	srv, _ := newTestServer(t)
 	_, err := srv.GetProfileByID(context.Background(), &pb.GetProfileByIDRequest{})
 	st, _ := status.FromError(err)
 	assert.Equal(t, codes.InvalidArgument, st.Code())
 }
 
-func TestGetProfileByIDGRPC_NotFound(t *testing.T) {
+func TestGetProfileByIDGRPCNotFound(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`SELECT id, user_id`).
 		WithArgs("nonexistent").
@@ -500,13 +512,13 @@ func TestGetProfileByIDGRPC_NotFound(t *testing.T) {
 	assert.Equal(t, codes.NotFound, st.Code())
 }
 
-func TestGetProfileByIDGRPC_DBError(t *testing.T) {
+func TestGetProfileByIDGRPCDBError(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`SELECT id, user_id`).
-		WithArgs("any-uuid").
-		WillReturnError(fmt.Errorf("db error"))
+		WithArgs(testAnyUUID).
+		WillReturnError(fmt.Errorf(testDbError))
 
-	_, err := srv.GetProfileByID(context.Background(), &pb.GetProfileByIDRequest{Id: "any-uuid"})
+	_, err := srv.GetProfileByID(context.Background(), &pb.GetProfileByIDRequest{Id: testAnyUUID})
 	st, _ := status.FromError(err)
 	assert.Equal(t, codes.Internal, st.Code())
 }
@@ -515,26 +527,26 @@ func TestGetProfileByIDGRPC_DBError(t *testing.T) {
 // gRPC: GetProfileByUserID
 // ═══════════════════════════════════════════
 
-func TestGetProfileByUserIDGRPC_Success(t *testing.T) {
+func TestGetProfileByUserIDGRPCSuccess(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`SELECT id, user_id`).
-		WithArgs("user-uuid-1").
-		WillReturnRows(testProfileRow("profile-uuid-1", "user-uuid-1"))
+		WithArgs(testUserUUID).
+		WillReturnRows(testProfileRow(testProfileUUID, testUserUUID))
 
-	resp, err := srv.GetProfileByUserID(context.Background(), &pb.GetProfileByUserIDRequest{UserId: "user-uuid-1"})
+	resp, err := srv.GetProfileByUserID(context.Background(), &pb.GetProfileByUserIDRequest{UserId: testUserUUID})
 	require.NoError(t, err)
-	assert.Equal(t, "profile-uuid-1", resp.Id)
+	assert.Equal(t, testProfileUUID, resp.Id)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestGetProfileByUserIDGRPC_EmptyUserID(t *testing.T) {
+func TestGetProfileByUserIDGRPCEmptyUserID(t *testing.T) {
 	srv, _ := newTestServer(t)
 	_, err := srv.GetProfileByUserID(context.Background(), &pb.GetProfileByUserIDRequest{})
 	st, _ := status.FromError(err)
 	assert.Equal(t, codes.InvalidArgument, st.Code())
 }
 
-func TestGetProfileByUserIDGRPC_NotFound(t *testing.T) {
+func TestGetProfileByUserIDGRPCNotFound(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`SELECT id, user_id`).
 		WithArgs("nonexistent").
@@ -545,13 +557,13 @@ func TestGetProfileByUserIDGRPC_NotFound(t *testing.T) {
 	assert.Equal(t, codes.NotFound, st.Code())
 }
 
-func TestGetProfileByUserIDGRPC_DBError(t *testing.T) {
+func TestGetProfileByUserIDGRPCDBError(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`SELECT id, user_id`).
-		WithArgs("any-uuid").
-		WillReturnError(fmt.Errorf("db error"))
+		WithArgs(testAnyUUID).
+		WillReturnError(fmt.Errorf(testDbError))
 
-	_, err := srv.GetProfileByUserID(context.Background(), &pb.GetProfileByUserIDRequest{UserId: "any-uuid"})
+	_, err := srv.GetProfileByUserID(context.Background(), &pb.GetProfileByUserIDRequest{UserId: testAnyUUID})
 	st, _ := status.FromError(err)
 	assert.Equal(t, codes.Internal, st.Code())
 }
@@ -560,27 +572,27 @@ func TestGetProfileByUserIDGRPC_DBError(t *testing.T) {
 // gRPC: UpdateProfile
 // ═══════════════════════════════════════════
 
-func TestUpdateProfileGRPC_Success(t *testing.T) {
+func TestUpdateProfileGRPCSuccess(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectExec(`UPDATE profile`).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
 	resp, err := srv.UpdateProfile(context.Background(), &pb.UpdateProfileRequest{
-		Id: "profile-uuid-1", Bank: "BRI", Branch: "Jakarta", Name: "Jane Doe", CardNumber: "1234",
+		Id: testProfileUUID, Bank: "BRI", Branch: "Jakarta", Name: "Jane Doe", CardNumber: "1234",
 	})
 	require.NoError(t, err)
 	assert.Equal(t, int32(http.StatusOK), resp.Code)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestUpdateProfileGRPC_EmptyID(t *testing.T) {
+func TestUpdateProfileGRPCEmptyID(t *testing.T) {
 	srv, _ := newTestServer(t)
 	_, err := srv.UpdateProfile(context.Background(), &pb.UpdateProfileRequest{})
 	st, _ := status.FromError(err)
 	assert.Equal(t, codes.InvalidArgument, st.Code())
 }
 
-func TestUpdateProfileGRPC_NotFound(t *testing.T) {
+func TestUpdateProfileGRPCNotFound(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectExec(`UPDATE profile`).
 		WillReturnResult(sqlmock.NewResult(0, 0))
@@ -592,13 +604,13 @@ func TestUpdateProfileGRPC_NotFound(t *testing.T) {
 	assert.Equal(t, codes.NotFound, st.Code())
 }
 
-func TestUpdateProfileGRPC_DBError(t *testing.T) {
+func TestUpdateProfileGRPCDBError(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectExec(`UPDATE profile`).
-		WillReturnError(fmt.Errorf("db error"))
+		WillReturnError(fmt.Errorf(testDbError))
 
 	_, err := srv.UpdateProfile(context.Background(), &pb.UpdateProfileRequest{
-		Id: "profile-uuid-1", Bank: "BRI", Branch: "Jakarta", Name: "Test", CardNumber: "1234",
+		Id: testProfileUUID, Bank: "BRI", Branch: "Jakarta", Name: "Test", CardNumber: "1234",
 	})
 	st, _ := status.FromError(err)
 	assert.Equal(t, codes.Internal, st.Code())

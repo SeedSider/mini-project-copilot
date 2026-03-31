@@ -11,6 +11,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const (
+	testProfileID   = "profile-uuid-1"
+	testUserID      = "user-uuid-1"
+	testProfileName = "John Doe"
+)
+
 func newTestProvider(t *testing.T) (*Provider, sqlmock.Sqlmock) {
 	t.Helper()
 	dbConn, mock, err := sqlmock.New()
@@ -27,29 +33,29 @@ var profileCols = []string{
 func profileRow(id, userID string) *sqlmock.Rows {
 	uid := userID
 	return sqlmock.NewRows(profileCols).AddRow(
-		id, &uid, "BRI", "Jakarta", "John Doe",
+		id, &uid, "BRI", "Jakarta", testProfileName,
 		"4111111111111111", "VISA", int64(1_000_000), "IDR", "REGULAR", "",
 	)
 }
 
 // ── GetProfileByID ──
 
-func TestGetProfileByID_Success(t *testing.T) {
+func TestGetProfileByIDSuccess(t *testing.T) {
 	p, mock := newTestProvider(t)
 
 	mock.ExpectQuery(`SELECT id, user_id`).
-		WithArgs("profile-uuid-1").
-		WillReturnRows(profileRow("profile-uuid-1", "user-uuid-1"))
+		WithArgs(testProfileID).
+		WillReturnRows(profileRow(testProfileID, testUserID))
 
-	profile, err := p.GetProfileByID(context.Background(), "profile-uuid-1")
+	profile, err := p.GetProfileByID(context.Background(), testProfileID)
 	require.NoError(t, err)
-	assert.Equal(t, "profile-uuid-1", profile.ID)
+	assert.Equal(t, testProfileID, profile.ID)
 	assert.Equal(t, "BRI", profile.Bank)
 	assert.Equal(t, "REGULAR", profile.AccountType)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestGetProfileByID_NotFound(t *testing.T) {
+func TestGetProfileByIDNotFound(t *testing.T) {
 	p, mock := newTestProvider(t)
 
 	mock.ExpectQuery(`SELECT id, user_id`).
@@ -62,7 +68,7 @@ func TestGetProfileByID_NotFound(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestGetProfileByID_DBError(t *testing.T) {
+func TestGetProfileByIDDBError(t *testing.T) {
 	p, mock := newTestProvider(t)
 
 	mock.ExpectQuery(`SELECT id, user_id`).
@@ -75,22 +81,22 @@ func TestGetProfileByID_DBError(t *testing.T) {
 
 // ── GetProfileByUserID ──
 
-func TestGetProfileByUserID_Success(t *testing.T) {
+func TestGetProfileByUserIDSuccess(t *testing.T) {
 	p, mock := newTestProvider(t)
 
 	mock.ExpectQuery(`SELECT id, user_id`).
-		WithArgs("user-uuid-1").
-		WillReturnRows(profileRow("profile-uuid-1", "user-uuid-1"))
+		WithArgs(testUserID).
+		WillReturnRows(profileRow(testProfileID, testUserID))
 
-	profile, err := p.GetProfileByUserID(context.Background(), "user-uuid-1")
+	profile, err := p.GetProfileByUserID(context.Background(), testUserID)
 	require.NoError(t, err)
-	assert.Equal(t, "profile-uuid-1", profile.ID)
+	assert.Equal(t, testProfileID, profile.ID)
 	require.NotNil(t, profile.UserID)
-	assert.Equal(t, "user-uuid-1", *profile.UserID)
+	assert.Equal(t, testUserID, *profile.UserID)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestGetProfileByUserID_NotFound(t *testing.T) {
+func TestGetProfileByUserIDNotFound(t *testing.T) {
 	p, mock := newTestProvider(t)
 
 	mock.ExpectQuery(`SELECT id, user_id`).
@@ -103,7 +109,7 @@ func TestGetProfileByUserID_NotFound(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestGetProfileByUserID_DBError(t *testing.T) {
+func TestGetProfileByUserIDDBError(t *testing.T) {
 	p, mock := newTestProvider(t)
 
 	mock.ExpectQuery(`SELECT id, user_id`).
@@ -115,21 +121,21 @@ func TestGetProfileByUserID_DBError(t *testing.T) {
 
 // ── UpdateProfile ──
 
-func TestUpdateProfile_Success(t *testing.T) {
+func TestUpdateProfileSuccess(t *testing.T) {
 	p, mock := newTestProvider(t)
 
 	mock.ExpectExec(`UPDATE profile`).
-		WithArgs("BRI", "Bandung", "Jane Doe", "4222222222222222", "profile-uuid-1").
+		WithArgs("BRI", "Bandung", "Jane Doe", "4222222222222222", testProfileID).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 
-	err := p.UpdateProfile(context.Background(), "profile-uuid-1", EditProfileRequest{
+	err := p.UpdateProfile(context.Background(), testProfileID, EditProfileRequest{
 		Bank: "BRI", Branch: "Bandung", Name: "Jane Doe", CardNumber: "4222222222222222",
 	})
 	require.NoError(t, err)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestUpdateProfile_NotFound(t *testing.T) {
+func TestUpdateProfileNotFound(t *testing.T) {
 	p, mock := newTestProvider(t)
 
 	mock.ExpectExec(`UPDATE profile`).
@@ -141,7 +147,7 @@ func TestUpdateProfile_NotFound(t *testing.T) {
 	assert.ErrorIs(t, err, sql.ErrNoRows)
 }
 
-func TestUpdateProfile_DBError(t *testing.T) {
+func TestUpdateProfileDBError(t *testing.T) {
 	p, mock := newTestProvider(t)
 
 	mock.ExpectExec(`UPDATE profile`).
@@ -153,21 +159,21 @@ func TestUpdateProfile_DBError(t *testing.T) {
 
 // ── CreateProfile ──
 
-func TestCreateProfile_Success(t *testing.T) {
+func TestCreateProfileSuccess(t *testing.T) {
 	p, mock := newTestProvider(t)
 
-	uid := "user-uuid-1"
+	uid := testUserID
 	mock.ExpectQuery(`INSERT INTO profile`).
 		WillReturnRows(sqlmock.NewRows(profileCols).AddRow(
-			"new-profile-uuid", &uid, "BRI", "Jakarta", "John Doe",
+			"new-profile-uuid", &uid, "BRI", "Jakarta", testProfileName,
 			"4111111111111111", "VISA", int64(500_000), "IDR", "REGULAR", "",
 		))
 
 	profile, err := p.CreateProfile(context.Background(), CreateProfileRequest{
-		UserID:       "user-uuid-1",
+		UserID:       testUserID,
 		Bank:         "BRI",
 		Branch:       "Jakarta",
-		Name:         "John Doe",
+		Name:         testProfileName,
 		CardNumber:   "4111111111111111",
 		CardProvider: "VISA",
 		Balance:      500_000,
@@ -179,13 +185,13 @@ func TestCreateProfile_Success(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestCreateProfile_DBError(t *testing.T) {
+func TestCreateProfileDBError(t *testing.T) {
 	p, mock := newTestProvider(t)
 
 	mock.ExpectQuery(`INSERT INTO profile`).
 		WillReturnError(fmt.Errorf("constraint violation"))
 
-	profile, err := p.CreateProfile(context.Background(), CreateProfileRequest{UserID: "user-uuid-1"})
+	profile, err := p.CreateProfile(context.Background(), CreateProfileRequest{UserID: testUserID})
 	assert.Error(t, err)
 	assert.Nil(t, profile)
 }

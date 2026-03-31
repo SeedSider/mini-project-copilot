@@ -17,20 +17,28 @@ import (
 	pb "github.com/bankease/user-profile-service/protogen/user-profile-service"
 )
 
+const (
+	testAPIMenu  = "/api/menu"
+	testMenuID1  = "menu-1"
+	testMenuID2  = "menu-2"
+	testIconURL1 = "http://icon1.png"
+	testIconURL2 = "http://icon2.png"
+)
+
 var testMenuCols = []string{"id", "index", "type", "title", "icon_url", "is_active"}
 
 // ═══════════════════════════════════════════
 // HTTP HandleGetAllMenus
 // ═══════════════════════════════════════════
 
-func TestHandleGetAllMenus_Success(t *testing.T) {
+func TestHandleGetAllMenusSuccess(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`FROM menu`).
 		WillReturnRows(sqlmock.NewRows(testMenuCols).
-			AddRow("menu-1", 1, "REGULAR", "Transfer", "http://icon1.png", true).
-			AddRow("menu-2", 2, "PREMIUM", "Investasi", "http://icon2.png", true))
+			AddRow(testMenuID1, 1, "REGULAR", "Transfer", testIconURL1, true).
+			AddRow(testMenuID2, 2, "PREMIUM", "Investasi", testIconURL2, true))
 
-	r := httptest.NewRequest(http.MethodGet, "/api/menu", nil)
+	r := httptest.NewRequest(http.MethodGet, testAPIMenu, nil)
 	w := httptest.NewRecorder()
 
 	srv.HandleGetAllMenus(w, r)
@@ -39,12 +47,12 @@ func TestHandleGetAllMenus_Success(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestHandleGetAllMenus_Empty(t *testing.T) {
+func TestHandleGetAllMenusEmpty(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`FROM menu`).
 		WillReturnRows(sqlmock.NewRows(testMenuCols))
 
-	r := httptest.NewRequest(http.MethodGet, "/api/menu", nil)
+	r := httptest.NewRequest(http.MethodGet, testAPIMenu, nil)
 	w := httptest.NewRecorder()
 
 	srv.HandleGetAllMenus(w, r)
@@ -52,12 +60,12 @@ func TestHandleGetAllMenus_Empty(t *testing.T) {
 	assert.Equal(t, http.StatusOK, w.Code)
 }
 
-func TestHandleGetAllMenus_DBError(t *testing.T) {
+func TestHandleGetAllMenusDBError(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`FROM menu`).
-		WillReturnError(fmt.Errorf("db error"))
+		WillReturnError(fmt.Errorf(testDbError))
 
-	r := httptest.NewRequest(http.MethodGet, "/api/menu", nil)
+	r := httptest.NewRequest(http.MethodGet, testAPIMenu, nil)
 	w := httptest.NewRecorder()
 
 	srv.HandleGetAllMenus(w, r)
@@ -69,14 +77,14 @@ func TestHandleGetAllMenus_DBError(t *testing.T) {
 // HTTP HandleGetMenusByAccountType
 // ═══════════════════════════════════════════
 
-func TestHandleGetMenusByAccountType_Regular(t *testing.T) {
+func TestHandleGetMenusByAccountTypeRegular(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`FROM menu`).
 		WithArgs("REGULAR").
 		WillReturnRows(sqlmock.NewRows(testMenuCols).
-			AddRow("menu-1", 1, "REGULAR", "Transfer", "http://icon1.png", true))
+			AddRow(testMenuID1, 1, "REGULAR", "Transfer", testIconURL1, true))
 
-	r := httptest.NewRequest(http.MethodGet, "/api/menu/REGULAR", nil)
+	r := httptest.NewRequest(http.MethodGet, testAPIMenu+"/REGULAR", nil)
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("accountType", "REGULAR")
 	r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
@@ -88,9 +96,9 @@ func TestHandleGetMenusByAccountType_Regular(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestHandleGetMenusByAccountType_MissingType(t *testing.T) {
+func TestHandleGetMenusByAccountTypeMissingType(t *testing.T) {
 	srv, _ := newTestServer(t)
-	r := httptest.NewRequest(http.MethodGet, "/api/menu/", nil)
+	r := httptest.NewRequest(http.MethodGet, testAPIMenu+"/", nil)
 	w := httptest.NewRecorder()
 
 	srv.HandleGetMenusByAccountType(w, r)
@@ -98,12 +106,12 @@ func TestHandleGetMenusByAccountType_MissingType(t *testing.T) {
 	assert.Equal(t, http.StatusBadRequest, w.Code)
 }
 
-func TestHandleGetMenusByAccountType_DBError(t *testing.T) {
+func TestHandleGetMenusByAccountTypeDBError(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`FROM menu`).
-		WillReturnError(fmt.Errorf("db error"))
+		WillReturnError(fmt.Errorf(testDbError))
 
-	r := httptest.NewRequest(http.MethodGet, "/api/menu/PREMIUM", nil)
+	r := httptest.NewRequest(http.MethodGet, testAPIMenu+"/PREMIUM", nil)
 	rctx := chi.NewRouteContext()
 	rctx.URLParams.Add("accountType", "PREMIUM")
 	r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
@@ -118,12 +126,12 @@ func TestHandleGetMenusByAccountType_DBError(t *testing.T) {
 // gRPC: GetAllMenus
 // ═══════════════════════════════════════════
 
-func TestGetAllMenusGRPC_Success(t *testing.T) {
+func TestGetAllMenusGRPCSuccess(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`FROM menu`).
 		WillReturnRows(sqlmock.NewRows(testMenuCols).
-			AddRow("menu-1", 1, "REGULAR", "Transfer", "http://icon1.png", true).
-			AddRow("menu-2", 2, "PREMIUM", "Investasi", "http://icon2.png", true))
+			AddRow(testMenuID1, 1, "REGULAR", "Transfer", testIconURL1, true).
+			AddRow(testMenuID2, 2, "PREMIUM", "Investasi", testIconURL2, true))
 
 	resp, err := srv.GetAllMenus(context.Background(), &pb.GetAllMenusRequest{})
 	require.NoError(t, err)
@@ -132,10 +140,10 @@ func TestGetAllMenusGRPC_Success(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestGetAllMenusGRPC_DBError(t *testing.T) {
+func TestGetAllMenusGRPCDBError(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`FROM menu`).
-		WillReturnError(fmt.Errorf("db error"))
+		WillReturnError(fmt.Errorf(testDbError))
 
 	_, err := srv.GetAllMenus(context.Background(), &pb.GetAllMenusRequest{})
 	st, _ := status.FromError(err)
@@ -146,12 +154,12 @@ func TestGetAllMenusGRPC_DBError(t *testing.T) {
 // gRPC: GetMenusByAccountType
 // ═══════════════════════════════════════════
 
-func TestGetMenusByAccountTypeGRPC_Success(t *testing.T) {
+func TestGetMenusByAccountTypeGRPCSuccess(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`FROM menu`).
 		WithArgs("REGULAR").
 		WillReturnRows(sqlmock.NewRows(testMenuCols).
-			AddRow("menu-1", 1, "REGULAR", "Transfer", "http://icon1.png", true))
+			AddRow(testMenuID1, 1, "REGULAR", "Transfer", testIconURL1, true))
 
 	resp, err := srv.GetMenusByAccountType(context.Background(), &pb.GetMenusByAccountTypeRequest{AccountType: "REGULAR"})
 	require.NoError(t, err)
@@ -160,17 +168,17 @@ func TestGetMenusByAccountTypeGRPC_Success(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestGetMenusByAccountTypeGRPC_EmptyAccountType(t *testing.T) {
+func TestGetMenusByAccountTypeGRPCEmptyAccountType(t *testing.T) {
 	srv, _ := newTestServer(t)
 	_, err := srv.GetMenusByAccountType(context.Background(), &pb.GetMenusByAccountTypeRequest{})
 	st, _ := status.FromError(err)
 	assert.Equal(t, codes.InvalidArgument, st.Code())
 }
 
-func TestGetMenusByAccountTypeGRPC_DBError(t *testing.T) {
+func TestGetMenusByAccountTypeGRPCDBError(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`FROM menu`).
-		WillReturnError(fmt.Errorf("db error"))
+		WillReturnError(fmt.Errorf(testDbError))
 
 	_, err := srv.GetMenusByAccountType(context.Background(), &pb.GetMenusByAccountTypeRequest{AccountType: "PREMIUM"})
 	st, _ := status.FromError(err)
