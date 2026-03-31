@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package saving;
+
+option go_package = "protogen/saving-service";
+
+import "saving_payload.proto";
+
+service SavingService {
+    rpc GetExchangeRates(GetExchangeRatesRequest) returns (ExchangeRateListResponse);
+    rpc GetInterestRates(GetInterestRatesRequest) returns (InterestRateListResponse);
+    rpc GetBranches(GetBranchesRequest) returns (BranchListResponse);
+}

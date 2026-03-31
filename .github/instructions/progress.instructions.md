@@ -112,35 +112,55 @@ applyTo: "**"
 - [x] `var _ pb.IdentityServiceServer = (*Server)(nil)` compile-time check
 - [x] SignUp gRPC TIDAK melakukan best-effort HTTP ke profile (BFF orchestrates)
 
+### saving-service — SELESAI ✅
+
+- [x] Diekstrak dari user-profile-service search feature menjadi service mandiri
+- [x] Folder structure: `server/` (main.go, core_config.go, core_db.go, api/, db/, constant/, utils/, lib/)
+- [x] 3 REST endpoint: GET /api/exchange-rates, GET /api/interest-rates, GET /api/branches?q=
+- [x] 3 gRPC RPC: GetExchangeRates, GetInterestRates, GetBranches
+- [x] Proto definitions: `saving_api.proto`, `saving_payload.proto`
+- [x] Hand-written protogen + codec.go (JSONCodec via `encoding.RegisterCodec` in `init()`)
+- [x] Migrations: 001_add_exchange_rates.sql, 002_add_interest_rates.sql, 003_add_branches.sql + embed.go
+- [x] DB Provider pattern: provider.go, exchange_rate_provider.go, interest_rate_provider.go, branch_provider.go
+- [x] Docker Compose: PostgreSQL 17 (port 5434) + saving-service (HTTP 8081, gRPC 9303)
+- [x] Seed data: 4 exchange rates + 4 interest rates + 5 branches
+- [x] Swagger docs + UI di `/swagger/`
+- [x] CLI: `urfave/cli` (grpc-server, gw-server, grpc-gw-server)
+- [x] Health check: GET /health
+- [x] `go build ./server/` + `go vet ./server/` — compile pass ✅
+- [x] Docker Compose RUNNING ✅
+- [x] Seed data migrated to database ✅
+
 ### BFF Service — SELESAI ✅
 
-- [x] Backend spec BFF service (`backend-spec-bff-service.md`) — 11 endpoint lengkap
+- [x] Backend spec BFF service (`backend-spec-bff-service.md`) — 14 endpoint lengkap (11 original + 3 saving proxy)
 - [x] Go project scaffolding (`bff-service/`, `go.mod`, folder structure)
 - [x] Proto definitions (`bff_api.proto`, `bff_payload.proto`)
-- [x] Protogen — hand-written gRPC stubs (BFF server, identity client, profile client)
+- [x] Protogen — hand-written gRPC stubs (BFF server, identity client, profile client, saving client)
 - [x] Server entry point + CLI (`server/main.go`) — `grpc-gw-server` command
 - [x] Config loading (`server/core_config.go`) — godotenv + os.LookupEnv
 - [x] JWT Manager (`server/jwt/manager.go`) — Verify only (HS256, local verification)
-- [x] ServiceConnection (`server/services/service.go`) — gRPC clients to identity + profile
+- [x] ServiceConnection (`server/services/service.go`) — gRPC clients to identity + profile + saving
 - [x] Interceptor chain (`server/api/bff_interceptor.go`) — ProcessId → Logging → Auth
 - [x] Auth interceptor (`server/api/bff_authInterceptor.go`) — JWT verify for GetMe, GetMyProfile
 - [x] Auth handlers (`server/api/bff_auth_api.go`) — SignUp (orchestrated), SignIn (proxy), GetMe
 - [x] Profile handlers (`server/api/bff_profile_api.go`) — GetMyProfile, GetProfileByID, GetProfileByUserID, CreateProfile, UpdateProfile
 - [x] Menu handlers (`server/api/bff_menu_api.go`) — GetAllMenus, GetMenusByAccountType
-- [x] HTTP gateway + routes (`server/http_routes.go`) — manual REST→gRPC bridge
+- [x] **Saving handlers** (`server/api/bff_saving_api.go`) — GetExchangeRates, GetInterestRates, GetBranches
+- [x] HTTP gateway + routes (`server/http_routes.go`) — manual REST→gRPC bridge (14 routes)
 - [x] Upload handler (`server/gateway_http_handler.go`) — multipart/form-data → Azure Blob direct
 - [x] CORS + security headers middleware
 - [x] Error helpers + gRPC→HTTP status code mapping
 - [x] Logger (`server/lib/logger/`) — Zap structured logger
 - [x] Utils, Constants
 - [x] Dockerfile (multi-stage: golang:1.24-alpine → alpine:3.20)
-- [x] Docker Compose full stack (`docker-compose.yml` di root) — 5 containers
+- [x] Docker Compose full stack (`docker-compose.yml` di root) — containers for BFF + downstream services
 - [x] `.env.example`, `Makefile`, `sonar-project.properties`, `.dockerignore`
 - [x] `go build ./server/` — compile pass ✅
 - [x] **JWT fix** — `contextFromHTTPRequest` verify JWT + inject `user_claims`; `jwtMgr` package-level var ✅
 - [x] **`protogen/identity-service/codec.go`** — JSONCodec registered, gRPC server handle JSON requests ✅
 - [x] **Docker Compose full stack RUNNING & VERIFIED** — SignUp → SignIn → GET /api/profile end-to-end ✅
-- [x] **Swagger UI DITAMBAHKAN** — 11 operasi, 5 tags (Auth, Profile, Menu, Upload)
+- [x] **Swagger UI DITAMBAHKAN** — BearerAuth security definition
   - [x] Dependencies: `swaggo/swag@v1.16.6` + `swaggo/http-swagger@v1.3.4`
   - [x] Generated docs: `docs/docs.go`, `docs/swagger.json`, `docs/swagger.yaml`
   - [x] Swagger UI route: `http://localhost:3000/swagger/bff/`
@@ -148,6 +168,11 @@ applyTo: "**"
   - [x] Doc stubs pada `server/swagger_docs.go` (Profile GET/POST, Profile/{id} GET/PUT, Upload)
   - [x] `@securityDefinitions.apikey BearerAuth` untuk protected endpoints
   - [x] `go build ./server/` + `go vet ./server/` — pass ✅
+- [x] **saving-service integration** — 3 new routes: GET /api/exchange-rates, /api/interest-rates, /api/branches
+  - [x] `protogen/saving-service/saving_api_grpc.pb.go` — gRPC client stub
+  - [x] `server/services/service.go` — SavingService gRPC client (port 9303)
+  - [x] `server/api/bff_saving_api.go` — GetExchangeRates, GetInterestRates, GetBranches handlers
+  - [x] `server/core_config.go` — `SavingServiceAddr` config (default: localhost:9303)
 
 ### BFF Service Spec — SELESAI ✅
 
@@ -180,6 +205,7 @@ _(tidak ada item in progress saat ini)_
 
 - [ ] Unit tests bff-service (target ≥ 90%)
 - [ ] Unit tests user-profile-service (target ≥ 90%) — belum ada test file
+- [ ] Unit tests saving-service (target ≥ 90%) — belum ada test file
 - [ ] Unit tests identity-service coverage ≥ 90% (test files sudah ada, perlu verifikasi coverage)
 - [ ] SonarQube analysis pass untuk semua service
 
@@ -193,8 +219,9 @@ _(tidak ada item in progress saat ini)_
 ## Known Issues
 
 - user-profile-service: belum ada unit tests
-- Kedua services belum melalui SonarQube analysis
-- **Seed data caveat**: `docker-entrypoint-initdb.d` hanya jalan saat volume fresh; new tables (004-006) tidak otomatis ter-seed; gunakan `docker cp + psql -f` untuk re-seed
+- saving-service: belum ada unit tests
+- Semua services belum melalui SonarQube analysis
+- **Seed data caveat**: `docker-entrypoint-initdb.d` hanya jalan saat volume fresh; gunakan `docker exec -i <container> psql -U postgres -d <db> -f /docker-entrypoint-initdb.d/seed.sql` untuk re-seed
 - **`create_file` tool caveat**: tool bisa melaporkan sukses tapi file tidak terbuat di disk. SELALU verifikasi dengan `Get-Item <path>` setelah membuat file baru.
 
 ## Architecture Decisions Log
@@ -219,3 +246,6 @@ _(tidak ada item in progress saat ini)_
 | codec.go wajib di setiap protogen pkg   | Hand-written types tidak implement proto.Message; gRPC fallback ke proto codec | 2026-03-30 |
 | user-profile-service refactor ke server/ | Konsistensi folder structure dengan identity-service & BFF | 2026-03-30 |
 | BFF Swagger via swaggo                  | Konsisten dengan user-profile-service; swaggo annotation-based doc gen | 2026-03-30 |
+| Search endpoints → saving-service        | Separation of concerns; search data bukan tanggung jawab user-profile  | 2026-03-31 |
+| saving-service standalone                | Service mandiri dengan DB sendiri (PostgreSQL `saving`, port 5434)      | 2026-03-31 |
+| BFF terhubung ke 3 downstream services   | identity (9301) + user-profile (9302) + saving (9303)                  | 2026-03-31 |

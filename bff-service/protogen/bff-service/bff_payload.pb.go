@@ -430,6 +430,59 @@ func (x *MenuListResponse) GetMenus() []*MenuItem {
 	return nil
 }
 
+// ── Search / Saving Messages ──
+
+type GetExchangeRatesRequest struct{}
+
+type ExchangeRateItem struct {
+	Id          string  `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Country     string  `protobuf:"bytes,2,opt,name=country,proto3" json:"country,omitempty"`
+	Currency    string  `protobuf:"bytes,3,opt,name=currency,proto3" json:"currency,omitempty"`
+	CountryCode string  `protobuf:"bytes,4,opt,name=country_code,json=countryCode,proto3" json:"country_code,omitempty"`
+	Buy         float64 `protobuf:"fixed64,5,opt,name=buy,proto3" json:"buy,omitempty"`
+	Sell        float64 `protobuf:"fixed64,6,opt,name=sell,proto3" json:"sell,omitempty"`
+}
+
+type ExchangeRateListResponse struct {
+	ExchangeRates []*ExchangeRateItem `protobuf:"bytes,1,rep,name=exchange_rates,json=exchangeRates,proto3" json:"exchange_rates,omitempty"`
+}
+
+type GetInterestRatesRequest struct{}
+
+type InterestRateItem struct {
+	Id      string  `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Kind    string  `protobuf:"bytes,2,opt,name=kind,proto3" json:"kind,omitempty"`
+	Deposit string  `protobuf:"bytes,3,opt,name=deposit,proto3" json:"deposit,omitempty"`
+	Rate    float64 `protobuf:"fixed64,4,opt,name=rate,proto3" json:"rate,omitempty"`
+}
+
+type InterestRateListResponse struct {
+	InterestRates []*InterestRateItem `protobuf:"bytes,1,rep,name=interest_rates,json=interestRates,proto3" json:"interest_rates,omitempty"`
+}
+
+type GetBranchesRequest struct {
+	Query string `protobuf:"bytes,1,opt,name=query,proto3" json:"query,omitempty"`
+}
+
+func (x *GetBranchesRequest) GetQuery() string {
+	if x != nil {
+		return x.Query
+	}
+	return ""
+}
+
+type BranchItem struct {
+	Id        string  `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name      string  `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Distance  string  `protobuf:"bytes,3,opt,name=distance,proto3" json:"distance,omitempty"`
+	Latitude  float64 `protobuf:"fixed64,4,opt,name=latitude,proto3" json:"latitude,omitempty"`
+	Longitude float64 `protobuf:"fixed64,5,opt,name=longitude,proto3" json:"longitude,omitempty"`
+}
+
+type BranchListResponse struct {
+	Branches []*BranchItem `protobuf:"bytes,1,rep,name=branches,proto3" json:"branches,omitempty"`
+}
+
 // ── Common Messages ──
 
 type StandardResponse struct {

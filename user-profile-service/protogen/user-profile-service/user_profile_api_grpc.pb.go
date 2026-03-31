@@ -19,9 +19,6 @@ type UserProfileServiceServer interface {
 	UpdateProfile(context.Context, *UpdateProfileRequest) (*StandardResponse, error)
 	GetAllMenus(context.Context, *GetAllMenusRequest) (*MenuListResponse, error)
 	GetMenusByAccountType(context.Context, *GetMenusByAccountTypeRequest) (*MenuListResponse, error)
-	GetExchangeRates(context.Context, *GetExchangeRatesRequest) (*ExchangeRateListResponse, error)
-	GetInterestRates(context.Context, *GetInterestRatesRequest) (*InterestRateListResponse, error)
-	GetBranches(context.Context, *GetBranchesRequest) (*BranchListResponse, error)
 }
 
 // UnimplementedUserProfileServiceServer should be embedded to have forward compatible implementations.
@@ -45,15 +42,6 @@ func (UnimplementedUserProfileServiceServer) GetAllMenus(context.Context, *GetAl
 func (UnimplementedUserProfileServiceServer) GetMenusByAccountType(context.Context, *GetMenusByAccountTypeRequest) (*MenuListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMenusByAccountType not implemented")
 }
-func (UnimplementedUserProfileServiceServer) GetExchangeRates(context.Context, *GetExchangeRatesRequest) (*ExchangeRateListResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetExchangeRates not implemented")
-}
-func (UnimplementedUserProfileServiceServer) GetInterestRates(context.Context, *GetInterestRatesRequest) (*InterestRateListResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetInterestRates not implemented")
-}
-func (UnimplementedUserProfileServiceServer) GetBranches(context.Context, *GetBranchesRequest) (*BranchListResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetBranches not implemented")
-}
 
 // UserProfileServiceClient is the client API for UserProfileService service.
 type UserProfileServiceClient interface {
@@ -63,9 +51,6 @@ type UserProfileServiceClient interface {
 	UpdateProfile(ctx context.Context, in *UpdateProfileRequest, opts ...grpc.CallOption) (*StandardResponse, error)
 	GetAllMenus(ctx context.Context, in *GetAllMenusRequest, opts ...grpc.CallOption) (*MenuListResponse, error)
 	GetMenusByAccountType(ctx context.Context, in *GetMenusByAccountTypeRequest, opts ...grpc.CallOption) (*MenuListResponse, error)
-	GetExchangeRates(ctx context.Context, in *GetExchangeRatesRequest, opts ...grpc.CallOption) (*ExchangeRateListResponse, error)
-	GetInterestRates(ctx context.Context, in *GetInterestRatesRequest, opts ...grpc.CallOption) (*InterestRateListResponse, error)
-	GetBranches(ctx context.Context, in *GetBranchesRequest, opts ...grpc.CallOption) (*BranchListResponse, error)
 }
 
 type userProfileServiceClient struct {
@@ -132,33 +117,6 @@ func (c *userProfileServiceClient) GetMenusByAccountType(ctx context.Context, in
 	return out, nil
 }
 
-func (c *userProfileServiceClient) GetExchangeRates(ctx context.Context, in *GetExchangeRatesRequest, opts ...grpc.CallOption) (*ExchangeRateListResponse, error) {
-	out := new(ExchangeRateListResponse)
-	err := c.cc.Invoke(ctx, userProfileServiceName+"GetExchangeRates", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *userProfileServiceClient) GetInterestRates(ctx context.Context, in *GetInterestRatesRequest, opts ...grpc.CallOption) (*InterestRateListResponse, error) {
-	out := new(InterestRateListResponse)
-	err := c.cc.Invoke(ctx, userProfileServiceName+"GetInterestRates", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *userProfileServiceClient) GetBranches(ctx context.Context, in *GetBranchesRequest, opts ...grpc.CallOption) (*BranchListResponse, error) {
-	out := new(BranchListResponse)
-	err := c.cc.Invoke(ctx, userProfileServiceName+"GetBranches", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // UserProfileService_ServiceDesc is the grpc.ServiceDesc for UserProfileService service.
 var UserProfileService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "userprofile.UserProfileService",
@@ -187,18 +145,6 @@ var UserProfileService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetMenusByAccountType",
 			Handler:    _UserProfileService_GetMenusByAccountType_Handler,
-		},
-		{
-			MethodName: "GetExchangeRates",
-			Handler:    _UserProfileService_GetExchangeRates_Handler,
-		},
-		{
-			MethodName: "GetInterestRates",
-			Handler:    _UserProfileService_GetInterestRates_Handler,
-		},
-		{
-			MethodName: "GetBranches",
-			Handler:    _UserProfileService_GetBranches_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -313,60 +259,6 @@ func _UserProfileService_GetMenusByAccountType_Handler(srv interface{}, ctx cont
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(UserProfileServiceServer).GetMenusByAccountType(ctx, req.(*GetMenusByAccountTypeRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _UserProfileService_GetExchangeRates_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetExchangeRatesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserProfileServiceServer).GetExchangeRates(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: userProfileServiceName + "GetExchangeRates",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserProfileServiceServer).GetExchangeRates(ctx, req.(*GetExchangeRatesRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _UserProfileService_GetInterestRates_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetInterestRatesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserProfileServiceServer).GetInterestRates(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: userProfileServiceName + "GetInterestRates",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserProfileServiceServer).GetInterestRates(ctx, req.(*GetInterestRatesRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _UserProfileService_GetBranches_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetBranchesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UserProfileServiceServer).GetBranches(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: userProfileServiceName + "GetBranches",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UserProfileServiceServer).GetBranches(ctx, req.(*GetBranchesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

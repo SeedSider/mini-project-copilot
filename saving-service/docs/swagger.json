@@ -1,0 +1,180 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API for exchange rates, interest rates, and branch information",
+        "title": "Saving Service API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "basePath": "/",
+    "paths": {
+        "/api/branches": {
+            "get": {
+                "description": "Retrieve all branches, or search by name with query parameter",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Branches"
+                ],
+                "summary": "Get branches",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search query (case-insensitive partial match on branch name)",
+                        "name": "q",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_bankease_saving-service_server_db.Branch"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/server_api.standardResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/exchange-rates": {
+            "get": {
+                "description": "Retrieve all currency exchange rates",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Exchange Rates"
+                ],
+                "summary": "Get all exchange rates",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_bankease_saving-service_server_db.ExchangeRate"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/server_api.standardResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/interest-rates": {
+            "get": {
+                "description": "Retrieve all deposit interest rates",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Interest Rates"
+                ],
+                "summary": "Get all interest rates",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/github_com_bankease_saving-service_server_db.InterestRate"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/server_api.standardResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "github_com_bankease_saving-service_server_db.Branch": {
+            "type": "object",
+            "properties": {
+                "distance": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_bankease_saving-service_server_db.ExchangeRate": {
+            "type": "object",
+            "properties": {
+                "buy": {
+                    "type": "number"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "countryCode": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "sell": {
+                    "type": "number"
+                }
+            }
+        },
+        "github_com_bankease_saving-service_server_db.InterestRate": {
+            "type": "object",
+            "properties": {
+                "deposit": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "kind": {
+                    "type": "string"
+                },
+                "rate": {
+                    "type": "number"
+                }
+            }
+        },
+        "server_api.standardResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,60 @@
+services:
+  saving-db:
+    image: postgres:17-alpine
+    container_name: saving-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: saving
+    ports:
+      - "5434:5432"
+    volumes:
+      - saving-db-data:/var/lib/postgresql/data
+      - ./seed.sql:/docker-entrypoint-initdb.d/seed.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  saving-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: saving-service
+    command:
+      [
+        "./server",
+        "grpc-gw-server",
+        "--port1",
+        "9303",
+        "--port2",
+        "8081",
+      ]
+    ports:
+      - "8081:8081"
+      - "9303:9303"
+    environment:
+      DB_HOST: saving-db
+      DB_PORT: "5432"
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: saving
+      DB_SSLMODE: disable
+      DB_TIMEZONE: Asia/Jakarta
+      HTTP_PORT: "8081"
+      GRPC_PORT: "9303"
+      ENV: DEV
+      APP_NAME: saving-service
+      PRODUCT_NAME: BRICaMS
+      LOGGER_TAG: saving.dev
+      LOGGER_OUTPUT: stdout
+      LOGGER_LEVEL: debug
+    depends_on:
+      saving-db:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  saving-db-data:

@@ -301,6 +301,66 @@ func (s *gatewayServer) handleMenuByAccountType(w http.ResponseWriter, r *http.R
 	writeJSON(w, http.StatusOK, resp)
 }
 
+// ── Search / Saving endpoints ──
+
+func (s *gatewayServer) handleExchangeRates(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		return
+	}
+	if r.Method != "GET" {
+		writeJSONError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	ctx := contextFromHTTPRequest(r)
+	resp, err := s.apiServer.GetExchangeRates(ctx, &pb.GetExchangeRatesRequest{})
+	if err != nil {
+		writeGRPCError(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, resp)
+}
+
+func (s *gatewayServer) handleInterestRates(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		return
+	}
+	if r.Method != "GET" {
+		writeJSONError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	ctx := contextFromHTTPRequest(r)
+	resp, err := s.apiServer.GetInterestRates(ctx, &pb.GetInterestRatesRequest{})
+	if err != nil {
+		writeGRPCError(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, resp)
+}
+
+func (s *gatewayServer) handleBranches(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		return
+	}
+	if r.Method != "GET" {
+		writeJSONError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	q := r.URL.Query().Get("q")
+	ctx := contextFromHTTPRequest(r)
+	resp, err := s.apiServer.GetBranches(ctx, &pb.GetBranchesRequest{Query: q})
+	if err != nil {
+		writeGRPCError(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, resp)
+}
+
 // ── Helpers ──
 
 func contextFromHTTPRequest(r *http.Request) context.Context {
