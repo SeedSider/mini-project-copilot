@@ -10,9 +10,6 @@ services:
     environment:
       BFF_GRPC_PORT: "9090"
       BFF_HTTP_PORT: "3000"
-      IDENTITY_SERVICE_ADDR: host.docker.internal:9301
-      PROFILE_SERVICE_ADDR: host.docker.internal:9302
-      SAVINGS_SERVICE_ADDR: host.docker.internal:9303
     env_file:
       - .env
     extra_hosts:
