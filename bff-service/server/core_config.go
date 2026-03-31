@@ -37,18 +37,18 @@ func initConfig() {
 	godotenv.Load(".env")
 
 	config = &Config{
-		BffGRPCPort: GetEnv("BFF_GRPC_PORT", "9090"),
-		BffHTTPPort: GetEnv("BFF_HTTP_PORT", "3000"),
+		BffGRPCPort: GetEnv("GRPC_PORT", "9090"),
+		BffHTTPPort: GetEnv("HTTP_PORT", "3000"),
 
-		IdentityServiceAddr: GetEnv("BFF_IDENTITY_SERVICE_ADDR", "localhost:9301"),
-		ProfileServiceAddr:  GetEnv("BFF_PROFILE_SERVICE_ADDR", "localhost:9302"),
-		SavingServiceAddr:   GetEnv("BFF_SAVING_SERVICE_ADDR", "localhost:9303"),
+		IdentityServiceAddr: GetEnv("IDENTITY_SERVICE_ADDR", "localhost:9301"),
+		ProfileServiceAddr:  GetEnv("PROFILE_SERVICE_ADDR", "localhost:9302"),
+		SavingServiceAddr:   GetEnv("SAVING_SERVICE_ADDR", "localhost:9303"),
 
-		JWTSecret:   GetEnv("BFF_JWT_SECRET", "secret"),
+		JWTSecret:   GetEnv("JWT_SECRET", "secret"),
 		JWTDuration: GetEnv("JWT_DURATION", "24h"),
 
-		AzureSASURL:    GetEnv("BFF_AZURE_SAS_URL", ""),
-		AzureContainer: GetEnv("BFF_AZURE_CONTAINER", "images"),
+		AzureSASURL:    GetEnv("AZURE_SAS_URL", ""),
+		AzureContainer: GetEnv("AZURE_CONTAINER", "images"),
 
 		Env:          GetEnv("ENV", "DEV"),
 		AppName:      GetEnv("APP_NAME", "bff-service"),
