@@ -81,6 +81,7 @@ func grpcGatewayServerCmd() cli.Command {
 			svcConn := services.InitServicesConn(
 				config.IdentityServiceAddr,
 				config.ProfileServiceAddr,
+				config.SavingServiceAddr,
 			)
 			defer svcConn.Close()
 
@@ -178,6 +179,11 @@ func startHTTPServer(port string, apiServer *api.Server) error {
 	// Menu endpoints
 	mux.HandleFunc("/api/menu/", gwServer.handleMenuByAccountType)
 	mux.HandleFunc("/api/menu", gwServer.handleMenuAll)
+
+	// Search / Saving endpoints
+	mux.HandleFunc("/api/exchange-rates", gwServer.handleExchangeRates)
+	mux.HandleFunc("/api/interest-rates", gwServer.handleInterestRates)
+	mux.HandleFunc("/api/branches", gwServer.handleBranches)
 
 	listener, err := net.Listen("tcp", ":"+port)
 	if err != nil {

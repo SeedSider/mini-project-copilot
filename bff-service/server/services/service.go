@@ -5,6 +5,7 @@ import (
 	"log"
 
 	identityPB "github.com/bankease/bff-service/protogen/identity-service"
+	savingPB "github.com/bankease/bff-service/protogen/saving-service"
 	profilePB "github.com/bankease/bff-service/protogen/user-profile-service"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -14,10 +15,11 @@ import (
 type ServiceConnection struct {
 	IdentityService    *grpc.ClientConn
 	UserProfileService *grpc.ClientConn
+	SavingService      *grpc.ClientConn
 }
 
 // InitServicesConn initializes all gRPC client connections.
-func InitServicesConn(identityAddr, profileAddr string) *ServiceConnection {
+func InitServicesConn(identityAddr, profileAddr, savingAddr string) *ServiceConnection {
 	services := &ServiceConnection{}
 
 	opts := []grpc.DialOption{
@@ -37,6 +39,11 @@ func InitServicesConn(identityAddr, profileAddr string) *ServiceConnection {
 		log.Fatalf("Failed to connect to user-profile-service at %s: %v", profileAddr, err)
 	}
 
+	services.SavingService, err = grpc.Dial(savingAddr, opts...)
+	if err != nil {
+		log.Fatalf("Failed to connect to saving-service at %s: %v", savingAddr, err)
+	}
+
 	return services
 }
 
@@ -50,6 +57,11 @@ func (sc *ServiceConnection) UserProfileClient() profilePB.UserProfileServiceCli
 	return profilePB.NewUserProfileServiceClient(sc.UserProfileService)
 }
 
+// SavingClient returns a new saving-service gRPC client.
+func (sc *ServiceConnection) SavingClient() savingPB.SavingServiceClient {
+	return savingPB.NewSavingServiceClient(sc.SavingService)
+}
+
 // Close closes all gRPC client connections.
 func (sc *ServiceConnection) Close() {
 	if sc.IdentityService != nil {
@@ -57,6 +69,9 @@ func (sc *ServiceConnection) Close() {
 	}
 	if sc.UserProfileService != nil {
 		sc.UserProfileService.Close()
+	}
+	if sc.SavingService != nil {
+		sc.SavingService.Close()
 	}
 }
 

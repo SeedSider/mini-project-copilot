@@ -15,21 +15,24 @@ BankEase menggunakan arsitektur microservices dengan BFF pattern. Mobile app ber
 │   Native)    │  POST /api/auth/signin       │                         │
 │              │  GET  /api/profile            │   Port 3000 (HTTP)      │
 │              │  GET  /api/menu/...           │   Port 9090 (gRPC)      │
+│              │  GET  /api/exchange-rates     │                         │
+│              │  GET  /api/interest-rates     │                         │
+│              │  GET  /api/branches           │                         │
 └──────────────┘  POST /api/upload/image      └──────┬───────┬──────────┘
                                                      │       │
                                           gRPC       │       │  gRPC
                                                      ▼       ▼
-                                    ┌────────────────┐ ┌──────────────────┐
-                                    │ identity-      │ │ user-profile-    │
-                                    │ service        │ │ service          │
-                                    │ Port 9301 gRPC │ │ Port 9302 gRPC   │
-                                    │ Port 3031 HTTP │ │ Port 8080 HTTP   │
-                                    └───────┬────────┘ └────────┬─────────┘
-                                            ▼                   ▼
-                                    ┌────────────────┐ ┌──────────────────┐
-                                    │ PostgreSQL     │ │ PostgreSQL       │
-                                    │ identity_db    │ │ bankease_db      │
-                                    └────────────────┘ └──────────────────┘
+                                    ┌────────────────┐ ┌──────────────────┐ ┌──────────────────┐
+                                    │ identity-      │ │ user-profile-    │ │ saving-          │
+                                    │ service        │ │ service          │ │ service          │
+                                    │ Port 9301 gRPC │ │ Port 9302 gRPC   │ │ Port 9303 gRPC   │
+                                    │ Port 3031 HTTP │ │ Port 8080 HTTP   │ │ Port 8081 HTTP   │
+                                    └───────┬────────┘ └────────┬─────────┘ └────────┬─────────┘
+                                            ▼                   ▼                    ▼
+                                    ┌────────────────┐ ┌──────────────────┐ ┌──────────────────┐
+                                    │ PostgreSQL     │ │ PostgreSQL       │ │ PostgreSQL       │
+                                    │ identity_db    │ │ bankease_db      │ │ saving           │
+                                    └────────────────┘ └──────────────────┘ └──────────────────┘
 ```
 
 ## Per-Service Architecture
@@ -112,10 +115,12 @@ BankEase menggunakan arsitektur microservices dengan BFF pattern. Mobile app ber
 │    - bff_auth_api.go → orchestration    │
 │    - bff_profile_api.go → proxy         │
 │    - bff_menu_api.go → proxy            │
+│    - bff_saving_api.go → proxy          │
 │    - bff_interceptor.go → chain         │
 ├─────────────────────────────────────────┤
 │  server/services/ (ServiceConnection)   │
 │    - gRPC clients ke identity + profile │
+│      + saving                           │
 ├─────────────────────────────────────────┤
 │  server/jwt/ → JWT Verify (lokal)       │
 ├─────────────────────────────────────────┤
@@ -135,7 +140,7 @@ BankEase menggunakan arsitektur microservices dengan BFF pattern. Mobile app ber
 | Logging           | Logrus + Fluent            | Zap + FluentBit              | stdlib log                   | Zap + FluentBit               |
 | DI Pattern        | Manual (Server struct)     | Manual (Server struct)       | Manual (Server struct)       | Manual (Server struct)        |
 | Folder structure  | server/ pattern            | server/ pattern              | server/ pattern (refactored) | server/ pattern               |
-| External services | 15+ gRPC clients           | 1 HTTP call (profile)        | Tidak ada                    | 2 gRPC clients                |
+| External services | 15+ gRPC clients           | 1 HTTP call (profile)        | Tidak ada                    | 3 gRPC clients                |
 
 ## Key Design Decisions
 
@@ -149,6 +154,7 @@ BankEase menggunakan arsitektur microservices dengan BFF pattern. Mobile app ber
 
 - BFF → identity-service: gRPC
 - BFF → user-profile-service: gRPC
+- BFF → saving-service: gRPC
 - Mobile app → BFF: REST (via grpc-gateway)
 
 ### 3. JWT Local Verification di BFF
@@ -157,10 +163,11 @@ BankEase menggunakan arsitektur microservices dengan BFF pattern. Mobile app ber
 - Tidak perlu call ke identity-service untuk setiap verifikasi token
 - Protected endpoints: GET /api/auth/me, GET /api/profile
 
-### 4. Dual Database
+### 4. Triple Database
 
 - identity-service: PostgreSQL `identity_db` (tabel `users`)
 - user-profile-service: PostgreSQL `bankease_db` (tabel `profile`, `menu`)
+- saving-service: PostgreSQL `saving` (tabel `exchange_rate`, `interest_rate`, `branch`)
 - BFF: stateless, tidak punya database sendiri
 
 ### 5. Layered Architecture (per service)
@@ -211,7 +218,7 @@ ProcessIdInterceptor → LoggingInterceptor → ErrorsInterceptor → AuthInterc
 /health                → GET (health check)
 ```
 
-### bff-service (planned — all of the above via single entry point)
+### bff-service (all of the above via single entry point)
 
 ```
 /api/auth/signup       → POST (orchestrated: identity + profile)
@@ -223,6 +230,18 @@ ProcessIdInterceptor → LoggingInterceptor → ErrorsInterceptor → AuthInterc
 /api/menu              → GET
 /api/menu/{accountType}→ GET
 /api/upload/image      → POST (BFF direct to Azure Blob)
+/api/exchange-rates    → GET (proxy to saving)
+/api/interest-rates    → GET (proxy to saving)
+/api/branches          → GET (proxy to saving, ?q= search)
+```
+
+### saving-service
+
+```
+/api/exchange-rates    → GET (all exchange rates)
+/api/interest-rates    → GET (all interest rates)
+/api/branches          → GET (all branches, ?q= search by name ILIKE)
+/health                → GET (health check)
 ```
 
 ## Error Handling Pattern
@@ -234,12 +253,18 @@ ProcessIdInterceptor → LoggingInterceptor → ErrorsInterceptor → AuthInterc
 ## Docker Deployment Pattern
 
 ```
-docker-compose.yml (full stack)
-├── identity-db (postgres:17-alpine, port 5432)
-├── profile-db (postgres:17-alpine, port 5433)
-├── identity-service (port 3031 HTTP, 9301 gRPC)
-├── user-profile-service (port 8080 HTTP, 9302 gRPC)
-└── bff-service (port 3000 HTTP, 9090 gRPC)
+docker-compose.yml (per service, local dev)
+├── identity-service/docker-compose.local.yml
+│   ├── identity-db (postgres:17-alpine, port 5432)
+│   └── identity-service (port 3031 HTTP, 9301 gRPC)
+├── user-profile-service/docker-compose.local.yml
+│   ├── profile-db (postgres:17-alpine, port 5433)
+│   └── user-profile-service (port 8080 HTTP, 9302 gRPC)
+├── saving-service/docker-compose.local.yml
+│   ├── saving-db (postgres:17-alpine, port 5434)
+│   └── saving-service (port 8081 HTTP, 9303 gRPC)
+└── bff-service/docker-compose.yml (full stack)
+    └── bff-service (port 3000 HTTP, 9090 gRPC)
 ```
 
 - Multi-stage Dockerfiles: build di `golang:1.24-alpine`, run di `alpine`

@@ -12,6 +12,7 @@ type Config struct {
 
 	IdentityServiceAddr string
 	ProfileServiceAddr  string
+	SavingServiceAddr   string
 
 	JWTSecret   string
 	JWTDuration string
@@ -41,6 +42,7 @@ func initConfig() {
 
 		IdentityServiceAddr: GetEnv("BFF_IDENTITY_SERVICE_ADDR", "localhost:9301"),
 		ProfileServiceAddr:  GetEnv("BFF_PROFILE_SERVICE_ADDR", "localhost:9302"),
+		SavingServiceAddr:   GetEnv("BFF_SAVING_SERVICE_ADDR", "localhost:9303"),
 
 		JWTSecret:   GetEnv("BFF_JWT_SECRET", "secret"),
 		JWTDuration: GetEnv("JWT_DURATION", "24h"),

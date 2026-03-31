@@ -51,10 +51,17 @@ Mobile app BankEase (React Native/Expo) sebelumnya menggunakan MSW (Mock Service
   - `REGULAR` → hanya menu tipe REGULAR
   - `PREMIUM` → semua menu (REGULAR + PREMIUM)
 
-### 4. BFF — Backend for Frontend (bff-service)
+### 4. Data Finansial (saving-service)
+
+- Melihat kurs mata uang asing (exchange rates)
+- Melihat suku bunga deposito (interest rates)
+- Mencari lokasi cabang bank (branches) — pencarian case-insensitive
+
+### 5. BFF — Backend for Frontend (bff-service)
 
 - Single entry point untuk mobile app (REST)
 - Orchestrate multi-service calls (contoh: SignUp → identity + profile)
+- Proxy ke saving-service untuk data finansial
 - JWT verification lokal
 - Upload image langsung ke Azure Blob Storage
 

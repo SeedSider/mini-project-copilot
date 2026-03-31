@@ -1,0 +1,13 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: saving-service
+    ports:
+      - "8081:8081"
+      - "9303:9303"
+    env_file:
+      - .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

@@ -31,10 +31,11 @@ BankEase adalah platform backend microservices yang menyediakan layanan identita
 ## Scope
 
 - **In scope**:
-  - **3 backend services**: identity-service, user-profile-service, bff-service
+  - **4 backend services**: identity-service, user-profile-service, saving-service, bff-service
   - Identity: SignUp, SignIn, GetMe (JWT auth)
   - Profile: CRUD profil pengguna, upload image (Azure Blob)
   - Menu: Get all menus, filter by accountType (REGULAR/PREMIUM)
+  - Saving: Exchange rates, interest rates, branch search
   - BFF: REST entry point → gRPC orchestration ke downstream services
   - Database PostgreSQL per service
   - Docker Compose untuk development
@@ -57,17 +58,25 @@ BankEase adalah platform backend microservices yang menyediakan layanan identita
 
 - Profil pengguna: CRUD + image upload
 - Menu homepage: filter by accountType
-- Search: exchange rates, interest rates, branches
-- PostgreSQL (tabel `profile`, `menu`, `exchange_rate`, `interest_rate`, `branch`)
+- PostgreSQL (tabel `profile`, `menu`)
 - REST API (chi router) + gRPC (port 9302)
 - Folder structure: `server/` pattern (sama dengan identity-service)
 
-### 3. bff-service (SELESAI)
+### 3. saving-service (SELESAI)
+
+- Financial data: exchange rates, interest rates, branch locations
+- Branch search: case-insensitive partial match (ILIKE)
+- PostgreSQL (tabel `exchange_rate`, `interest_rate`, `branch`)
+- HTTP (net/http) + gRPC (port 9303)
+- Diekstrak dari user-profile-service search feature menjadi service mandiri
+
+### 4. bff-service (SELESAI)
 
 - Single entry point untuk mobile app (REST via manual gateway)
-- Orchestrate calls ke identity-service + user-profile-service via gRPC
+- Orchestrate calls ke identity-service + user-profile-service + saving-service via gRPC
 - JWT verification lokal
 - Upload image langsung ke Azure Blob Storage
+- Docker Compose full stack (5 containers) running & verified
 - Docker Compose full stack (5 containers) running & verified
 
 ## Referensi Arsitektur

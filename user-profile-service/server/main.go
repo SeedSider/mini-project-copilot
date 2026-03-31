@@ -97,11 +97,6 @@ func httpServer(apiServer *api.Server) error {
 	// Upload routes
 	r.Post("/api/upload/image", apiServer.HandleUploadImage)
 
-	// Search / rates / branches routes
-	r.Get("/api/exchange-rates", apiServer.HandleGetExchangeRates)
-	r.Get("/api/interest-rates", apiServer.HandleGetInterestRates)
-	r.Get("/api/branches", apiServer.HandleGetBranches)
-
 	// Swagger UI
 	r.Get("/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL("/swagger/doc.json"),

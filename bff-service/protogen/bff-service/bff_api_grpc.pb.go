@@ -23,6 +23,9 @@ type BffServiceServer interface {
 	UpdateProfile(context.Context, *UpdateProfileRequest) (*StandardResponse, error)
 	GetAllMenus(context.Context, *GetAllMenusRequest) (*MenuListResponse, error)
 	GetMenusByAccountType(context.Context, *GetMenusByAccountTypeRequest) (*MenuListResponse, error)
+	GetExchangeRates(context.Context, *GetExchangeRatesRequest) (*ExchangeRateListResponse, error)
+	GetInterestRates(context.Context, *GetInterestRatesRequest) (*InterestRateListResponse, error)
+	GetBranches(context.Context, *GetBranchesRequest) (*BranchListResponse, error)
 }
 
 // UnimplementedBffServiceServer should be embedded to have forward compatible implementations.
@@ -58,6 +61,15 @@ func (UnimplementedBffServiceServer) GetAllMenus(context.Context, *GetAllMenusRe
 func (UnimplementedBffServiceServer) GetMenusByAccountType(context.Context, *GetMenusByAccountTypeRequest) (*MenuListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMenusByAccountType not implemented")
 }
+func (UnimplementedBffServiceServer) GetExchangeRates(context.Context, *GetExchangeRatesRequest) (*ExchangeRateListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetExchangeRates not implemented")
+}
+func (UnimplementedBffServiceServer) GetInterestRates(context.Context, *GetInterestRatesRequest) (*InterestRateListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetInterestRates not implemented")
+}
+func (UnimplementedBffServiceServer) GetBranches(context.Context, *GetBranchesRequest) (*BranchListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetBranches not implemented")
+}
 
 const bffServiceName = "/bff.BffService/"
 
@@ -76,6 +88,9 @@ var BffService_ServiceDesc = grpc.ServiceDesc{
 		{MethodName: "UpdateProfile", Handler: _BffService_UpdateProfile_Handler},
 		{MethodName: "GetAllMenus", Handler: _BffService_GetAllMenus_Handler},
 		{MethodName: "GetMenusByAccountType", Handler: _BffService_GetMenusByAccountType_Handler},
+		{MethodName: "GetExchangeRates", Handler: _BffService_GetExchangeRates_Handler},
+		{MethodName: "GetInterestRates", Handler: _BffService_GetInterestRates_Handler},
+		{MethodName: "GetBranches", Handler: _BffService_GetBranches_Handler},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "bff_api.proto",
@@ -231,6 +246,51 @@ func _BffService_GetMenusByAccountType_Handler(srv interface{}, ctx context.Cont
 	info := &grpc.UnaryServerInfo{Server: srv, FullMethod: bffServiceName + "GetMenusByAccountType"}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(BffServiceServer).GetMenusByAccountType(ctx, req.(*GetMenusByAccountTypeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BffService_GetExchangeRates_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetExchangeRatesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BffServiceServer).GetExchangeRates(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{Server: srv, FullMethod: bffServiceName + "GetExchangeRates"}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BffServiceServer).GetExchangeRates(ctx, req.(*GetExchangeRatesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BffService_GetInterestRates_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetInterestRatesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BffServiceServer).GetInterestRates(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{Server: srv, FullMethod: bffServiceName + "GetInterestRates"}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BffServiceServer).GetInterestRates(ctx, req.(*GetInterestRatesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BffService_GetBranches_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetBranchesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BffServiceServer).GetBranches(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{Server: srv, FullMethod: bffServiceName + "GetBranches"}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BffServiceServer).GetBranches(ctx, req.(*GetBranchesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

@@ -13,7 +13,4 @@ service UserProfileService {
     rpc UpdateProfile(UpdateProfileRequest) returns (StandardResponse);
     rpc GetAllMenus(GetAllMenusRequest) returns (MenuListResponse);
     rpc GetMenusByAccountType(GetMenusByAccountTypeRequest) returns (MenuListResponse);
-    rpc GetExchangeRates(GetExchangeRatesRequest) returns (ExchangeRateListResponse);
-    rpc GetInterestRates(GetInterestRatesRequest) returns (InterestRateListResponse);
-    rpc GetBranches(GetBranchesRequest) returns (BranchListResponse);
 }
