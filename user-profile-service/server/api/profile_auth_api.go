@@ -15,6 +15,10 @@ import (
 )
 
 //#region GetMyProfile
+const (
+	InternalServerErrorMessage = "Internal server error"
+	ProfileNotFoundMessage     = "Profile not found"
+)
 
 // HandleGetMyProfile handles GET /api/profile
 func (s *Server) HandleGetMyProfile(w http.ResponseWriter, r *http.Request) {
@@ -35,11 +39,11 @@ func (s *Server) HandleGetMyProfile(w http.ResponseWriter, r *http.Request) {
 	profile, err := s.provider.GetProfileByUserID(r.Context(), userID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			writeError(w, http.StatusNotFound, "Profile not found")
+			writeError(w, http.StatusNotFound, ProfileNotFoundMessage)
 			return
 		}
 		log.Printf("Error getting profile: %v", err)
-		writeError(w, http.StatusInternalServerError, "Internal server error")
+		writeError(w, http.StatusInternalServerError, InternalServerErrorMessage)
 		return
 	}
 
@@ -61,11 +65,11 @@ func (s *Server) HandleGetProfile(w http.ResponseWriter, r *http.Request) {
 	profile, err := s.provider.GetProfileByID(r.Context(), id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			writeError(w, http.StatusNotFound, "Profile not found")
+			writeError(w, http.StatusNotFound, ProfileNotFoundMessage)
 			return
 		}
 		log.Printf("Error getting profile: %v", err)
-		writeError(w, http.StatusInternalServerError, "Internal server error")
+		writeError(w, http.StatusInternalServerError, InternalServerErrorMessage)
 		return
 	}
 
@@ -92,11 +96,11 @@ func (s *Server) HandleUpdateProfile(w http.ResponseWriter, r *http.Request) {
 
 	if err := s.provider.UpdateProfile(r.Context(), id, req); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			writeError(w, http.StatusNotFound, "Profile not found")
+			writeError(w, http.StatusNotFound, ProfileNotFoundMessage)
 			return
 		}
 		log.Printf("Error updating profile: %v", err)
-		writeError(w, http.StatusInternalServerError, "Internal server error")
+		writeError(w, http.StatusInternalServerError, InternalServerErrorMessage)
 		return
 	}
 

@@ -18,6 +18,17 @@ import (
 	"github.com/bankease/saving-service/server/lib/logger"
 )
 
+const (
+	testAPIExchangeRates = "/api/exchange-rates"
+	testAPIInterestRates = "/api/interest-rates"
+	testAPIBranches      = "/api/branches"
+	testDBError          = "db error"
+	testBRIJakarta       = "BRI Jakarta Pusat"
+	testBRIBandung        = "BRI Bandung"
+	testDistance1          = "1.2 km"
+	testDistance2          = "5.0 km"
+)
+
 func newTestLogger() *logger.Logger {
 	return logger.New(&logger.LoggerConfig{
 		Env:         "DEV",
@@ -47,14 +58,14 @@ var testBranchCols = []string{"id", "name", "distance", "latitude", "longitude"}
 // HTTP HandleGetExchangeRates
 // ═══════════════════════════════════════════
 
-func TestHandleGetExchangeRates_Success(t *testing.T) {
+func TestHandleGetExchangeRatesSuccess(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`FROM exchange_rate`).
 		WillReturnRows(sqlmock.NewRows(testExchangeRateCols).
 			AddRow("er-1", "United States", "USD", "US", 16000.0, 16200.0).
 			AddRow("er-2", "Japan", "JPY", "JP", 107.5, 108.0))
 
-	r := httptest.NewRequest(http.MethodGet, "/api/exchange-rates", nil)
+	r := httptest.NewRequest(http.MethodGet, testAPIExchangeRates, nil)
 	w := httptest.NewRecorder()
 
 	srv.HandleGetExchangeRates(w, r)
@@ -63,12 +74,12 @@ func TestHandleGetExchangeRates_Success(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestHandleGetExchangeRates_DBError(t *testing.T) {
+func TestHandleGetExchangeRatesDBError(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`FROM exchange_rate`).
-		WillReturnError(fmt.Errorf("db error"))
+		WillReturnError(fmt.Errorf(testDBError))
 
-	r := httptest.NewRequest(http.MethodGet, "/api/exchange-rates", nil)
+	r := httptest.NewRequest(http.MethodGet, testAPIExchangeRates, nil)
 	w := httptest.NewRecorder()
 
 	srv.HandleGetExchangeRates(w, r)
@@ -80,14 +91,14 @@ func TestHandleGetExchangeRates_DBError(t *testing.T) {
 // HTTP HandleGetInterestRates
 // ═══════════════════════════════════════════
 
-func TestHandleGetInterestRates_Success(t *testing.T) {
+func TestHandleGetInterestRatesSuccess(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`FROM interest_rate`).
 		WillReturnRows(sqlmock.NewRows(testInterestRateCols).
 			AddRow("ir-1", "Tabungan", "1 Bulan", 3.5).
 			AddRow("ir-2", "Deposito", "3 Bulan", 4.25))
 
-	r := httptest.NewRequest(http.MethodGet, "/api/interest-rates", nil)
+	r := httptest.NewRequest(http.MethodGet, testAPIInterestRates, nil)
 	w := httptest.NewRecorder()
 
 	srv.HandleGetInterestRates(w, r)
@@ -96,12 +107,12 @@ func TestHandleGetInterestRates_Success(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestHandleGetInterestRates_DBError(t *testing.T) {
+func TestHandleGetInterestRatesDBError(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`FROM interest_rate`).
-		WillReturnError(fmt.Errorf("db error"))
+		WillReturnError(fmt.Errorf(testDBError))
 
-	r := httptest.NewRequest(http.MethodGet, "/api/interest-rates", nil)
+	r := httptest.NewRequest(http.MethodGet, testAPIInterestRates, nil)
 	w := httptest.NewRecorder()
 
 	srv.HandleGetInterestRates(w, r)
@@ -113,14 +124,14 @@ func TestHandleGetInterestRates_DBError(t *testing.T) {
 // HTTP HandleGetBranches
 // ═══════════════════════════════════════════
 
-func TestHandleGetBranches_NoQuery_Success(t *testing.T) {
+func TestHandleGetBranchesNoQuerySuccess(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`FROM branch`).
 		WillReturnRows(sqlmock.NewRows(testBranchCols).
-			AddRow("br-1", "BRI Jakarta Pusat", "1.2 km", -6.2088, 106.8456).
-			AddRow("br-2", "BRI Bandung", "5.0 km", -6.9175, 107.6191))
+			AddRow("br-1", testBRIJakarta, testDistance1, -6.2088, 106.8456).
+			AddRow("br-2", testBRIBandung, testDistance2, -6.9175, 107.6191))
 
-	r := httptest.NewRequest(http.MethodGet, "/api/branches", nil)
+	r := httptest.NewRequest(http.MethodGet, testAPIBranches, nil)
 	w := httptest.NewRecorder()
 
 	srv.HandleGetBranches(w, r)
@@ -129,14 +140,14 @@ func TestHandleGetBranches_NoQuery_Success(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestHandleGetBranches_WithQuery_Success(t *testing.T) {
+func TestHandleGetBranchesWithQuerySuccess(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`FROM branch WHERE name ILIKE`).
 		WithArgs("jakarta").
 		WillReturnRows(sqlmock.NewRows(testBranchCols).
-			AddRow("br-1", "BRI Jakarta Pusat", "1.2 km", -6.2088, 106.8456))
+			AddRow("br-1", testBRIJakarta, testDistance1, -6.2088, 106.8456))
 
-	r := httptest.NewRequest(http.MethodGet, "/api/branches?q=jakarta", nil)
+	r := httptest.NewRequest(http.MethodGet, testAPIBranches+"?q=jakarta", nil)
 	w := httptest.NewRecorder()
 
 	srv.HandleGetBranches(w, r)
@@ -145,12 +156,12 @@ func TestHandleGetBranches_WithQuery_Success(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestHandleGetBranches_DBError(t *testing.T) {
+func TestHandleGetBranchesDBError(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`FROM branch`).
-		WillReturnError(fmt.Errorf("db error"))
+		WillReturnError(fmt.Errorf(testDBError))
 
-	r := httptest.NewRequest(http.MethodGet, "/api/branches", nil)
+	r := httptest.NewRequest(http.MethodGet, testAPIBranches, nil)
 	w := httptest.NewRecorder()
 
 	srv.HandleGetBranches(w, r)
@@ -162,7 +173,7 @@ func TestHandleGetBranches_DBError(t *testing.T) {
 // gRPC: GetExchangeRates
 // ═══════════════════════════════════════════
 
-func TestGetExchangeRatesGRPC_Success(t *testing.T) {
+func TestGetExchangeRatesGRPCSuccess(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`FROM exchange_rate`).
 		WillReturnRows(sqlmock.NewRows(testExchangeRateCols).
@@ -175,10 +186,10 @@ func TestGetExchangeRatesGRPC_Success(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestGetExchangeRatesGRPC_DBError(t *testing.T) {
+func TestGetExchangeRatesGRPCDBError(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`FROM exchange_rate`).
-		WillReturnError(fmt.Errorf("db error"))
+		WillReturnError(fmt.Errorf(testDBError))
 
 	_, err := srv.GetExchangeRates(context.Background(), &pb.GetExchangeRatesRequest{})
 	st, _ := status.FromError(err)
@@ -189,7 +200,7 @@ func TestGetExchangeRatesGRPC_DBError(t *testing.T) {
 // gRPC: GetInterestRates
 // ═══════════════════════════════════════════
 
-func TestGetInterestRatesGRPC_Success(t *testing.T) {
+func TestGetInterestRatesGRPCSuccess(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`FROM interest_rate`).
 		WillReturnRows(sqlmock.NewRows(testInterestRateCols).
@@ -202,10 +213,10 @@ func TestGetInterestRatesGRPC_Success(t *testing.T) {
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestGetInterestRatesGRPC_DBError(t *testing.T) {
+func TestGetInterestRatesGRPCDBError(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`FROM interest_rate`).
-		WillReturnError(fmt.Errorf("db error"))
+		WillReturnError(fmt.Errorf(testDBError))
 
 	_, err := srv.GetInterestRates(context.Background(), &pb.GetInterestRatesRequest{})
 	st, _ := status.FromError(err)
@@ -216,49 +227,49 @@ func TestGetInterestRatesGRPC_DBError(t *testing.T) {
 // gRPC: GetBranches
 // ═══════════════════════════════════════════
 
-func TestGetBranchesGRPC_Success(t *testing.T) {
+func TestGetBranchesGRPCSuccess(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`FROM branch`).
 		WillReturnRows(sqlmock.NewRows(testBranchCols).
-			AddRow("br-1", "BRI Jakarta Pusat", "1.2 km", -6.2088, 106.8456).
-			AddRow("br-2", "BRI Bandung", "5.0 km", -6.9175, 107.6191))
+			AddRow("br-1", testBRIJakarta, testDistance1, -6.2088, 106.8456).
+			AddRow("br-2", testBRIBandung, testDistance2, -6.9175, 107.6191))
 
 	resp, err := srv.GetBranches(context.Background(), &pb.GetBranchesRequest{})
 	require.NoError(t, err)
 	assert.Len(t, resp.Branches, 2)
-	assert.Equal(t, "BRI Jakarta Pusat", resp.Branches[0].Name)
+	assert.Equal(t, testBRIJakarta, resp.Branches[0].Name)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestGetBranchesGRPC_WithQuery(t *testing.T) {
+func TestGetBranchesGRPCWithQuery(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`FROM branch WHERE name ILIKE`).
 		WithArgs("bandung").
 		WillReturnRows(sqlmock.NewRows(testBranchCols).
-			AddRow("br-2", "BRI Bandung", "5.0 km", -6.9175, 107.6191))
+			AddRow("br-2", testBRIBandung, testDistance2, -6.9175, 107.6191))
 
 	resp, err := srv.GetBranches(context.Background(), &pb.GetBranchesRequest{Query: "bandung"})
 	require.NoError(t, err)
 	assert.Len(t, resp.Branches, 1)
-	assert.Equal(t, "BRI Bandung", resp.Branches[0].Name)
+	assert.Equal(t, testBRIBandung, resp.Branches[0].Name)
 	assert.NoError(t, mock.ExpectationsWereMet())
 }
 
-func TestGetBranchesGRPC_DBError(t *testing.T) {
+func TestGetBranchesGRPCDBError(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`FROM branch`).
-		WillReturnError(fmt.Errorf("db error"))
+		WillReturnError(fmt.Errorf(testDBError))
 
 	_, err := srv.GetBranches(context.Background(), &pb.GetBranchesRequest{})
 	st, _ := status.FromError(err)
 	assert.Equal(t, codes.Internal, st.Code())
 }
 
-func TestGetBranchesGRPC_WithQuery_DBError(t *testing.T) {
+func TestGetBranchesGRPCWithQueryDBError(t *testing.T) {
 	srv, mock := newTestServer(t)
 	mock.ExpectQuery(`FROM branch WHERE name ILIKE`).
 		WithArgs("jakarta").
-		WillReturnError(fmt.Errorf("db error"))
+		WillReturnError(fmt.Errorf(testDBError))
 
 	_, err := srv.GetBranches(context.Background(), &pb.GetBranchesRequest{Query: "jakarta"})
 	st, _ := status.FromError(err)

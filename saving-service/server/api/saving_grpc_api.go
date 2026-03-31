@@ -16,7 +16,7 @@ func (s *Server) GetExchangeRates(ctx context.Context, _ *pb.GetExchangeRatesReq
 	rates, err := s.provider.GetAllExchangeRates(ctx)
 	if err != nil {
 		log.Error(processId, "GetExchangeRates", err.Error(), nil, nil, nil, err)
-		return nil, status.Errorf(codes.Internal, "internal server error")
+		return nil, status.Errorf(codes.Internal, InternalServerErrorMessage)
 	}
 
 	return &pb.ExchangeRateListResponse{
@@ -31,7 +31,7 @@ func (s *Server) GetInterestRates(ctx context.Context, _ *pb.GetInterestRatesReq
 	rates, err := s.provider.GetAllInterestRates(ctx)
 	if err != nil {
 		log.Error(processId, "GetInterestRates", err.Error(), nil, nil, nil, err)
-		return nil, status.Errorf(codes.Internal, "internal server error")
+		return nil, status.Errorf(codes.Internal, InternalServerErrorMessage)
 	}
 
 	return &pb.InterestRateListResponse{
@@ -48,7 +48,7 @@ func (s *Server) GetBranches(ctx context.Context, req *pb.GetBranchesRequest) (*
 		items, err := s.provider.GetAllBranches(ctx)
 		if err != nil {
 			log.Error(processId, "GetBranches", err.Error(), nil, nil, nil, err)
-			return nil, status.Errorf(codes.Internal, "internal server error")
+			return nil, status.Errorf(codes.Internal, InternalServerErrorMessage)
 		}
 		return &pb.BranchListResponse{Branches: branchesToProto(items)}, nil
 	}
@@ -56,7 +56,7 @@ func (s *Server) GetBranches(ctx context.Context, req *pb.GetBranchesRequest) (*
 	items, err := s.provider.SearchBranchesByName(ctx, q)
 	if err != nil {
 		log.Error(processId, "GetBranches", err.Error(), nil, nil, nil, err)
-		return nil, status.Errorf(codes.Internal, "internal server error")
+		return nil, status.Errorf(codes.Internal, InternalServerErrorMessage)
 	}
 	return &pb.BranchListResponse{Branches: branchesToProto(items)}, nil
 }

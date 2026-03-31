@@ -5,6 +5,7 @@ import (
 	"net/http"
 )
 
+const InternalServerErrorMessage = "Internal server error"
 // HandleGetExchangeRates handles GET /api/exchange-rates
 // @Summary      Get all exchange rates
 // @Description  Retrieve all currency exchange rates
@@ -17,7 +18,7 @@ func (s *Server) HandleGetExchangeRates(w http.ResponseWriter, r *http.Request) 
 	rates, err := s.provider.GetAllExchangeRates(r.Context())
 	if err != nil {
 		log.Error("", "HandleGetExchangeRates", err.Error(), nil, nil, nil, err)
-		writeError(w, http.StatusInternalServerError, "Internal server error")
+		writeError(w, http.StatusInternalServerError, InternalServerErrorMessage)
 		return
 	}
 
@@ -36,7 +37,7 @@ func (s *Server) HandleGetInterestRates(w http.ResponseWriter, r *http.Request) 
 	rates, err := s.provider.GetAllInterestRates(r.Context())
 	if err != nil {
 		log.Error("", "HandleGetInterestRates", err.Error(), nil, nil, nil, err)
-		writeError(w, http.StatusInternalServerError, "Internal server error")
+		writeError(w, http.StatusInternalServerError, InternalServerErrorMessage)
 		return
 	}
 
@@ -66,7 +67,7 @@ func (s *Server) HandleGetBranches(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		log.Error("", "HandleGetBranches", err.Error(), nil, nil, nil, err)
-		writeError(w, http.StatusInternalServerError, "Internal server error")
+		writeError(w, http.StatusInternalServerError, InternalServerErrorMessage)
 		return
 	}
 
