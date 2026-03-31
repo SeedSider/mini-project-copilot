@@ -52,7 +52,10 @@ func (s *Server) SignUp(ctx context.Context, req *pb.SignUpRequest) (*pb.SignUpR
 		return nil, s.serverError()
 	}
 
-	// 5. Return response (no best-effort profile creation — BFF handles orchestration)
+	// 5. Best-effort: create profile for the new user with a randomized card number
+	go s.createProfileBestEffort(result.UserID, result.Username)
+
+	// 6. Return response
 	log.Info(processId, "GrpcSignUp", fmt.Sprintf("User registered: %s", result.UserID), nil, nil, nil, nil)
 	return &pb.SignUpResponse{
 		UserId:   result.UserID,

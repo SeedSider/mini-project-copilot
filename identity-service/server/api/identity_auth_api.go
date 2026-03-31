@@ -1,12 +1,14 @@
 package api
 
 import (
+	"bytes"
 	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	manager "bitbucket.bri.co.id/scm/addons/addons-identity-service/server/jwt"
 	"bitbucket.bri.co.id/scm/addons/addons-identity-service/server/utils"
@@ -26,6 +28,68 @@ type SignUpRequest struct {
 type SignUpResponse struct {
 	UserID   string `json:"user_id"`
 	Username string `json:"username"`
+}
+
+type createProfileRequest struct {
+	UserID       string `json:"user_id"`
+	Bank         string `json:"bank"`
+	Branch       string `json:"branch"`
+	Name         string `json:"name"`
+	CardNumber   string `json:"card_number"`
+	CardProvider string `json:"card_provider"`
+	Balance      int64  `json:"balance"`
+	Currency     string `json:"currency"`
+	AccountType  string `json:"accountType"`
+	Image        string `json:"image"`
+}
+
+// createProfileBestEffort calls the profile service to create a profile for a newly registered user.
+// Errors are logged but do not affect the sign-up response.
+func (s *Server) createProfileBestEffort(userID, username string) {
+	if s.profileServiceURL == "" {
+		return
+	}
+
+	reqBody := createProfileRequest{
+		UserID:       userID,
+		Bank:         "BRI",
+		Branch:       "PUSAT",
+		Name:         username,
+		CardNumber:   utils.GenerateCardNumber(),
+		CardProvider: utils.GenerateCardProvider(),
+		Balance:      0,
+		Currency:     "IDR",
+		AccountType:  "REGULAR",
+		Image:        "",
+	}
+
+	body, err := json.Marshal(reqBody)
+	if err != nil {
+		log.Error("", "createProfileBestEffort", fmt.Sprintf("failed to marshal profile request: %v", err), nil, nil, nil, err)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, s.profileServiceURL+"/api/profile", bytes.NewReader(body))
+	if err != nil {
+		log.Error("", "createProfileBestEffort", fmt.Sprintf("failed to build profile request: %v", err), nil, nil, nil, err)
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{Timeout: 5 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Error("", "createProfileBestEffort", fmt.Sprintf("failed to call profile service: %v", err), nil, nil, nil, err)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		log.Error("", "createProfileBestEffort", fmt.Sprintf("profile service returned status %d", resp.StatusCode), nil, nil, nil, nil)
+	}
 }
 
 func (s *Server) httpSignUp(ctx context.Context, req *SignUpRequest) (*SignUpResponse, error) {
@@ -63,7 +127,9 @@ func (s *Server) httpSignUp(ctx context.Context, req *SignUpRequest) (*SignUpRes
 		return nil, s.serverError()
 	}
 
-	// 5. Return response (profile creation handled by BFF orchestration)
+	// 5. Best-effort: create profile for the new user with a randomized card number
+	go s.createProfileBestEffort(result.UserID, result.Username)
+
 	log.Info(processId, "httpSignUp", fmt.Sprintf("User registered: %s", result.UserID), nil, nil, nil, nil)
 	return &SignUpResponse{
 		UserID:   result.UserID,
@@ -253,14 +319,18 @@ type errorResponse struct {
 	Message string `json:"message"`
 }
 
+const (
+	contentTypeJSON = "application/json"
+	contentTypeHeader = "Content-Type"
+)
 func writeJSONResponse(w http.ResponseWriter, code int, data interface{}) {
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(contentTypeHeader, contentTypeJSON)
 	w.WriteHeader(code)
 	json.NewEncoder(w).Encode(data)
 }
 
 func writeErrorResponse(w http.ResponseWriter, code int, message string) {
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(contentTypeHeader, contentTypeJSON)
 	w.WriteHeader(code)
 	json.NewEncoder(w).Encode(&errorResponse{
 		Error:   true,
