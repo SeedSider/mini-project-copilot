@@ -1,0 +1,43 @@
+syntax = "proto3";
+package payment;
+option go_package = "github.com/bankease/payment-service/protogen/payment-service";
+
+message GetProvidersRequest {}
+message GetInternetBillRequest {}
+message GetCurrencyListRequest {}
+
+message Provider {
+  string id = 1;
+  string name = 2;
+}
+
+message InternetBillDetail {
+  string customer_id = 1;
+  string name = 2;
+  string address = 3;
+  string phone_number = 4;
+  string code = 5;
+  string from = 6;
+  string to = 7;
+  string internet_fee = 8;
+  string tax = 9;
+  string total = 10;
+}
+
+message CurrencyEntry {
+  string code = 1;
+  string label = 2;
+  double rate = 3;
+}
+
+message ProviderListResponse {
+  repeated Provider providers = 1;
+}
+
+message InternetBillResponse {
+  InternetBillDetail bill = 1;
+}
+
+message CurrencyListResponse {
+  repeated CurrencyEntry currencies = 1;
+}

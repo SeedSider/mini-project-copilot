@@ -13,6 +13,7 @@ type Config struct {
 	IdentityServiceAddr string
 	ProfileServiceAddr  string
 	SavingServiceAddr   string
+	PaymentServiceAddr  string
 
 	JWTSecret   string
 	JWTDuration string
@@ -43,6 +44,7 @@ func initConfig() {
 		IdentityServiceAddr: GetEnv("IDENTITY_SERVICE_ADDR", "localhost:9301"),
 		ProfileServiceAddr:  GetEnv("PROFILE_SERVICE_ADDR", "localhost:9302"),
 		SavingServiceAddr:   GetEnv("SAVING_SERVICE_ADDR", "localhost:9303"),
+		PaymentServiceAddr:  GetEnv("PAYMENT_SERVICE_ADDR", "localhost:9304"),
 
 		JWTSecret:   GetEnv("JWT_SECRET", "secret"),
 		JWTDuration: GetEnv("JWT_DURATION", "24h"),

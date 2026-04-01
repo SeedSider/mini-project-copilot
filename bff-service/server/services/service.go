@@ -5,6 +5,7 @@ import (
 	"log"
 
 	identityPB "github.com/bankease/bff-service/protogen/identity-service"
+	paymentPB "github.com/bankease/bff-service/protogen/payment-service"
 	savingPB "github.com/bankease/bff-service/protogen/saving-service"
 	profilePB "github.com/bankease/bff-service/protogen/user-profile-service"
 	"google.golang.org/grpc"
@@ -16,10 +17,11 @@ type ServiceConnection struct {
 	IdentityService    *grpc.ClientConn
 	UserProfileService *grpc.ClientConn
 	SavingService      *grpc.ClientConn
+	PaymentService     *grpc.ClientConn
 }
 
 // InitServicesConn initializes all gRPC client connections.
-func InitServicesConn(identityAddr, profileAddr, savingAddr string) *ServiceConnection {
+func InitServicesConn(identityAddr, profileAddr, savingAddr, paymentAddr string) *ServiceConnection {
 	services := &ServiceConnection{}
 
 	opts := []grpc.DialOption{
@@ -44,6 +46,11 @@ func InitServicesConn(identityAddr, profileAddr, savingAddr string) *ServiceConn
 		log.Fatalf("Failed to connect to saving-service at %s: %v", savingAddr, err)
 	}
 
+	services.PaymentService, err = grpc.Dial(paymentAddr, opts...)
+	if err != nil {
+		log.Fatalf("Failed to connect to payment-service at %s: %v", paymentAddr, err)
+	}
+
 	return services
 }
 
@@ -62,6 +69,11 @@ func (sc *ServiceConnection) SavingClient() savingPB.SavingServiceClient {
 	return savingPB.NewSavingServiceClient(sc.SavingService)
 }
 
+// PaymentClient returns a new payment-service gRPC client.
+func (sc *ServiceConnection) PaymentClient() paymentPB.PaymentServiceClient {
+	return paymentPB.NewPaymentServiceClient(sc.PaymentService)
+}
+
 // Close closes all gRPC client connections.
 func (sc *ServiceConnection) Close() {
 	if sc.IdentityService != nil {
@@ -72,6 +84,9 @@ func (sc *ServiceConnection) Close() {
 	}
 	if sc.SavingService != nil {
 		sc.SavingService.Close()
+	}
+	if sc.PaymentService != nil {
+		sc.PaymentService.Close()
 	}
 }
 

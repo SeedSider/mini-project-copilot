@@ -53,17 +53,18 @@ argument-hint: "What to check (e.g. 'completed items', 'remaining work', 'known 
 
 ### BFF Service — SELESAI ✅
 
-- [x] 14 endpoints implemented (11 original + 3 saving proxy)
-- [x] Proto + protogen (BFF server + 3 downstream clients)
-- [x] Server: CLI, config, JWT (verify only), ServiceConnection (3 gRPC clients)
+- [x] 17 endpoints implemented (14 original + 3 payment proxy)
+- [x] Proto + protogen (BFF server + 4 downstream clients)
+- [x] Server: CLI, config, JWT (verify only), ServiceConnection (4 gRPC clients)
 - [x] Interceptor chain: ProcessId → Logging → Auth
-- [x] Auth, Profile, Menu, Saving handlers
+- [x] Auth, Profile, Menu, Saving, Payment handlers
 - [x] HTTP gateway + routes (manual REST→gRPC bridge)
 - [x] Upload: multipart/form-data → Azure Blob direct
 - [x] JWT fix: `contextFromHTTPRequest` verify + inject `user_claims`
 - [x] Docker Compose full stack RUNNING & VERIFIED (signup → signin → profile e2e)
 - [x] Swagger UI at `/swagger/bff/` with BearerAuth
 - [x] saving-service integration (3 routes)
+- [x] payment-service integration (3 routes: providers, internet-bill, currency-list)
 
 ### Infrastructure
 
@@ -72,21 +73,46 @@ argument-hint: "What to check (e.g. 'completed items', 'remaining work', 'known 
 - [x] Docker Compose full stack UP (5 containers) ✅ VERIFIED 2026-03-30
 - [x] End-to-end flow verified: POST /signup → POST /signin → GET /api/profile ✅
 
+### payment-service — SELESAI ✅
+
+- [x] Phase 1 — Foundation: go.mod, proto, protogen (codec.go + hand-written stubs), migrations (3 SQL + embed.go), lib/, constant/, utils/, seed.sql, .env.example
+- [x] Phase 2 — Core Infrastructure: core_config.go (Config + initConfig + JWTSecret), core_db.go (DB wrapper + retry + embed.FS migration), jwt/manager.go (Verify only)
+- [x] Phase 3 — Data Layer: db/provider.go, db/bill_provider.go (GetAllProviders, GetInternetBillByUserID), db/currency_provider.go (GetAllCurrencies), db/error.go (NotFoundErr)
+- [x] Phase 4 — API Layer: api.go (Server struct + compile-time check), payment_api.go (3 HTTP handlers), payment_grpc_api.go (3 gRPC RPCs), payment_authInterceptor.go (JWT, skip public), payment_interceptor.go (chain), converter.go, error.go
+- [x] Phase 5 — Server Entry Point: main.go (CLI + HTTP/gRPC + jwtMiddleware + cors + routes)
+- [x] Phase 6 — Docker & Config: Dockerfile (multi-stage), docker-compose.yml, docker-compose.local.yml, Makefile, sonar-project.properties
+- [x] Phase 7 — Swagger Docs: docs/docs.go, swagger.json, swagger.yaml
+- [x] Phase 8 — BFF Integration: protogen client stubs, bff_payment_api.go, ServiceConnection (+PaymentService), http_routes (+3), bff_api_grpc.pb.go (+3 RPCs), bff_payload.pb.go (+payment types), core_config (+PaymentServiceAddr), docker-compose updated
+- [x] Phase 9 — Verification: `go build ./server/` + `go vet ./server/` pass for payment-service AND bff-service
+
 ## Not Started
 
+### Remaining Tasks
+
+- [ ] Unit tests payment-service (target ≥ 90%)
 - [ ] Functional testing BFF — 30+ test cases from testing checklist
 - [ ] Unit tests bff-service (target ≥ 90%)
 - [ ] Unit tests identity-service coverage verification ≥ 90%
 - [ ] SonarQube analysis pass for all services
+- [ ] Docker Compose full stack test (5 services + 4 DBs)
 
 ## In Progress / Recently Completed (2026-04-01)
 
-- [x] Unit tests user-profile-service ✅ — 5 test files: `server/api/profile_api_test.go`, `server/api/menu_api_test.go`, `server/api/upload_api_test.go`, `server/db/profile_provider_test.go`, `server/db/menu_provider_test.go`
-- [x] Unit tests saving-service ✅ — 4 test files: `server/api/saving_api_test.go`, `server/api/saving_interceptor_test.go`, `server/db/saving_provider_test.go`, `server/db/db_error_test.go`
+- [x] payment-service IMPLEMENTED ✅ — 30 new files, 9 phases complete
+  - 3 endpoints: GET /api/pay-the-bill/providers, GET /api/pay-the-bill/internet-bill (JWT), GET /api/currency-list
+  - gRPC + HTTP dual server, JWT auth interceptor, PostgreSQL (port 5435)
+  - Docker Compose, Makefile, Swagger docs, sonar-project.properties
+- [x] BFF payment integration ✅ — 4th downstream service
+  - New: `bff-service/protogen/payment-service/`, `bff-service/server/api/bff_payment_api.go`
+  - Modified: core_config (+PaymentServiceAddr), services/service.go (+PaymentService client), main.go (+4th arg), http_routes.go (+3 handlers), bff_api_grpc.pb.go (+3 RPCs), bff_payload.pb.go (+payment types)
+- [x] All 5 services compile verified: `go build ./server/` pass for identity, user-profile, saving, payment, bff
+- [x] Unit tests user-profile-service ✅ — 5 test files
+- [x] Unit tests saving-service ✅ — 4 test files
 
 ## Known Issues
 
 - bff-service: no unit tests yet
+- payment-service: no unit tests yet
 - All services: no SonarQube analysis yet
 - Seed data caveat: `docker-entrypoint-initdb.d` only runs on fresh volume; use `docker exec -i <container> psql -U postgres -d <db> -f /docker-entrypoint-initdb.d/seed.sql` for re-seed
 - `create_file` tool caveat: tool may report success but file not created on disk. Always verify with `Get-Item <path>`.
@@ -116,3 +142,8 @@ argument-hint: "What to check (e.g. 'completed items', 'remaining work', 'known 
 | Search endpoints → saving-service        | Separation of concerns; search data bukan tanggung jawab user-profile  | 2026-03-31 |
 | saving-service standalone                | Service mandiri dengan DB sendiri (PostgreSQL `saving`, port 5434)      | 2026-03-31 |
 | BFF terhubung ke 3 downstream services   | identity (9301) + user-profile (9302) + saving (9303)                  | 2026-03-31 |
+| payment-service planned                  | 5th service: providers, internet-bill (JWT), currency-list; ports 8082/9304/5435 | 2026-04-01 |
+| payment-service auth hybrid              | internet-bill protected (JWT), providers + currency-list public        | 2026-04-01 |
+| payment-service DB wrapper identity-style | Consistency: use lib/database/ wrapper across all services             | 2026-04-01 |
+| BFF terhubung ke 4 downstream            | identity (9301) + user-profile (9302) + saving (9303) + payment (9304) | 2026-04-01 |
+| payment-service IMPLEMENTED              | 30 files, 3 endpoints, HTTP+gRPC, JWT intercept, Swagger, Docker       | 2026-04-01 |
