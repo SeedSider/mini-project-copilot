@@ -159,22 +159,27 @@ jobs:
             } > "$REPO_DIR/payment-service/.env"
 
             # Deploy user-profile-service
+            docker rm -f user-profile-service 2>/dev/null || true
             cd "$REPO_DIR/user-profile-service"
             docker compose up --build -d --force-recreate --remove-orphans
 
             # Deploy identity-service
+            docker rm -f identity-service 2>/dev/null || true
             cd "$REPO_DIR/identity-service"
             docker compose up --build -d --force-recreate --remove-orphans
 
             # Deploy saving-service
+            docker rm -f saving-service 2>/dev/null || true
             cd "$REPO_DIR/saving-service"
             docker compose up --build -d --force-recreate --remove-orphans
 
             # Deploy payment-service
+            docker rm -f payment-service 2>/dev/null || true
             cd "$REPO_DIR/payment-service"
             docker compose up --build -d --force-recreate --remove-orphans
 
             # Deploy bff-service
+            docker rm -f bff-service 2>/dev/null || true
             cd "$REPO_DIR/bff-service"
             docker compose up --build -d --force-recreate --remove-orphans
 
