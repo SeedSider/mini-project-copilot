@@ -12,6 +12,10 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+const(
+	profileNotFoundMsg = "profile not found"
+	internalServerErrorMsg = "internal server error"
+)
 // CreateProfile implements the gRPC CreateProfile RPC.
 func (s *Server) CreateProfile(ctx context.Context, req *pb.CreateProfileRequest) (*pb.ProfileResponse, error) {
 	if req.GetUserId() == "" {
@@ -37,10 +41,10 @@ func (s *Server) GetProfileByID(ctx context.Context, req *pb.GetProfileByIDReque
 	profile, err := s.provider.GetProfileByID(ctx, req.GetId())
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, status.Errorf(codes.NotFound, "profile not found")
+			return nil, status.Errorf(codes.NotFound, profileNotFoundMsg)
 		}
 		log.Printf("gRPC GetProfileByID error: %v", err)
-		return nil, status.Errorf(codes.Internal, "internal server error")
+		return nil, status.Errorf(codes.Internal, internalServerErrorMsg)
 	}
 
 	return profileToProto(profile), nil
@@ -55,10 +59,10 @@ func (s *Server) GetProfileByUserID(ctx context.Context, req *pb.GetProfileByUse
 	profile, err := s.provider.GetProfileByUserID(ctx, req.GetUserId())
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, status.Errorf(codes.NotFound, "profile not found")
+			return nil, status.Errorf(codes.NotFound, profileNotFoundMsg)
 		}
 		log.Printf("gRPC GetProfileByUserID error: %v", err)
-		return nil, status.Errorf(codes.Internal, "internal server error")
+		return nil, status.Errorf(codes.Internal, internalServerErrorMsg)
 	}
 
 	return profileToProto(profile), nil
@@ -73,10 +77,10 @@ func (s *Server) UpdateProfile(ctx context.Context, req *pb.UpdateProfileRequest
 
 	if err := s.provider.UpdateProfile(ctx, id, modelReq); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, status.Errorf(codes.NotFound, "profile not found")
+			return nil, status.Errorf(codes.NotFound, profileNotFoundMsg)
 		}
 		log.Printf("gRPC UpdateProfile error: %v", err)
-		return nil, status.Errorf(codes.Internal, "internal server error")
+		return nil, status.Errorf(codes.Internal, internalServerErrorMsg)
 	}
 
 	return &pb.StandardResponse{
