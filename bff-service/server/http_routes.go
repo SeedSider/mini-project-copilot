@@ -380,6 +380,14 @@ func (s *gatewayServer) handleUpdatePassword(w http.ResponseWriter, r *http.Requ
 
 // ── Search / Saving endpoints ──
 
+// handleExchangeRates godoc
+// @Summary Get exchange rates
+// @Description Retrieve all foreign currency exchange rates
+// @Tags Saving
+// @Produce json
+// @Success 200 {object} pb.ExchangeRateListResponse
+// @Failure 500 {object} pb.ErrorBodyResponse
+// @Router /api/exchange-rates [get]
 func (s *gatewayServer) handleExchangeRates(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "OPTIONS" {
 		return
@@ -399,6 +407,14 @@ func (s *gatewayServer) handleExchangeRates(w http.ResponseWriter, r *http.Reque
 	writeJSON(w, http.StatusOK, resp)
 }
 
+// handleInterestRates godoc
+// @Summary Get interest rates
+// @Description Retrieve all deposit interest rates
+// @Tags Saving
+// @Produce json
+// @Success 200 {object} pb.InterestRateListResponse
+// @Failure 500 {object} pb.ErrorBodyResponse
+// @Router /api/interest-rates [get]
 func (s *gatewayServer) handleInterestRates(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "OPTIONS" {
 		return
@@ -418,6 +434,15 @@ func (s *gatewayServer) handleInterestRates(w http.ResponseWriter, r *http.Reque
 	writeJSON(w, http.StatusOK, resp)
 }
 
+// handleBranches godoc
+// @Summary Get bank branches
+// @Description Retrieve bank branches, optionally filtered by search query
+// @Tags Saving
+// @Produce json
+// @Param q query string false "Search query (partial branch name)"
+// @Success 200 {object} pb.BranchListResponse
+// @Failure 500 {object} pb.ErrorBodyResponse
+// @Router /api/branches [get]
 func (s *gatewayServer) handleBranches(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "OPTIONS" {
 		return
@@ -430,6 +455,92 @@ func (s *gatewayServer) handleBranches(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query().Get("q")
 	ctx := contextFromHTTPRequest(r)
 	resp, err := s.apiServer.GetBranches(ctx, &pb.GetBranchesRequest{Query: q})
+	if err != nil {
+		writeGRPCError(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, resp)
+}
+
+// ── Payment endpoints ──
+
+// handleProviders godoc
+// @Summary Get internet bill providers
+// @Description Retrieve all internet service providers available for bill payment
+// @Tags Payment
+// @Produce json
+// @Success 200 {object} pb.ProviderListResponse
+// @Failure 500 {object} pb.ErrorBodyResponse
+// @Router /api/pay-the-bill/providers [get]
+func (s *gatewayServer) handleProviders(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		return
+	}
+	if r.Method != "GET" {
+		writeJSONError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	ctx := contextFromHTTPRequest(r)
+	resp, err := s.apiServer.GetProviders(ctx, &pb.GetProvidersRequest{})
+	if err != nil {
+		writeGRPCError(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, resp)
+}
+
+// handleInternetBill godoc
+// @Summary Get internet bill detail
+// @Description Retrieve the authenticated user's internet bill detail. Requires JWT authentication.
+// @Tags Payment
+// @Produce json
+// @Security BearerAuth
+// @Success 200 {object} pb.InternetBillResponse
+// @Failure 401 {object} pb.ErrorBodyResponse
+// @Failure 404 {object} pb.ErrorBodyResponse
+// @Failure 500 {object} pb.ErrorBodyResponse
+// @Router /api/pay-the-bill/internet-bill [get]
+func (s *gatewayServer) handleInternetBill(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		return
+	}
+	if r.Method != "GET" {
+		writeJSONError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	ctx := contextFromHTTPRequest(r)
+	resp, err := s.apiServer.GetInternetBill(ctx, &pb.GetInternetBillRequest{})
+	if err != nil {
+		writeGRPCError(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, resp)
+}
+
+// handleCurrencyList godoc
+// @Summary Get currency list
+// @Description Retrieve all supported currency exchange entries
+// @Tags Payment
+// @Produce json
+// @Success 200 {object} pb.CurrencyListResponse
+// @Failure 500 {object} pb.ErrorBodyResponse
+// @Router /api/currency-list [get]
+func (s *gatewayServer) handleCurrencyList(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		return
+	}
+	if r.Method != "GET" {
+		writeJSONError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	ctx := contextFromHTTPRequest(r)
+	resp, err := s.apiServer.GetCurrencyList(ctx, &pb.GetCurrencyListRequest{})
 	if err != nil {
 		writeGRPCError(w, err)
 		return

@@ -1,0 +1,64 @@
+services:
+  payment-db:
+    image: postgres:17-alpine
+    container_name: payment-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: payment
+    ports:
+      - "5435:5432"
+    volumes:
+      - payment-db-data:/var/lib/postgresql/data
+      - ./migrations/001_add_providers.sql:/docker-entrypoint-initdb.d/001_add_providers.sql
+      - ./migrations/002_add_internet_bills.sql:/docker-entrypoint-initdb.d/002_add_internet_bills.sql
+      - ./migrations/003_add_currencies.sql:/docker-entrypoint-initdb.d/003_add_currencies.sql
+      - ./seed.sql:/docker-entrypoint-initdb.d/seed.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  payment-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: payment-service
+    command:
+      [
+        "./server",
+        "grpc-gw-server",
+        "--port1",
+        "9304",
+        "--port2",
+        "8082",
+      ]
+    ports:
+      - "8082:8082"
+      - "9304:9304"
+    environment:
+      DB_HOST: payment-db
+      DB_PORT: "5432"
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: payment
+      DB_SSLMODE: disable
+      DB_TIMEZONE: Asia/Jakarta
+      JWT_SECRET: secret
+      HTTP_PORT: "8082"
+      GRPC_PORT: "9304"
+      ENV: DEV
+      APP_NAME: payment-service
+      PRODUCT_NAME: BRICaMS
+      LOGGER_TAG: payment.dev
+      LOGGER_OUTPUT: stdout
+      LOGGER_LEVEL: debug
+    depends_on:
+      payment-db:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  payment-db-data:

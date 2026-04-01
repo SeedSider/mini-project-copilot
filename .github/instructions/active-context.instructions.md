@@ -6,28 +6,33 @@ applyTo: "**"
 
 ## Current Focus
 
-- **Forgot Password feature SELESAI** ✅ — ValidateOtp + UpdatePassword di identity-service + BFF, end-to-end verified.
-- identity-service unit tests: 91.2% coverage (api), 100% (db), 93.3% (jwt) ✅
-- identity-service + bff-service RUNNING via Docker Compose ✅ (April 1, 2026)
-- Next priority: unit tests bff-service → SonarQube analysis.
+- All **5 services SELESAI** — compile pass (`go build` + `go vet`), all verified.
+- **payment-service IMPLEMENTED** ✅ — 30 new files, 3 endpoints (providers, internet-bill, currency-list)
+- **BFF integration with payment-service DONE** ✅ — 4th downstream (gRPC 9304), 3 proxy routes added
+- Unit tests user-profile-service ✅ (5 test files)
+- Unit tests saving-service ✅ (4 test files)
+- Next priority: unit tests payment-service → unit tests bff-service → SonarQube.
 
 ## Next Steps
 
-1. Unit tests bff-service (target ≥ 90%)
-2. Functional testing BFF — 30+ test cases from checklist
-3. SonarQube analysis pass for all services
+1. **Unit tests payment-service** (target ≥ 90%) — payment_api, payment_grpc_api, bill_provider, currency_provider, interceptor
+2. **Unit tests bff-service** (target ≥ 90%) — all proxy handlers including payment
+3. Unit tests identity-service coverage verification ≥ 90%
+4. Functional testing BFF — 30+ test cases from checklist
+5. SonarQube analysis pass for all services
+6. Docker Compose full stack test (all 5 services + 4 DBs)
 
 ## Active Decisions
 
 - BFF uses manual REST→gRPC bridge (not grpc-gateway codegen)
-- BFF connects to 3 downstream: identity (9301), user-profile (9302), saving (9303)
-- JWT secret key same in identity-service and BFF (local verification)
+- BFF connects to **4 downstream**: identity (9301), user-profile (9302), saving (9303), payment (9304)
+- JWT secret key same in identity-service, payment-service, and BFF (local verification)
 - Upload image: BFF direct to Azure Blob (not via user-profile-service gRPC)
 - Docker Compose per service (local dev); full stack compose in bff-service/
 - Search endpoints extracted from user-profile to saving-service
-- **Forgot Password**: ValidateOtp is public; UpdatePassword is JWT-protected (BFF extracts username from JWT claims, forwards to identity gRPC)
-- **OTP**: `crypto/rand` random 6-digit (100000–999999); NOT hardcoded
-- **UpdatePassword flow**: Client → BFF (JWT verify, extract username) → identity-service gRPC (UpdatePassword with username + newPassword)
+- **payment-service**: HTTP 8082, gRPC 9304, PostgreSQL 5435 (DB: payment)
+- payment-service auth: hybrid — internet-bill protected (JWT), providers + currency-list public
+- payment-service HTTP JWT middleware in main.go (jwtMiddleware wraps HandleGetInternetBill)
 
 ## Important Patterns
 
@@ -39,5 +44,5 @@ applyTo: "**"
 - Seed data: `docker-entrypoint-initdb.d` only on fresh volume; `docker cp` + `psql -f` for re-seed
 - Menu filter: PREMIUM → all, REGULAR → only REGULAR
 - SignUp orchestration (BFF): identity.SignUp → profile.CreateProfile (best-effort)
-- **Forgot Password unit test**: inject `otpGenerator func() (int, error)` into handler via closure for testability; mock `crypto/rand` errors via generator injection
-- **Protected route pattern**: add path to `protectedPaths` map in `bff_authInterceptor.go` AND in identity-service `identity_authInterceptor.go` skip-list for JWT-protected endpoints
+- **payment-service pattern**: HTTP jwtMiddleware in main.go extracts claims → context.WithValue("user_claims") → handler reads from ctx
+- **BFF ServiceConnection**: InitServicesConn now takes 4 addrs (identity, profile, saving, payment)

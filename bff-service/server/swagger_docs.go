@@ -8,6 +8,18 @@ import (
 var (
 	_ *bff_service.ErrorBodyResponse
 	_ *bff_service.SignUpRequest
+	_ *bff_service.ExchangeRateItem
+	_ *bff_service.ExchangeRateListResponse
+	_ *bff_service.InterestRateItem
+	_ *bff_service.InterestRateListResponse
+	_ *bff_service.BranchItem
+	_ *bff_service.BranchListResponse
+	_ *bff_service.ProviderItem
+	_ *bff_service.ProviderListResponse
+	_ *bff_service.InternetBillDetail
+	_ *bff_service.InternetBillResponse
+	_ *bff_service.CurrencyEntry
+	_ *bff_service.CurrencyListResponse
 )
 
 // Swagger documentation stubs for endpoints that share a single handler
