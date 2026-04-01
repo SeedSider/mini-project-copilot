@@ -34,19 +34,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.GetMeResponse"
+                            "$ref": "#/definitions/bff_service.GetMeResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
                         }
                     }
                 }
@@ -72,7 +72,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.SignInRequest"
+                            "$ref": "#/definitions/bff_service.SignInRequest"
                         }
                     }
                 ],
@@ -80,25 +80,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.SignInResponse"
+                            "$ref": "#/definitions/bff_service.SignInResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
                         }
                     },
                     "401": {
                         "description": "Invalid credentials",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
                         }
                     }
                 }
@@ -124,7 +124,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.SignUpRequest"
+                            "$ref": "#/definitions/bff_service.SignUpRequest"
                         }
                     }
                 ],
@@ -132,25 +132,246 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.SignUpResponse"
+                            "$ref": "#/definitions/bff_service.SignUpResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
                         }
                     },
                     "409": {
                         "description": "Username already exists",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/update-password": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update the authenticated user's password. Username is extracted from JWT token.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Update password",
+                "parameters": [
+                    {
+                        "description": "UpdatePassword request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/bff_service.UpdatePasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/bff_service.UpdatePasswordResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/validate-otp": {
+            "post": {
+                "description": "Validate username and return a randomized 6-digit OTP (dummy for development)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Validate OTP for forgot password",
+                "parameters": [
+                    {
+                        "description": "ValidateOtp request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/bff_service.ValidateOtpRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/bff_service.ValidateOtpResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Username not found",
+                        "schema": {
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/branches": {
+            "get": {
+                "description": "Retrieve bank branches, optionally filtered by search query",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Saving"
+                ],
+                "summary": "Get bank branches",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Search query (partial branch name)",
+                        "name": "q",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/bff_service.BranchListResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/currency-list": {
+            "get": {
+                "description": "Retrieve all supported currency exchange entries",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payment"
+                ],
+                "summary": "Get currency list",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/bff_service.CurrencyListResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/exchange-rates": {
+            "get": {
+                "description": "Retrieve all foreign currency exchange rates",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Saving"
+                ],
+                "summary": "Get exchange rates",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/bff_service.ExchangeRateListResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/interest-rates": {
+            "get": {
+                "description": "Retrieve all deposit interest rates",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Saving"
+                ],
+                "summary": "Get interest rates",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/bff_service.InterestRateListResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
                         }
                     }
                 }
@@ -170,13 +391,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.MenuListResponse"
+                            "$ref": "#/definitions/bff_service.MenuListResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
                         }
                     }
                 }
@@ -205,19 +426,88 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.MenuListResponse"
+                            "$ref": "#/definitions/bff_service.MenuListResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/pay-the-bill/internet-bill": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve the authenticated user's internet bill detail. Requires JWT authentication.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payment"
+                ],
+                "summary": "Get internet bill detail",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/bff_service.InternetBillResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/pay-the-bill/providers": {
+            "get": {
+                "description": "Retrieve all internet service providers available for bill payment",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Payment"
+                ],
+                "summary": "Get internet bill providers",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/bff_service.ProviderListResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
                         }
                     }
                 }
@@ -242,25 +532,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ProfileResponse"
+                            "$ref": "#/definitions/bff_service.ProfileResponse"
                         }
                     },
                     "401": {
                         "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
                         }
                     }
                 }
@@ -284,7 +574,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.CreateProfileRequest"
+                            "$ref": "#/definitions/bff_service.CreateProfileRequest"
                         }
                     }
                 ],
@@ -292,19 +582,19 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ProfileResponse"
+                            "$ref": "#/definitions/bff_service.ProfileResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
                         }
                     }
                 }
@@ -333,25 +623,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ProfileResponse"
+                            "$ref": "#/definitions/bff_service.ProfileResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
                         }
                     }
                 }
@@ -380,25 +670,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ProfileResponse"
+                            "$ref": "#/definitions/bff_service.ProfileResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
                         }
                     }
                 }
@@ -429,7 +719,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.UpdateProfileRequest"
+                            "$ref": "#/definitions/bff_service.UpdateProfileRequest"
                         }
                     }
                 ],
@@ -437,206 +727,25 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.StandardResponse"
+                            "$ref": "#/definitions/bff_service.StandardResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/branches": {
-            "get": {
-                "description": "Retrieve bank branches, optionally filtered by search query",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Saving"
-                ],
-                "summary": "Get bank branches",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Search query (partial branch name)",
-                        "name": "q",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.BranchListResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/currency-list": {
-            "get": {
-                "description": "Retrieve all supported currency exchange entries",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Payment"
-                ],
-                "summary": "Get currency list",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.CurrencyListResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/exchange-rates": {
-            "get": {
-                "description": "Retrieve all foreign currency exchange rates",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Saving"
-                ],
-                "summary": "Get exchange rates",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ExchangeRateListResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/interest-rates": {
-            "get": {
-                "description": "Retrieve all deposit interest rates",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Saving"
-                ],
-                "summary": "Get interest rates",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.InterestRateListResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/pay-the-bill/internet-bill": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Retrieve the authenticated user's internet bill detail. Requires JWT authentication.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Payment"
-                ],
-                "summary": "Get internet bill detail",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.InternetBillResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/pay-the-bill/providers": {
-            "get": {
-                "description": "Retrieve all internet service providers available for bill payment",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Payment"
-                ],
-                "summary": "Get internet bill providers",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ProviderListResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
                         }
                     }
                 }
@@ -668,31 +777,31 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/server.uploadResponse"
+                            "$ref": "#/definitions/main.uploadResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
                         }
                     },
                     "413": {
                         "description": "File too large",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
                         }
                     },
                     "503": {
                         "description": "Azure not configured",
                         "schema": {
-                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                            "$ref": "#/definitions/bff_service.ErrorBodyResponse"
                         }
                     }
                 }
@@ -700,7 +809,38 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "github_com_bankease_bff-service_protogen_bff-service.CreateProfileRequest": {
+        "bff_service.BranchItem": {
+            "type": "object",
+            "properties": {
+                "distance": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "bff_service.BranchListResponse": {
+            "type": "object",
+            "properties": {
+                "branches": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/bff_service.BranchItem"
+                    }
+                }
+            }
+        },
+        "bff_service.CreateProfileRequest": {
             "type": "object",
             "properties": {
                 "account_type": {
@@ -732,7 +872,32 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse": {
+        "bff_service.CurrencyEntry": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "rate": {
+                    "type": "number"
+                }
+            }
+        },
+        "bff_service.CurrencyListResponse": {
+            "type": "object",
+            "properties": {
+                "currencies": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/bff_service.CurrencyEntry"
+                    }
+                }
+            }
+        },
+        "bff_service.ErrorBodyResponse": {
             "type": "object",
             "properties": {
                 "code": {
@@ -746,7 +911,41 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_bankease_bff-service_protogen_bff-service.GetMeResponse": {
+        "bff_service.ExchangeRateItem": {
+            "type": "object",
+            "properties": {
+                "buy": {
+                    "type": "number"
+                },
+                "country": {
+                    "type": "string"
+                },
+                "country_code": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "sell": {
+                    "type": "number"
+                }
+            }
+        },
+        "bff_service.ExchangeRateListResponse": {
+            "type": "object",
+            "properties": {
+                "exchange_rates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/bff_service.ExchangeRateItem"
+                    }
+                }
+            }
+        },
+        "bff_service.GetMeResponse": {
             "type": "object",
             "properties": {
                 "user_id": {
@@ -757,7 +956,78 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_bankease_bff-service_protogen_bff-service.MenuItem": {
+        "bff_service.InterestRateItem": {
+            "type": "object",
+            "properties": {
+                "deposit": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "kind": {
+                    "type": "string"
+                },
+                "rate": {
+                    "type": "number"
+                }
+            }
+        },
+        "bff_service.InterestRateListResponse": {
+            "type": "object",
+            "properties": {
+                "interest_rates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/bff_service.InterestRateItem"
+                    }
+                }
+            }
+        },
+        "bff_service.InternetBillDetail": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "customerId": {
+                    "type": "string"
+                },
+                "from": {
+                    "type": "string"
+                },
+                "internetFee": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phoneNumber": {
+                    "type": "string"
+                },
+                "tax": {
+                    "type": "string"
+                },
+                "to": {
+                    "type": "string"
+                },
+                "total": {
+                    "type": "string"
+                }
+            }
+        },
+        "bff_service.InternetBillResponse": {
+            "type": "object",
+            "properties": {
+                "bill": {
+                    "$ref": "#/definitions/bff_service.InternetBillDetail"
+                }
+            }
+        },
+        "bff_service.MenuItem": {
             "type": "object",
             "properties": {
                 "icon_url": {
@@ -780,18 +1050,18 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_bankease_bff-service_protogen_bff-service.MenuListResponse": {
+        "bff_service.MenuListResponse": {
             "type": "object",
             "properties": {
                 "menus": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.MenuItem"
+                        "$ref": "#/definitions/bff_service.MenuItem"
                     }
                 }
             }
         },
-        "github_com_bankease_bff-service_protogen_bff-service.ProfileResponse": {
+        "bff_service.ProfileResponse": {
             "type": "object",
             "properties": {
                 "account_type": {
@@ -829,7 +1099,29 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_bankease_bff-service_protogen_bff-service.SignInRequest": {
+        "bff_service.ProviderItem": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "bff_service.ProviderListResponse": {
+            "type": "object",
+            "properties": {
+                "providers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/bff_service.ProviderItem"
+                    }
+                }
+            }
+        },
+        "bff_service.SignInRequest": {
             "type": "object",
             "properties": {
                 "password": {
@@ -840,7 +1132,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_bankease_bff-service_protogen_bff-service.SignInResponse": {
+        "bff_service.SignInResponse": {
             "type": "object",
             "properties": {
                 "token": {
@@ -854,7 +1146,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_bankease_bff-service_protogen_bff-service.SignUpRequest": {
+        "bff_service.SignUpRequest": {
             "type": "object",
             "properties": {
                 "password": {
@@ -868,7 +1160,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_bankease_bff-service_protogen_bff-service.SignUpResponse": {
+        "bff_service.SignUpResponse": {
             "type": "object",
             "properties": {
                 "user_id": {
@@ -879,7 +1171,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_bankease_bff-service_protogen_bff-service.StandardResponse": {
+        "bff_service.StandardResponse": {
             "type": "object",
             "properties": {
                 "code": {
@@ -890,7 +1182,23 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_bankease_bff-service_protogen_bff-service.UpdateProfileRequest": {
+        "bff_service.UpdatePasswordRequest": {
+            "type": "object",
+            "properties": {
+                "newPassword": {
+                    "type": "string"
+                }
+            }
+        },
+        "bff_service.UpdatePasswordResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "bff_service.UpdateProfileRequest": {
             "type": "object",
             "properties": {
                 "bank": {
@@ -910,190 +1218,23 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_bankease_bff-service_protogen_bff-service.BranchItem": {
+        "bff_service.ValidateOtpRequest": {
             "type": "object",
             "properties": {
-                "distance": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "latitude": {
-                    "type": "number"
-                },
-                "longitude": {
-                    "type": "number"
-                },
-                "name": {
+                "username": {
                     "type": "string"
                 }
             }
         },
-        "github_com_bankease_bff-service_protogen_bff-service.BranchListResponse": {
+        "bff_service.ValidateOtpResponse": {
             "type": "object",
             "properties": {
-                "branches": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.BranchItem"
-                    }
+                "otp": {
+                    "type": "integer"
                 }
             }
         },
-        "github_com_bankease_bff-service_protogen_bff-service.CurrencyEntry": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "label": {
-                    "type": "string"
-                },
-                "rate": {
-                    "type": "number"
-                }
-            }
-        },
-        "github_com_bankease_bff-service_protogen_bff-service.CurrencyListResponse": {
-            "type": "object",
-            "properties": {
-                "currencies": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.CurrencyEntry"
-                    }
-                }
-            }
-        },
-        "github_com_bankease_bff-service_protogen_bff-service.ExchangeRateItem": {
-            "type": "object",
-            "properties": {
-                "buy": {
-                    "type": "number"
-                },
-                "country": {
-                    "type": "string"
-                },
-                "country_code": {
-                    "type": "string"
-                },
-                "currency": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "sell": {
-                    "type": "number"
-                }
-            }
-        },
-        "github_com_bankease_bff-service_protogen_bff-service.ExchangeRateListResponse": {
-            "type": "object",
-            "properties": {
-                "exchange_rates": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ExchangeRateItem"
-                    }
-                }
-            }
-        },
-        "github_com_bankease_bff-service_protogen_bff-service.InterestRateItem": {
-            "type": "object",
-            "properties": {
-                "deposit": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "kind": {
-                    "type": "string"
-                },
-                "rate": {
-                    "type": "number"
-                }
-            }
-        },
-        "github_com_bankease_bff-service_protogen_bff-service.InterestRateListResponse": {
-            "type": "object",
-            "properties": {
-                "interest_rates": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.InterestRateItem"
-                    }
-                }
-            }
-        },
-        "github_com_bankease_bff-service_protogen_bff-service.InternetBillDetail": {
-            "type": "object",
-            "properties": {
-                "address": {
-                    "type": "string"
-                },
-                "code": {
-                    "type": "string"
-                },
-                "customerId": {
-                    "type": "string"
-                },
-                "from": {
-                    "type": "string"
-                },
-                "internetFee": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "phoneNumber": {
-                    "type": "string"
-                },
-                "tax": {
-                    "type": "string"
-                },
-                "to": {
-                    "type": "string"
-                },
-                "total": {
-                    "type": "string"
-                }
-            }
-        },
-        "github_com_bankease_bff-service_protogen_bff-service.InternetBillResponse": {
-            "type": "object",
-            "properties": {
-                "bill": {
-                    "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.InternetBillDetail"
-                }
-            }
-        },
-        "github_com_bankease_bff-service_protogen_bff-service.ProviderItem": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "github_com_bankease_bff-service_protogen_bff-service.ProviderListResponse": {
-            "type": "object",
-            "properties": {
-                "providers": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ProviderItem"
-                    }
-                }
-            }
-        },
-        "server.uploadResponse": {
+        "main.uploadResponse": {
             "type": "object",
             "properties": {
                 "code": {

@@ -1,6 +1,26 @@
 basePath: /
 definitions:
-  github_com_bankease_bff-service_protogen_bff-service.CreateProfileRequest:
+  bff_service.BranchItem:
+    properties:
+      distance:
+        type: string
+      id:
+        type: string
+      latitude:
+        type: number
+      longitude:
+        type: number
+      name:
+        type: string
+    type: object
+  bff_service.BranchListResponse:
+    properties:
+      branches:
+        items:
+          $ref: '#/definitions/bff_service.BranchItem'
+        type: array
+    type: object
+  bff_service.CreateProfileRequest:
     properties:
       account_type:
         type: string
@@ -21,7 +41,23 @@ definitions:
       user_id:
         type: string
     type: object
-  github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse:
+  bff_service.CurrencyEntry:
+    properties:
+      code:
+        type: string
+      label:
+        type: string
+      rate:
+        type: number
+    type: object
+  bff_service.CurrencyListResponse:
+    properties:
+      currencies:
+        items:
+          $ref: '#/definitions/bff_service.CurrencyEntry'
+        type: array
+    type: object
+  bff_service.ErrorBodyResponse:
     properties:
       code:
         type: integer
@@ -30,14 +66,82 @@ definitions:
       message:
         type: string
     type: object
-  github_com_bankease_bff-service_protogen_bff-service.GetMeResponse:
+  bff_service.ExchangeRateItem:
+    properties:
+      buy:
+        type: number
+      country:
+        type: string
+      country_code:
+        type: string
+      currency:
+        type: string
+      id:
+        type: string
+      sell:
+        type: number
+    type: object
+  bff_service.ExchangeRateListResponse:
+    properties:
+      exchange_rates:
+        items:
+          $ref: '#/definitions/bff_service.ExchangeRateItem'
+        type: array
+    type: object
+  bff_service.GetMeResponse:
     properties:
       user_id:
         type: string
       username:
         type: string
     type: object
-  github_com_bankease_bff-service_protogen_bff-service.MenuItem:
+  bff_service.InterestRateItem:
+    properties:
+      deposit:
+        type: string
+      id:
+        type: string
+      kind:
+        type: string
+      rate:
+        type: number
+    type: object
+  bff_service.InterestRateListResponse:
+    properties:
+      interest_rates:
+        items:
+          $ref: '#/definitions/bff_service.InterestRateItem'
+        type: array
+    type: object
+  bff_service.InternetBillDetail:
+    properties:
+      address:
+        type: string
+      code:
+        type: string
+      customerId:
+        type: string
+      from:
+        type: string
+      internetFee:
+        type: string
+      name:
+        type: string
+      phoneNumber:
+        type: string
+      tax:
+        type: string
+      to:
+        type: string
+      total:
+        type: string
+    type: object
+  bff_service.InternetBillResponse:
+    properties:
+      bill:
+        $ref: '#/definitions/bff_service.InternetBillDetail'
+    type: object
+  bff_service.MenuItem:
     properties:
       icon_url:
         type: string
@@ -52,14 +156,14 @@ definitions:
       type:
         type: string
     type: object
-  github_com_bankease_bff-service_protogen_bff-service.MenuListResponse:
+  bff_service.MenuListResponse:
     properties:
       menus:
         items:
-          $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.MenuItem'
+          $ref: '#/definitions/bff_service.MenuItem'
         type: array
     type: object
-  github_com_bankease_bff-service_protogen_bff-service.ProfileResponse:
+  bff_service.ProfileResponse:
     properties:
       account_type:
         type: string
@@ -84,14 +188,28 @@ definitions:
       user_id:
         type: string
     type: object
-  github_com_bankease_bff-service_protogen_bff-service.SignInRequest:
+  bff_service.ProviderItem:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  bff_service.ProviderListResponse:
+    properties:
+      providers:
+        items:
+          $ref: '#/definitions/bff_service.ProviderItem'
+        type: array
+    type: object
+  bff_service.SignInRequest:
     properties:
       password:
         type: string
       username:
         type: string
     type: object
-  github_com_bankease_bff-service_protogen_bff-service.SignInResponse:
+  bff_service.SignInResponse:
     properties:
       token:
         type: string
@@ -100,7 +218,7 @@ definitions:
       username:
         type: string
     type: object
-  github_com_bankease_bff-service_protogen_bff-service.SignUpRequest:
+  bff_service.SignUpRequest:
     properties:
       password:
         type: string
@@ -109,21 +227,31 @@ definitions:
       username:
         type: string
     type: object
-  github_com_bankease_bff-service_protogen_bff-service.SignUpResponse:
+  bff_service.SignUpResponse:
     properties:
       user_id:
         type: string
       username:
         type: string
     type: object
-  github_com_bankease_bff-service_protogen_bff-service.StandardResponse:
+  bff_service.StandardResponse:
     properties:
       code:
         type: integer
       description:
         type: string
     type: object
-  github_com_bankease_bff-service_protogen_bff-service.UpdateProfileRequest:
+  bff_service.UpdatePasswordRequest:
+    properties:
+      newPassword:
+        type: string
+    type: object
+  bff_service.UpdatePasswordResponse:
+    properties:
+      message:
+        type: string
+    type: object
+  bff_service.UpdateProfileRequest:
     properties:
       bank:
         type: string
@@ -136,125 +264,17 @@ definitions:
       name:
         type: string
     type: object
-  github_com_bankease_bff-service_protogen_bff-service.BranchItem:
+  bff_service.ValidateOtpRequest:
     properties:
-      distance:
-        type: string
-      id:
-        type: string
-      latitude:
-        type: number
-      longitude:
-        type: number
-      name:
+      username:
         type: string
     type: object
-  github_com_bankease_bff-service_protogen_bff-service.BranchListResponse:
+  bff_service.ValidateOtpResponse:
     properties:
-      branches:
-        items:
-          $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.BranchItem'
-        type: array
+      otp:
+        type: integer
     type: object
-  github_com_bankease_bff-service_protogen_bff-service.CurrencyEntry:
-    properties:
-      code:
-        type: string
-      label:
-        type: string
-      rate:
-        type: number
-    type: object
-  github_com_bankease_bff-service_protogen_bff-service.CurrencyListResponse:
-    properties:
-      currencies:
-        items:
-          $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.CurrencyEntry'
-        type: array
-    type: object
-  github_com_bankease_bff-service_protogen_bff-service.ExchangeRateItem:
-    properties:
-      buy:
-        type: number
-      country:
-        type: string
-      country_code:
-        type: string
-      currency:
-        type: string
-      id:
-        type: string
-      sell:
-        type: number
-    type: object
-  github_com_bankease_bff-service_protogen_bff-service.ExchangeRateListResponse:
-    properties:
-      exchange_rates:
-        items:
-          $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ExchangeRateItem'
-        type: array
-    type: object
-  github_com_bankease_bff-service_protogen_bff-service.InterestRateItem:
-    properties:
-      deposit:
-        type: string
-      id:
-        type: string
-      kind:
-        type: string
-      rate:
-        type: number
-    type: object
-  github_com_bankease_bff-service_protogen_bff-service.InterestRateListResponse:
-    properties:
-      interest_rates:
-        items:
-          $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.InterestRateItem'
-        type: array
-    type: object
-  github_com_bankease_bff-service_protogen_bff-service.InternetBillDetail:
-    properties:
-      address:
-        type: string
-      code:
-        type: string
-      customerId:
-        type: string
-      from:
-        type: string
-      internetFee:
-        type: string
-      name:
-        type: string
-      phoneNumber:
-        type: string
-      tax:
-        type: string
-      to:
-        type: string
-      total:
-        type: string
-    type: object
-  github_com_bankease_bff-service_protogen_bff-service.InternetBillResponse:
-    properties:
-      bill:
-        $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.InternetBillDetail'
-    type: object
-  github_com_bankease_bff-service_protogen_bff-service.ProviderItem:
-    properties:
-      id:
-        type: string
-      name:
-        type: string
-    type: object
-  github_com_bankease_bff-service_protogen_bff-service.ProviderListResponse:
-    properties:
-      providers:
-        items:
-          $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ProviderItem'
-        type: array
-    type: object
-  server.uploadResponse:
+  main.uploadResponse:
     properties:
       code:
         type: integer
@@ -280,15 +300,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.GetMeResponse'
+            $ref: '#/definitions/bff_service.GetMeResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
       security:
       - BearerAuth: []
       summary: Get current user
@@ -305,26 +325,26 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.SignInRequest'
+          $ref: '#/definitions/bff_service.SignInRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.SignInResponse'
+            $ref: '#/definitions/bff_service.SignInResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
         "401":
           description: Invalid credentials
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
       summary: Sign in user
       tags:
       - Auth
@@ -340,29 +360,174 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.SignUpRequest'
+          $ref: '#/definitions/bff_service.SignUpRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.SignUpResponse'
+            $ref: '#/definitions/bff_service.SignUpResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
         "409":
           description: Username already exists
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
       summary: Register a new user
       tags:
       - Auth
+  /api/auth/update-password:
+    put:
+      consumes:
+      - application/json
+      description: Update the authenticated user's password. Username is extracted
+        from JWT token.
+      parameters:
+      - description: UpdatePassword request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/bff_service.UpdatePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/bff_service.UpdatePasswordResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
+      security:
+      - BearerAuth: []
+      summary: Update password
+      tags:
+      - Auth
+  /api/auth/validate-otp:
+    post:
+      consumes:
+      - application/json
+      description: Validate username and return a randomized 6-digit OTP (dummy for
+        development)
+      parameters:
+      - description: ValidateOtp request body
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/bff_service.ValidateOtpRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/bff_service.ValidateOtpResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
+        "404":
+          description: Username not found
+          schema:
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
+      summary: Validate OTP for forgot password
+      tags:
+      - Auth
+  /api/branches:
+    get:
+      description: Retrieve bank branches, optionally filtered by search query
+      parameters:
+      - description: Search query (partial branch name)
+        in: query
+        name: q
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/bff_service.BranchListResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
+      summary: Get bank branches
+      tags:
+      - Saving
+  /api/currency-list:
+    get:
+      description: Retrieve all supported currency exchange entries
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/bff_service.CurrencyListResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
+      summary: Get currency list
+      tags:
+      - Payment
+  /api/exchange-rates:
+    get:
+      description: Retrieve all foreign currency exchange rates
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/bff_service.ExchangeRateListResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
+      summary: Get exchange rates
+      tags:
+      - Saving
+  /api/interest-rates:
+    get:
+      description: Retrieve all deposit interest rates
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/bff_service.InterestRateListResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
+      summary: Get interest rates
+      tags:
+      - Saving
   /api/menu:
     get:
       description: Retrieve all homepage menu items
@@ -372,11 +537,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.MenuListResponse'
+            $ref: '#/definitions/bff_service.MenuListResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
       summary: Get all menus
       tags:
       - Menu
@@ -396,18 +561,63 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.MenuListResponse'
+            $ref: '#/definitions/bff_service.MenuListResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
       summary: Get menus by account type
       tags:
       - Menu
+  /api/pay-the-bill/internet-bill:
+    get:
+      description: Retrieve the authenticated user's internet bill detail. Requires
+        JWT authentication.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/bff_service.InternetBillResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
+      security:
+      - BearerAuth: []
+      summary: Get internet bill detail
+      tags:
+      - Payment
+  /api/pay-the-bill/providers:
+    get:
+      description: Retrieve all internet service providers available for bill payment
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/bff_service.ProviderListResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
+      summary: Get internet bill providers
+      tags:
+      - Payment
   /api/profile:
     get:
       description: Retrieve the authenticated user's banking profile using JWT token
@@ -417,19 +627,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ProfileResponse'
+            $ref: '#/definitions/bff_service.ProfileResponse'
         "401":
           description: Unauthorized
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
       security:
       - BearerAuth: []
       summary: Get my profile
@@ -445,22 +655,22 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.CreateProfileRequest'
+          $ref: '#/definitions/bff_service.CreateProfileRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ProfileResponse'
+            $ref: '#/definitions/bff_service.ProfileResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
       summary: Create a new profile
       tags:
       - Profile
@@ -479,19 +689,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ProfileResponse'
+            $ref: '#/definitions/bff_service.ProfileResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
       summary: Get profile by ID
       tags:
       - Profile
@@ -510,26 +720,26 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.UpdateProfileRequest'
+          $ref: '#/definitions/bff_service.UpdateProfileRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.StandardResponse'
+            $ref: '#/definitions/bff_service.StandardResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
       summary: Update a profile
       tags:
       - Profile
@@ -548,140 +758,22 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ProfileResponse'
+            $ref: '#/definitions/bff_service.ProfileResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
       summary: Get profile by user ID
       tags:
       - Profile
-  /api/branches:
-    get:
-      description: Retrieve bank branches, optionally filtered by search query
-      parameters:
-      - description: Search query (partial branch name)
-        in: query
-        name: q
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.BranchListResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
-      summary: Get bank branches
-      tags:
-      - Saving
-  /api/currency-list:
-    get:
-      description: Retrieve all supported currency exchange entries
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.CurrencyListResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
-      summary: Get currency list
-      tags:
-      - Payment
-  /api/exchange-rates:
-    get:
-      description: Retrieve all foreign currency exchange rates
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ExchangeRateListResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
-      summary: Get exchange rates
-      tags:
-      - Saving
-  /api/interest-rates:
-    get:
-      description: Retrieve all deposit interest rates
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.InterestRateListResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
-      summary: Get interest rates
-      tags:
-      - Saving
-  /api/pay-the-bill/internet-bill:
-    get:
-      description: Retrieve the authenticated user's internet bill detail. Requires
-        JWT authentication.
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.InternetBillResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
-      security:
-      - BearerAuth: []
-      summary: Get internet bill detail
-      tags:
-      - Payment
-  /api/pay-the-bill/providers:
-    get:
-      description: Retrieve all internet service providers available for bill payment
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ProviderListResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
-      summary: Get internet bill providers
-      tags:
-      - Payment
   /api/upload/image:
     post:
       consumes:
@@ -700,23 +792,23 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/server.uploadResponse'
+            $ref: '#/definitions/main.uploadResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
         "413":
           description: File too large
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
         "503":
           description: Azure not configured
           schema:
-            $ref: '#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse'
+            $ref: '#/definitions/bff_service.ErrorBodyResponse'
       summary: Upload image
       tags:
       - Upload

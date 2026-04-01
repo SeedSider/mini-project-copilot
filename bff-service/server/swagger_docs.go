@@ -8,6 +8,10 @@ import (
 var (
 	_ *bff_service.ErrorBodyResponse
 	_ *bff_service.SignUpRequest
+	_ *bff_service.ValidateOtpRequest
+	_ *bff_service.ValidateOtpResponse
+	_ *bff_service.UpdatePasswordRequest
+	_ *bff_service.UpdatePasswordResponse
 	_ *bff_service.ExchangeRateItem
 	_ *bff_service.ExchangeRateListResponse
 	_ *bff_service.InterestRateItem
