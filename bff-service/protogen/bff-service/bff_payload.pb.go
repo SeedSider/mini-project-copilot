@@ -309,17 +309,17 @@ func (x *UpdateProfileRequest) GetCardNumber() string {
 }
 
 type ProfileResponse struct {
-	Id           string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	UserId       string `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Bank         string `protobuf:"bytes,3,opt,name=bank,proto3" json:"bank,omitempty"`
-	Branch       string `protobuf:"bytes,4,opt,name=branch,proto3" json:"branch,omitempty"`
-	Name         string `protobuf:"bytes,5,opt,name=name,proto3" json:"name,omitempty"`
-	CardNumber   string `protobuf:"bytes,6,opt,name=card_number,json=cardNumber,proto3" json:"card_number,omitempty"`
-	CardProvider string `protobuf:"bytes,7,opt,name=card_provider,json=cardProvider,proto3" json:"card_provider,omitempty"`
-	Balance      int64  `protobuf:"varint,8,opt,name=balance,proto3" json:"balance,omitempty"`
-	Currency     string `protobuf:"bytes,9,opt,name=currency,proto3" json:"currency,omitempty"`
-	AccountType  string `protobuf:"bytes,10,opt,name=account_type,json=accountType,proto3" json:"account_type,omitempty"`
-	Image        string `protobuf:"bytes,11,opt,name=image,proto3" json:"image,omitempty"`
+	Id           string `protobuf:"bytes,1,opt,name=id,proto3" json:"id"`
+	UserId       string `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id"`
+	Bank         string `protobuf:"bytes,3,opt,name=bank,proto3" json:"bank"`
+	Branch       string `protobuf:"bytes,4,opt,name=branch,proto3" json:"branch"`
+	Name         string `protobuf:"bytes,5,opt,name=name,proto3" json:"name"`
+	CardNumber   string `protobuf:"bytes,6,opt,name=card_number,json=cardNumber,proto3" json:"card_number"`
+	CardProvider string `protobuf:"bytes,7,opt,name=card_provider,json=cardProvider,proto3" json:"card_provider"`
+	Balance      int64  `protobuf:"varint,8,opt,name=balance,proto3" json:"balance"`
+	Currency     string `protobuf:"bytes,9,opt,name=currency,proto3" json:"currency"`
+	AccountType  string `protobuf:"bytes,10,opt,name=account_type,json=accountType,proto3" json:"account_type"`
+	Image        string `protobuf:"bytes,11,opt,name=image,proto3" json:"image"`
 }
 
 func (x *ProfileResponse) GetId() string {
@@ -415,12 +415,12 @@ func (x *GetMenusByAccountTypeRequest) GetAccountType() string {
 }
 
 type MenuItem struct {
-	Id       string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Index    int32  `protobuf:"varint,2,opt,name=index,proto3" json:"index,omitempty"`
-	Type     string `protobuf:"bytes,3,opt,name=type,proto3" json:"type,omitempty"`
-	Title    string `protobuf:"bytes,4,opt,name=title,proto3" json:"title,omitempty"`
-	IconUrl  string `protobuf:"bytes,5,opt,name=icon_url,json=iconUrl,proto3" json:"icon_url,omitempty"`
-	IsActive bool   `protobuf:"varint,6,opt,name=is_active,json=isActive,proto3" json:"is_active,omitempty"`
+	Id       string `protobuf:"bytes,1,opt,name=id,proto3" json:"id"`
+	Index    int32  `protobuf:"varint,2,opt,name=index,proto3" json:"index"`
+	Type     string `protobuf:"bytes,3,opt,name=type,proto3" json:"type"`
+	Title    string `protobuf:"bytes,4,opt,name=title,proto3" json:"title"`
+	IconUrl  string `protobuf:"bytes,5,opt,name=icon_url,json=iconUrl,proto3" json:"icon_url"`
+	IsActive bool   `protobuf:"varint,6,opt,name=is_active,json=isActive,proto3" json:"is_active"`
 }
 
 func (x *MenuItem) GetId() string {
@@ -466,7 +466,7 @@ func (x *MenuItem) GetIsActive() bool {
 }
 
 type MenuListResponse struct {
-	Menus []*MenuItem `protobuf:"bytes,1,rep,name=menus,proto3" json:"menus,omitempty"`
+	Menus []*MenuItem `protobuf:"bytes,1,rep,name=menus,proto3" json:"menus"`
 }
 
 func (x *MenuListResponse) GetMenus() []*MenuItem {
@@ -481,29 +481,29 @@ func (x *MenuListResponse) GetMenus() []*MenuItem {
 type GetExchangeRatesRequest struct{}
 
 type ExchangeRateItem struct {
-	Id          string  `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Country     string  `protobuf:"bytes,2,opt,name=country,proto3" json:"country,omitempty"`
-	Currency    string  `protobuf:"bytes,3,opt,name=currency,proto3" json:"currency,omitempty"`
-	CountryCode string  `protobuf:"bytes,4,opt,name=country_code,json=countryCode,proto3" json:"country_code,omitempty"`
-	Buy         float64 `protobuf:"fixed64,5,opt,name=buy,proto3" json:"buy,omitempty"`
-	Sell        float64 `protobuf:"fixed64,6,opt,name=sell,proto3" json:"sell,omitempty"`
+	Id          string  `protobuf:"bytes,1,opt,name=id,proto3" json:"id"`
+	Country     string  `protobuf:"bytes,2,opt,name=country,proto3" json:"country"`
+	Currency    string  `protobuf:"bytes,3,opt,name=currency,proto3" json:"currency"`
+	CountryCode string  `protobuf:"bytes,4,opt,name=country_code,json=countryCode,proto3" json:"country_code"`
+	Buy         float64 `protobuf:"fixed64,5,opt,name=buy,proto3" json:"buy"`
+	Sell        float64 `protobuf:"fixed64,6,opt,name=sell,proto3" json:"sell"`
 }
 
 type ExchangeRateListResponse struct {
-	ExchangeRates []*ExchangeRateItem `protobuf:"bytes,1,rep,name=exchange_rates,json=exchangeRates,proto3" json:"exchange_rates,omitempty"`
+	ExchangeRates []*ExchangeRateItem `protobuf:"bytes,1,rep,name=exchange_rates,json=exchangeRates,proto3" json:"exchange_rates"`
 }
 
 type GetInterestRatesRequest struct{}
 
 type InterestRateItem struct {
-	Id      string  `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Kind    string  `protobuf:"bytes,2,opt,name=kind,proto3" json:"kind,omitempty"`
-	Deposit string  `protobuf:"bytes,3,opt,name=deposit,proto3" json:"deposit,omitempty"`
-	Rate    float64 `protobuf:"fixed64,4,opt,name=rate,proto3" json:"rate,omitempty"`
+	Id      string  `protobuf:"bytes,1,opt,name=id,proto3" json:"id"`
+	Kind    string  `protobuf:"bytes,2,opt,name=kind,proto3" json:"kind"`
+	Deposit string  `protobuf:"bytes,3,opt,name=deposit,proto3" json:"deposit"`
+	Rate    float64 `protobuf:"fixed64,4,opt,name=rate,proto3" json:"rate"`
 }
 
 type InterestRateListResponse struct {
-	InterestRates []*InterestRateItem `protobuf:"bytes,1,rep,name=interest_rates,json=interestRates,proto3" json:"interest_rates,omitempty"`
+	InterestRates []*InterestRateItem `protobuf:"bytes,1,rep,name=interest_rates,json=interestRates,proto3" json:"interest_rates"`
 }
 
 type GetBranchesRequest struct {
@@ -518,15 +518,15 @@ func (x *GetBranchesRequest) GetQuery() string {
 }
 
 type BranchItem struct {
-	Id        string  `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name      string  `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Distance  string  `protobuf:"bytes,3,opt,name=distance,proto3" json:"distance,omitempty"`
-	Latitude  float64 `protobuf:"fixed64,4,opt,name=latitude,proto3" json:"latitude,omitempty"`
-	Longitude float64 `protobuf:"fixed64,5,opt,name=longitude,proto3" json:"longitude,omitempty"`
+	Id        string  `protobuf:"bytes,1,opt,name=id,proto3" json:"id"`
+	Name      string  `protobuf:"bytes,2,opt,name=name,proto3" json:"name"`
+	Distance  string  `protobuf:"bytes,3,opt,name=distance,proto3" json:"distance"`
+	Latitude  float64 `protobuf:"fixed64,4,opt,name=latitude,proto3" json:"latitude"`
+	Longitude float64 `protobuf:"fixed64,5,opt,name=longitude,proto3" json:"longitude"`
 }
 
 type BranchListResponse struct {
-	Branches []*BranchItem `protobuf:"bytes,1,rep,name=branches,proto3" json:"branches,omitempty"`
+	Branches []*BranchItem `protobuf:"bytes,1,rep,name=branches,proto3" json:"branches"`
 }
 
 // ── Common Messages ──
@@ -568,7 +568,7 @@ type ProviderItem struct {
 }
 
 type ProviderListResponse struct {
-	Providers []*ProviderItem `protobuf:"bytes,1,rep,name=providers,proto3" json:"providers,omitempty"`
+	Providers []*ProviderItem `protobuf:"bytes,1,rep,name=providers,proto3" json:"providers"`
 }
 
 type GetInternetBillRequest struct{}
@@ -599,5 +599,5 @@ type CurrencyEntry struct {
 }
 
 type CurrencyListResponse struct {
-	Currencies []*CurrencyEntry `protobuf:"bytes,1,rep,name=currencies,proto3" json:"currencies,omitempty"`
+	Currencies []*CurrencyEntry `protobuf:"bytes,1,rep,name=currencies,proto3" json:"currencies"`
 }

@@ -159,17 +159,17 @@ func (x *UpdateProfileRequest) GetCardNumber() string {
 
 // ProfileResponse
 type ProfileResponse struct {
-	Id           string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	UserId       string `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
-	Bank         string `protobuf:"bytes,3,opt,name=bank,proto3" json:"bank,omitempty"`
-	Branch       string `protobuf:"bytes,4,opt,name=branch,proto3" json:"branch,omitempty"`
-	Name         string `protobuf:"bytes,5,opt,name=name,proto3" json:"name,omitempty"`
-	CardNumber   string `protobuf:"bytes,6,opt,name=card_number,json=cardNumber,proto3" json:"card_number,omitempty"`
-	CardProvider string `protobuf:"bytes,7,opt,name=card_provider,json=cardProvider,proto3" json:"card_provider,omitempty"`
-	Balance      int64  `protobuf:"varint,8,opt,name=balance,proto3" json:"balance,omitempty"`
-	Currency     string `protobuf:"bytes,9,opt,name=currency,proto3" json:"currency,omitempty"`
-	AccountType  string `protobuf:"bytes,10,opt,name=account_type,json=accountType,proto3" json:"account_type,omitempty"`
-	Image        string `protobuf:"bytes,11,opt,name=image,proto3" json:"image,omitempty"`
+	Id           string `protobuf:"bytes,1,opt,name=id,proto3" json:"id"`
+	UserId       string `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id"`
+	Bank         string `protobuf:"bytes,3,opt,name=bank,proto3" json:"bank"`
+	Branch       string `protobuf:"bytes,4,opt,name=branch,proto3" json:"branch"`
+	Name         string `protobuf:"bytes,5,opt,name=name,proto3" json:"name"`
+	CardNumber   string `protobuf:"bytes,6,opt,name=card_number,json=cardNumber,proto3" json:"card_number"`
+	CardProvider string `protobuf:"bytes,7,opt,name=card_provider,json=cardProvider,proto3" json:"card_provider"`
+	Balance      int64  `protobuf:"varint,8,opt,name=balance,proto3" json:"balance"`
+	Currency     string `protobuf:"bytes,9,opt,name=currency,proto3" json:"currency"`
+	AccountType  string `protobuf:"bytes,10,opt,name=account_type,json=accountType,proto3" json:"account_type"`
+	Image        string `protobuf:"bytes,11,opt,name=image,proto3" json:"image"`
 }
 
 func (x *ProfileResponse) GetId() string {
