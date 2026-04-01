@@ -76,15 +76,17 @@ argument-hint: "What to check (e.g. 'completed items', 'remaining work', 'known 
 
 - [ ] Functional testing BFF — 30+ test cases from testing checklist
 - [ ] Unit tests bff-service (target ≥ 90%)
-- [ ] Unit tests user-profile-service (target ≥ 90%)
-- [ ] Unit tests saving-service (target ≥ 90%)
 - [ ] Unit tests identity-service coverage verification ≥ 90%
 - [ ] SonarQube analysis pass for all services
 
+## In Progress / Recently Completed (2026-04-01)
+
+- [x] Unit tests user-profile-service ✅ — 5 test files: `server/api/profile_api_test.go`, `server/api/menu_api_test.go`, `server/api/upload_api_test.go`, `server/db/profile_provider_test.go`, `server/db/menu_provider_test.go`
+- [x] Unit tests saving-service ✅ — 4 test files: `server/api/saving_api_test.go`, `server/api/saving_interceptor_test.go`, `server/db/saving_provider_test.go`, `server/db/db_error_test.go`
+
 ## Known Issues
 
-- user-profile-service: no unit tests yet
-- saving-service: no unit tests yet
+- bff-service: no unit tests yet
 - All services: no SonarQube analysis yet
 - Seed data caveat: `docker-entrypoint-initdb.d` only runs on fresh volume; use `docker exec -i <container> psql -U postgres -d <db> -f /docker-entrypoint-initdb.d/seed.sql` for re-seed
 - `create_file` tool caveat: tool may report success but file not created on disk. Always verify with `Get-Item <path>`.
