@@ -5,13 +5,14 @@ Memory resets between sessions. Rely on Memory Bank files in `.github/instructio
 ## File Structure
 
 **Global** (`applyTo: "**"` — loaded every prompt):
-- `project-overview.instructions.md` — what the project is, 4 services, ports, scope
+- `project-overview.instructions.md` — what the project is, 5 services, ports, scope
 - `active-context.instructions.md` — current focus, decisions, patterns, next steps
 
 **Per-service** (loaded only when editing that service):
 - `identity-service.instructions.md` — folder structure, DB schema, dependencies, patterns
 - `user-profile-service.instructions.md` — same
 - `saving-service.instructions.md` — same
+- `payment-service.instructions.md` — same
 - `bff-service.instructions.md` — same
 
 **Skills** (loaded on demand):

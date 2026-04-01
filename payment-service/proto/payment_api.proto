@@ -1,0 +1,11 @@
+syntax = "proto3";
+package payment;
+option go_package = "github.com/bankease/payment-service/protogen/payment-service";
+
+import "payment_payload.proto";
+
+service PaymentService {
+  rpc GetProviders(GetProvidersRequest) returns (ProviderListResponse);
+  rpc GetInternetBill(GetInternetBillRequest) returns (InternetBillResponse);
+  rpc GetCurrencyList(GetCurrencyListRequest) returns (CurrencyListResponse);
+}

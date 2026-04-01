@@ -1,0 +1,69 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "BankEase Payment Service — providers, internet-bill, currency-list",
+        "title": "Payment Service API",
+        "version": "1.0"
+    },
+    "host": "localhost:8082",
+    "basePath": "/",
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    },
+    "paths": {
+        "/api/pay-the-bill/providers": {
+            "get": {
+                "summary": "Get all providers",
+                "description": "Retrieve all internet service providers",
+                "tags": ["Pay The Bill"],
+                "produces": ["application/json"],
+                "responses": {
+                    "200": { "description": "OK" },
+                    "500": { "description": "Internal Server Error" }
+                }
+            }
+        },
+        "/api/pay-the-bill/internet-bill": {
+            "get": {
+                "summary": "Get internet bill",
+                "description": "Retrieve internet bill for the authenticated user",
+                "tags": ["Pay The Bill"],
+                "produces": ["application/json"],
+                "security": [{"BearerAuth": []}],
+                "responses": {
+                    "200": { "description": "OK" },
+                    "401": { "description": "Unauthorized" },
+                    "404": { "description": "Not Found" },
+                    "500": { "description": "Internal Server Error" }
+                }
+            }
+        },
+        "/api/currency-list": {
+            "get": {
+                "summary": "Get currency list",
+                "description": "Retrieve all supported currencies with exchange rates",
+                "tags": ["Currency"],
+                "produces": ["application/json"],
+                "responses": {
+                    "200": { "description": "OK" },
+                    "500": { "description": "Internal Server Error" }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "summary": "Health check",
+                "description": "Returns service health status",
+                "tags": ["Health"],
+                "produces": ["application/json"],
+                "responses": {
+                    "200": { "description": "OK" }
+                }
+            }
+        }
+    }
+}
