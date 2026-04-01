@@ -7,16 +7,16 @@ applyTo: "**"
 ## Current Focus
 
 - All 4 services **SELESAI** — compile pass, Docker Compose running, verified end-to-end.
-- Next priority: unit tests (bff, user-profile, saving) → SonarQube.
+- Unit tests user-profile-service ✅ (5 test files: profile_api, menu_api, upload_api, profile_provider, menu_provider)
+- Unit tests saving-service ✅ (4 test files: saving_api, saving_interceptor, saving_provider, db_error)
+- Next priority: unit tests bff-service → coverage verification → SonarQube.
 
 ## Next Steps
 
 1. Unit tests bff-service (target ≥ 90%)
-2. Unit tests user-profile-service (target ≥ 90%)
-3. Unit tests saving-service (target ≥ 90%)
-4. Unit tests identity-service coverage verification ≥ 90%
-5. Functional testing BFF — 30+ test cases from checklist
-6. SonarQube analysis pass for all services
+2. Unit tests identity-service coverage verification ≥ 90%
+3. Functional testing BFF — 30+ test cases from checklist
+4. SonarQube analysis pass for all services
 
 ## Active Decisions
 
