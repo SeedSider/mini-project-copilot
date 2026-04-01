@@ -27,15 +27,21 @@ jobs:
           BFF_JWT_SECRET: ${{ secrets.BFF_JWT_SECRET }}
           BFF_IDENTITY_SERVICE_ADDR: ${{ vars.BFF_IDENTITY_SERVICE_ADDR }}
           BFF_PROFILE_SERVICE_ADDR: ${{ vars.BFF_PROFILE_SERVICE_ADDR }}
+          BFF_SAVING_SERVICE_ADDR: ${{ vars.BFF_SAVING_SERVICE_ADDR }}
           BFF_AZURE_SAS_URL: ${{ secrets.BFF_AZURE_SAS_URL }}
           BFF_AZURE_CONTAINER: ${{ vars.BFF_AZURE_CONTAINER }}
+          SS_DB_HOST: ${{ vars.SS_DB_HOST }}
+          SS_DB_PORT: ${{ vars.SS_DB_PORT }}
+          SS_DB_USER: ${{ vars.SS_DB_USER }}
+          SS_DB_PASSWORD: ${{ secrets.SS_DB_PASSWORD }}
+          SS_DB_NAME: ${{ vars.SS_DB_NAME }}
         with:
           host: ${{ vars.REMOTE_HOST }}
           username: ${{ vars.REMOTE_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           command_timeout: 30m
           timeout: 30m
-          envs: UPS_DATABASE_URL,UPS_JWT_SECRET,UPS_AZURE_STORAGE_SAS_URL,UPS_AZURE_STORAGE_CONTAINER,IS_JWT_SECRET,IS_DB_HOST,IS_DB_PORT,IS_DB_USER,IS_DB_PASSWORD,IS_DB_NAME,BFF_JWT_SECRET,BFF_IDENTITY_SERVICE_ADDR,BFF_PROFILE_SERVICE_ADDR,BFF_AZURE_SAS_URL,BFF_AZURE_CONTAINER
+          envs: UPS_DATABASE_URL,UPS_JWT_SECRET,UPS_AZURE_STORAGE_SAS_URL,UPS_AZURE_STORAGE_CONTAINER,IS_JWT_SECRET,IS_DB_HOST,IS_DB_PORT,IS_DB_USER,IS_DB_PASSWORD,IS_DB_NAME,BFF_JWT_SECRET,BFF_IDENTITY_SERVICE_ADDR,BFF_PROFILE_SERVICE_ADDR,BFF_SAVING_SERVICE_ADDR,BFF_AZURE_SAS_URL,BFF_AZURE_CONTAINER,SS_DB_HOST,SS_DB_PORT,SS_DB_USER,SS_DB_PASSWORD,SS_DB_NAME
           script: |
             set -e
 
@@ -85,10 +91,9 @@ jobs:
 
             # Write .env for bff-service
             {
-              echo "BFF_GRPC_PORT=9090"
-              echo "BFF_HTTP_PORT=3000"
               echo "IDENTITY_SERVICE_ADDR=$BFF_IDENTITY_SERVICE_ADDR"
               echo "PROFILE_SERVICE_ADDR=$BFF_PROFILE_SERVICE_ADDR"
+              echo "SAVING_SERVICE_ADDR=$BFF_SAVING_SERVICE_ADDR"
               echo "JWT_SECRET=$BFF_JWT_SECRET"
               echo "JWT_DURATION=24h"
               echo "AZURE_SAS_URL=$BFF_AZURE_SAS_URL"
@@ -100,12 +105,37 @@ jobs:
               echo "LOGGER_LEVEL=debug"
             } > "$REPO_DIR/bff-service/.env"
 
+            # Write .env for saving-service
+            {
+              echo "DB_HOST=$SS_DB_HOST"
+              echo "DB_PORT=$SS_DB_PORT"
+              echo "DB_USER=$SS_DB_USER"
+              echo "DB_PASSWORD=$SS_DB_PASSWORD"
+              echo "DB_NAME=$SS_DB_NAME"
+              echo "DB_SSLMODE=disable"
+              echo "DB_TIMEZONE=Asia/Jakarta"
+              echo "HTTP_PORT=8081"
+              echo "GRPC_PORT=9303"
+              echo "ENV=DEV"
+              echo "APP_NAME=saving-service"
+              echo "PRODUCT_NAME=BRICaMS"
+              echo "LOGGER_TAG=saving.dev"
+              echo "LOGGER_OUTPUT=stdout"
+              echo "LOGGER_LEVEL=debug"
+              echo "FLUENTBIT_HOST=0.0.0.0"
+              echo "FLUENTBIT_PORT=24223"
+            } > "$REPO_DIR/saving-service/.env"
+
             # Deploy user-profile-service
             cd "$REPO_DIR/user-profile-service"
             docker compose up --build -d
 
             # Deploy identity-service
             cd "$REPO_DIR/identity-service"
+            docker compose up --build -d
+
+            # Deploy saving-service
+            cd "$REPO_DIR/saving-service"
             docker compose up --build -d
 
             # Deploy bff-service

@@ -4,6 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: identity-service
+    restart: unless-stopped
     command:
       [
         "./server",
