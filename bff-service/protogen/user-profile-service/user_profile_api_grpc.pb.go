@@ -47,10 +47,10 @@ type ProfileResponse struct {
 	Name         string `protobuf:"bytes,5,opt,name=name,proto3" json:"name,omitempty"`
 	CardNumber   string `protobuf:"bytes,6,opt,name=card_number,json=cardNumber,proto3" json:"card_number,omitempty"`
 	CardProvider string `protobuf:"bytes,7,opt,name=card_provider,json=cardProvider,proto3" json:"card_provider,omitempty"`
-	Balance      int64  `protobuf:"varint,8,opt,name=balance,proto3" json:"balance,omitempty"`
-	Currency     string `protobuf:"bytes,9,opt,name=currency,proto3" json:"currency,omitempty"`
-	AccountType  string `protobuf:"bytes,10,opt,name=account_type,json=accountType,proto3" json:"account_type,omitempty"`
-	Image        string `protobuf:"bytes,11,opt,name=image,proto3" json:"image,omitempty"`
+	Balance      int64  `protobuf:"varint,8,opt,name=balance,proto3" json:"balance"`
+	Currency     string `protobuf:"bytes,9,opt,name=currency,proto3" json:"currency"`
+	AccountType  string `protobuf:"bytes,10,opt,name=account_type,json=accountType,proto3" json:"account_type"`
+	Image        string `protobuf:"bytes,11,opt,name=image,proto3" json:"image"`
 }
 
 type GetAllMenusRequest struct{}
