@@ -549,6 +549,86 @@ func (s *gatewayServer) handleCurrencyList(w http.ResponseWriter, r *http.Reques
 	writeJSON(w, http.StatusOK, resp)
 }
 
+// ── Mobile Prepaid endpoints ──
+
+// handleGetBeneficiaries godoc
+// @Summary Get prepaid beneficiaries
+// @Description Retrieve saved mobile prepaid top-up contacts for an account
+// @Tags Mobile Prepaid
+// @Produce json
+// @Security BearerAuth
+// @Param accountId query string true "Account ID"
+// @Success 200 {object} pb.BeneficiaryListResponse
+// @Failure 401 {object} pb.ErrorBodyResponse
+// @Failure 500 {object} pb.ErrorBodyResponse
+// @Router /api/mobile-prepaid/beneficiaries [get]
+func (s *gatewayServer) handleGetBeneficiaries(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		return
+	}
+	if r.Method != "GET" {
+		writeJSONError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	accountID := r.URL.Query().Get("accountId")
+	if accountID == "" {
+		writeJSONError(w, http.StatusBadRequest, "accountId query parameter is required")
+		return
+	}
+
+	ctx := contextFromHTTPRequest(r)
+	resp, err := s.apiServer.GetBeneficiaries(ctx, &pb.GetBeneficiariesRequest{AccountId: accountID})
+	if err != nil {
+		writeGRPCError(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, resp)
+}
+
+// handlePrepaidPay godoc
+// @Summary Submit prepaid payment
+// @Description Process a mobile prepaid top-up transaction
+// @Tags Mobile Prepaid
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param Idempotency-Key header string true "Client-generated UUID for idempotency"
+// @Param request body pb.PrepaidPayRequest true "Prepaid payment request body"
+// @Success 200 {object} pb.PrepaidPayResponse
+// @Failure 400 {object} pb.ErrorBodyResponse
+// @Failure 401 {object} pb.ErrorBodyResponse
+// @Failure 500 {object} pb.ErrorBodyResponse
+// @Router /api/mobile-prepaid/pay [post]
+func (s *gatewayServer) handlePrepaidPay(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		return
+	}
+	if r.Method != "POST" {
+		writeJSONError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	idempotencyKey := r.Header.Get("Idempotency-Key")
+
+	var req pb.PrepaidPayRequest
+	if err := decodeJSONBody(r, &req); err != nil {
+		writeJSONError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+	req.IdempotencyKey = idempotencyKey
+
+	ctx := contextFromHTTPRequest(r)
+	resp, err := s.apiServer.PrepaidPay(ctx, &req)
+	if err != nil {
+		writeGRPCError(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, resp)
+}
+
 // ── Helpers ──
 
 func contextFromHTTPRequest(r *http.Request) context.Context {

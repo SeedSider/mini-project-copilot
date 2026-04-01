@@ -164,3 +164,123 @@ func (x *CurrencyListResponse) GetCurrencies() []*CurrencyEntry {
 	}
 	return nil
 }
+
+// ── Mobile Prepaid Messages ──
+
+type GetBeneficiariesRequest struct {
+	AccountId string `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"accountId"`
+}
+
+func (x *GetBeneficiariesRequest) GetAccountId() string {
+	if x != nil {
+		return x.AccountId
+	}
+	return ""
+}
+
+type BeneficiaryItem struct {
+	Id     string `protobuf:"bytes,1,opt,name=id,proto3" json:"id"`
+	Name   string `protobuf:"bytes,2,opt,name=name,proto3" json:"name"`
+	Phone  string `protobuf:"bytes,3,opt,name=phone,proto3" json:"phone"`
+	Avatar string `protobuf:"bytes,4,opt,name=avatar,proto3" json:"avatar"`
+}
+
+func (x *BeneficiaryItem) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+func (x *BeneficiaryItem) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+func (x *BeneficiaryItem) GetPhone() string {
+	if x != nil {
+		return x.Phone
+	}
+	return ""
+}
+func (x *BeneficiaryItem) GetAvatar() string {
+	if x != nil {
+		return x.Avatar
+	}
+	return ""
+}
+
+type BeneficiaryListResponse struct {
+	Beneficiaries []*BeneficiaryItem `protobuf:"bytes,1,rep,name=beneficiaries,proto3" json:"beneficiaries,omitempty"`
+}
+
+func (x *BeneficiaryListResponse) GetBeneficiaries() []*BeneficiaryItem {
+	if x != nil {
+		return x.Beneficiaries
+	}
+	return nil
+}
+
+type PrepaidPayRequest struct {
+	CardId         string `protobuf:"bytes,1,opt,name=card_id,json=cardId,proto3" json:"cardId"`
+	Phone          string `protobuf:"bytes,2,opt,name=phone,proto3" json:"phone"`
+	Amount         int64  `protobuf:"varint,3,opt,name=amount,proto3" json:"amount"`
+	IdempotencyKey string `protobuf:"bytes,4,opt,name=idempotency_key,json=idempotencyKey,proto3" json:"idempotencyKey"`
+}
+
+func (x *PrepaidPayRequest) GetCardId() string {
+	if x != nil {
+		return x.CardId
+	}
+	return ""
+}
+func (x *PrepaidPayRequest) GetPhone() string {
+	if x != nil {
+		return x.Phone
+	}
+	return ""
+}
+func (x *PrepaidPayRequest) GetAmount() int64 {
+	if x != nil {
+		return x.Amount
+	}
+	return 0
+}
+func (x *PrepaidPayRequest) GetIdempotencyKey() string {
+	if x != nil {
+		return x.IdempotencyKey
+	}
+	return ""
+}
+
+type PrepaidPayResponse struct {
+	Id        string `protobuf:"bytes,1,opt,name=id,proto3" json:"id"`
+	Status    string `protobuf:"bytes,2,opt,name=status,proto3" json:"status"`
+	Message   string `protobuf:"bytes,3,opt,name=message,proto3" json:"message"`
+	Timestamp string `protobuf:"bytes,4,opt,name=timestamp,proto3" json:"timestamp"`
+}
+
+func (x *PrepaidPayResponse) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+func (x *PrepaidPayResponse) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+func (x *PrepaidPayResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+func (x *PrepaidPayResponse) GetTimestamp() string {
+	if x != nil {
+		return x.Timestamp
+	}
+	return ""
+}

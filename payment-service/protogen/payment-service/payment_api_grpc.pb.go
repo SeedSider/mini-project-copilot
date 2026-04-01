@@ -16,6 +16,8 @@ type PaymentServiceServer interface {
 	GetProviders(context.Context, *GetProvidersRequest) (*ProviderListResponse, error)
 	GetInternetBill(context.Context, *GetInternetBillRequest) (*InternetBillResponse, error)
 	GetCurrencyList(context.Context, *GetCurrencyListRequest) (*CurrencyListResponse, error)
+	GetBeneficiaries(context.Context, *GetBeneficiariesRequest) (*BeneficiaryListResponse, error)
+	PrepaidPay(context.Context, *PrepaidPayRequest) (*PrepaidPayResponse, error)
 }
 
 // UnimplementedPaymentServiceServer should be embedded to have forward compatible implementations.
@@ -30,12 +32,20 @@ func (UnimplementedPaymentServiceServer) GetInternetBill(context.Context, *GetIn
 func (UnimplementedPaymentServiceServer) GetCurrencyList(context.Context, *GetCurrencyListRequest) (*CurrencyListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCurrencyList not implemented")
 }
+func (UnimplementedPaymentServiceServer) GetBeneficiaries(context.Context, *GetBeneficiariesRequest) (*BeneficiaryListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetBeneficiaries not implemented")
+}
+func (UnimplementedPaymentServiceServer) PrepaidPay(context.Context, *PrepaidPayRequest) (*PrepaidPayResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PrepaidPay not implemented")
+}
 
 // PaymentServiceClient is the client API for PaymentService service.
 type PaymentServiceClient interface {
 	GetProviders(ctx context.Context, in *GetProvidersRequest, opts ...grpc.CallOption) (*ProviderListResponse, error)
 	GetInternetBill(ctx context.Context, in *GetInternetBillRequest, opts ...grpc.CallOption) (*InternetBillResponse, error)
 	GetCurrencyList(ctx context.Context, in *GetCurrencyListRequest, opts ...grpc.CallOption) (*CurrencyListResponse, error)
+	GetBeneficiaries(ctx context.Context, in *GetBeneficiariesRequest, opts ...grpc.CallOption) (*BeneficiaryListResponse, error)
+	PrepaidPay(ctx context.Context, in *PrepaidPayRequest, opts ...grpc.CallOption) (*PrepaidPayResponse, error)
 }
 
 type paymentServiceClient struct {
@@ -75,6 +85,24 @@ func (c *paymentServiceClient) GetCurrencyList(ctx context.Context, in *GetCurre
 	return out, nil
 }
 
+func (c *paymentServiceClient) GetBeneficiaries(ctx context.Context, in *GetBeneficiariesRequest, opts ...grpc.CallOption) (*BeneficiaryListResponse, error) {
+	out := new(BeneficiaryListResponse)
+	err := c.cc.Invoke(ctx, paymentServiceName+"GetBeneficiaries", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *paymentServiceClient) PrepaidPay(ctx context.Context, in *PrepaidPayRequest, opts ...grpc.CallOption) (*PrepaidPayResponse, error) {
+	out := new(PrepaidPayResponse)
+	err := c.cc.Invoke(ctx, paymentServiceName+"PrepaidPay", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PaymentService_ServiceDesc is the grpc.ServiceDesc for PaymentService service.
 var PaymentService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "payment.PaymentService",
@@ -91,6 +119,14 @@ var PaymentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetCurrencyList",
 			Handler:    _PaymentService_GetCurrencyList_Handler,
+		},
+		{
+			MethodName: "GetBeneficiaries",
+			Handler:    _PaymentService_GetBeneficiaries_Handler,
+		},
+		{
+			MethodName: "PrepaidPay",
+			Handler:    _PaymentService_PrepaidPay_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -151,6 +187,42 @@ func _PaymentService_GetCurrencyList_Handler(srv interface{}, ctx context.Contex
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(PaymentServiceServer).GetCurrencyList(ctx, req.(*GetCurrencyListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PaymentService_GetBeneficiaries_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetBeneficiariesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PaymentServiceServer).GetBeneficiaries(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: paymentServiceName + "GetBeneficiaries",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PaymentServiceServer).GetBeneficiaries(ctx, req.(*GetBeneficiariesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PaymentService_PrepaidPay_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PrepaidPayRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PaymentServiceServer).PrepaidPay(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: paymentServiceName + "PrepaidPay",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PaymentServiceServer).PrepaidPay(ctx, req.(*PrepaidPayRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

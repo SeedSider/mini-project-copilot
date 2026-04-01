@@ -193,6 +193,10 @@ func startHTTPServer(port string, apiServer *api.Server) error {
 	mux.HandleFunc("/api/pay-the-bill/internet-bill", gwServer.handleInternetBill)
 	mux.HandleFunc("/api/currency-list", gwServer.handleCurrencyList)
 
+	// Mobile Prepaid endpoints
+	mux.HandleFunc("/api/mobile-prepaid/beneficiaries", gwServer.handleGetBeneficiaries)
+	mux.HandleFunc("/api/mobile-prepaid/pay", gwServer.handlePrepaidPay)
+
 	listener, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		return err

@@ -152,6 +152,10 @@ func httpServer(port int) error {
 	// Protected API route (JWT required)
 	mux.HandleFunc("/api/pay-the-bill/internet-bill", methodOnly("GET", jwtMiddleware(apiServer.HandleGetInternetBill)))
 
+	// Mobile Prepaid routes (JWT required)
+	mux.HandleFunc("/api/mobile-prepaid/beneficiaries", methodOnly("GET", jwtMiddleware(apiServer.HandleGetBeneficiaries)))
+	mux.HandleFunc("/api/mobile-prepaid/pay", methodOnly("POST", jwtMiddleware(apiServer.HandlePrepaidPay)))
+
 	// Health check
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")

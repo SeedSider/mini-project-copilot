@@ -53,12 +53,45 @@ type CurrencyListResponse struct {
 	Currencies []*CurrencyEntry `protobuf:"bytes,1,rep,name=currencies,proto3" json:"currencies,omitempty"`
 }
 
+// ── Mobile Prepaid Types ──
+
+type GetBeneficiariesRequest struct {
+	AccountId string `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"accountId"`
+}
+
+type BeneficiaryItem struct {
+	Id     string `protobuf:"bytes,1,opt,name=id,proto3" json:"id"`
+	Name   string `protobuf:"bytes,2,opt,name=name,proto3" json:"name"`
+	Phone  string `protobuf:"bytes,3,opt,name=phone,proto3" json:"phone"`
+	Avatar string `protobuf:"bytes,4,opt,name=avatar,proto3" json:"avatar"`
+}
+
+type BeneficiaryListResponse struct {
+	Beneficiaries []*BeneficiaryItem `protobuf:"bytes,1,rep,name=beneficiaries,proto3" json:"beneficiaries,omitempty"`
+}
+
+type PrepaidPayRequest struct {
+	CardId         string `protobuf:"bytes,1,opt,name=card_id,json=cardId,proto3" json:"cardId"`
+	Phone          string `protobuf:"bytes,2,opt,name=phone,proto3" json:"phone"`
+	Amount         int64  `protobuf:"varint,3,opt,name=amount,proto3" json:"amount"`
+	IdempotencyKey string `protobuf:"bytes,4,opt,name=idempotency_key,json=idempotencyKey,proto3" json:"idempotencyKey"`
+}
+
+type PrepaidPayResponse struct {
+	Id        string `protobuf:"bytes,1,opt,name=id,proto3" json:"id"`
+	Status    string `protobuf:"bytes,2,opt,name=status,proto3" json:"status"`
+	Message   string `protobuf:"bytes,3,opt,name=message,proto3" json:"message"`
+	Timestamp string `protobuf:"bytes,4,opt,name=timestamp,proto3" json:"timestamp"`
+}
+
 // ── Client interface ──
 
 type PaymentServiceClient interface {
 	GetProviders(ctx context.Context, in *GetProvidersRequest, opts ...grpc.CallOption) (*ProviderListResponse, error)
 	GetInternetBill(ctx context.Context, in *GetInternetBillRequest, opts ...grpc.CallOption) (*InternetBillResponse, error)
 	GetCurrencyList(ctx context.Context, in *GetCurrencyListRequest, opts ...grpc.CallOption) (*CurrencyListResponse, error)
+	GetBeneficiaries(ctx context.Context, in *GetBeneficiariesRequest, opts ...grpc.CallOption) (*BeneficiaryListResponse, error)
+	PrepaidPay(ctx context.Context, in *PrepaidPayRequest, opts ...grpc.CallOption) (*PrepaidPayResponse, error)
 }
 
 type paymentServiceClient struct {
@@ -92,6 +125,24 @@ func (c *paymentServiceClient) GetInternetBill(ctx context.Context, in *GetInter
 func (c *paymentServiceClient) GetCurrencyList(ctx context.Context, in *GetCurrencyListRequest, opts ...grpc.CallOption) (*CurrencyListResponse, error) {
 	out := new(CurrencyListResponse)
 	err := c.cc.Invoke(ctx, paymentServiceName+"GetCurrencyList", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *paymentServiceClient) GetBeneficiaries(ctx context.Context, in *GetBeneficiariesRequest, opts ...grpc.CallOption) (*BeneficiaryListResponse, error) {
+	out := new(BeneficiaryListResponse)
+	err := c.cc.Invoke(ctx, paymentServiceName+"GetBeneficiaries", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *paymentServiceClient) PrepaidPay(ctx context.Context, in *PrepaidPayRequest, opts ...grpc.CallOption) (*PrepaidPayResponse, error) {
+	out := new(PrepaidPayResponse)
+	err := c.cc.Invoke(ctx, paymentServiceName+"PrepaidPay", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}

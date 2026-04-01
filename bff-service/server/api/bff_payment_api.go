@@ -6,7 +6,17 @@ import (
 	pb "github.com/bankease/bff-service/protogen/bff-service"
 	paymentPB "github.com/bankease/bff-service/protogen/payment-service"
 	"github.com/bankease/bff-service/server/utils"
+	"google.golang.org/grpc/metadata"
 )
+
+// forwardAuthCtx converts incoming gRPC metadata (set by contextFromHTTPRequest)
+// into outgoing metadata so downstream gRPC services receive the Authorization header.
+func forwardAuthCtx(ctx context.Context) context.Context {
+	if md, ok := metadata.FromIncomingContext(ctx); ok {
+		return metadata.NewOutgoingContext(ctx, md)
+	}
+	return ctx
+}
 
 // GetProviders proxies to payment-service.
 func (s *Server) GetProviders(ctx context.Context, _ *pb.GetProvidersRequest) (*pb.ProviderListResponse, error) {
@@ -35,7 +45,7 @@ func (s *Server) GetInternetBill(ctx context.Context, _ *pb.GetInternetBillReque
 	processId := utils.GetProcessIdFromCtx(ctx)
 	log.Info(processId, "GetInternetBill", "Proxying to payment-service", nil, nil, nil, nil)
 
-	resp, err := s.svcConn.PaymentClient().GetInternetBill(ctx, &paymentPB.GetInternetBillRequest{})
+	resp, err := s.svcConn.PaymentClient().GetInternetBill(forwardAuthCtx(ctx), &paymentPB.GetInternetBillRequest{})
 	if err != nil {
 		log.Error(processId, "GetInternetBill", err.Error(), nil, nil, nil, err)
 		return nil, err
@@ -81,4 +91,54 @@ func (s *Server) GetCurrencyList(ctx context.Context, _ *pb.GetCurrencyListReque
 	}
 
 	return &pb.CurrencyListResponse{Currencies: items}, nil
+}
+
+// GetBeneficiaries proxies to payment-service (JWT required).
+func (s *Server) GetBeneficiaries(ctx context.Context, req *pb.GetBeneficiariesRequest) (*pb.BeneficiaryListResponse, error) {
+	processId := utils.GetProcessIdFromCtx(ctx)
+	log.Info(processId, "GetBeneficiaries", "Proxying to payment-service", nil, nil, nil, nil)
+
+	resp, err := s.svcConn.PaymentClient().GetBeneficiaries(forwardAuthCtx(ctx), &paymentPB.GetBeneficiariesRequest{
+		AccountId: req.GetAccountId(),
+	})
+	if err != nil {
+		log.Error(processId, "GetBeneficiaries", err.Error(), nil, nil, nil, err)
+		return nil, err
+	}
+
+	items := make([]*pb.BeneficiaryItem, len(resp.Beneficiaries))
+	for i, b := range resp.Beneficiaries {
+		items[i] = &pb.BeneficiaryItem{
+			Id:     b.Id,
+			Name:   b.Name,
+			Phone:  b.Phone,
+			Avatar: b.Avatar,
+		}
+	}
+
+	return &pb.BeneficiaryListResponse{Beneficiaries: items}, nil
+}
+
+// PrepaidPay proxies to payment-service (JWT required).
+func (s *Server) PrepaidPay(ctx context.Context, req *pb.PrepaidPayRequest) (*pb.PrepaidPayResponse, error) {
+	processId := utils.GetProcessIdFromCtx(ctx)
+	log.Info(processId, "PrepaidPay", "Proxying to payment-service", nil, nil, nil, nil)
+
+	resp, err := s.svcConn.PaymentClient().PrepaidPay(forwardAuthCtx(ctx), &paymentPB.PrepaidPayRequest{
+		CardId:         req.GetCardId(),
+		Phone:          req.GetPhone(),
+		Amount:         req.GetAmount(),
+		IdempotencyKey: req.GetIdempotencyKey(),
+	})
+	if err != nil {
+		log.Error(processId, "PrepaidPay", err.Error(), nil, nil, nil, err)
+		return nil, err
+	}
+
+	return &pb.PrepaidPayResponse{
+		Id:        resp.Id,
+		Status:    resp.Status,
+		Message:   resp.Message,
+		Timestamp: resp.Timestamp,
+	}, nil
 }

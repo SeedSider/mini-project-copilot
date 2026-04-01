@@ -13,6 +13,8 @@ services:
       - ./migrations/001_add_providers.sql:/docker-entrypoint-initdb.d/001_add_providers.sql
       - ./migrations/002_add_internet_bills.sql:/docker-entrypoint-initdb.d/002_add_internet_bills.sql
       - ./migrations/003_add_currencies.sql:/docker-entrypoint-initdb.d/003_add_currencies.sql
+      - ./migrations/004_add_beneficiaries.sql:/docker-entrypoint-initdb.d/004_add_beneficiaries.sql
+      - ./migrations/005_add_prepaid_transactions.sql:/docker-entrypoint-initdb.d/005_add_prepaid_transactions.sql
       - ./seed.sql:/docker-entrypoint-initdb.d/seed.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
@@ -25,6 +27,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: payment-service
+    restart: on-failure
     command:
       [
         "./server",

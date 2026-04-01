@@ -24,3 +24,10 @@ INSERT INTO currency (code, label, rate) VALUES
   ('SAR', 'SAR (Saudi Riyal)',              3.75),
   ('SGD', 'SGD (Singapore Dollar)',         1.34),
   ('USD', 'USD (United States Dollar)',     1);
+
+-- Beneficiaries (sample contacts for test account)
+INSERT INTO beneficiary (account_id, name, phone, avatar) VALUES
+  ('acc-001', 'John Doe', '081234567890', ''),
+  ('acc-001', 'Jane Smith', '087654321012', ''),
+  ('acc-001', 'Bob Wilson', '082112345678', '')
+ON CONFLICT DO NOTHING;

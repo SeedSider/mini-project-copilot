@@ -24,6 +24,10 @@ var (
 	_ *bff_service.InternetBillResponse
 	_ *bff_service.CurrencyEntry
 	_ *bff_service.CurrencyListResponse
+	_ *bff_service.BeneficiaryItem
+	_ *bff_service.BeneficiaryListResponse
+	_ *bff_service.PrepaidPayRequest
+	_ *bff_service.PrepaidPayResponse
 )
 
 // Swagger documentation stubs for endpoints that share a single handler

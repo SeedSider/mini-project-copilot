@@ -8,4 +8,6 @@ service PaymentService {
   rpc GetProviders(GetProvidersRequest) returns (ProviderListResponse);
   rpc GetInternetBill(GetInternetBillRequest) returns (InternetBillResponse);
   rpc GetCurrencyList(GetCurrencyListRequest) returns (CurrencyListResponse);
+  rpc GetBeneficiaries(GetBeneficiariesRequest) returns (BeneficiaryListResponse);
+  rpc PrepaidPay(PrepaidPayRequest) returns (PrepaidPayResponse);
 }

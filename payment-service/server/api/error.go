@@ -40,3 +40,12 @@ func (s *Server) serverError() error {
 func (s *Server) unauthorizedError() error {
 	return status.New(codes.Unauthenticated, "Unauthorized").Err()
 }
+
+type prepaidErrorResponse struct {
+	Error   string `json:"error"`
+	Message string `json:"message"`
+}
+
+func writePrepaidError(w http.ResponseWriter, statusCode int, errorCode, message string) {
+	writeJSON(w, statusCode, prepaidErrorResponse{Error: errorCode, Message: message})
+}

@@ -42,3 +42,25 @@ func currenciesToProto(currencies []db.Currency) []*pb.CurrencyEntry {
 	}
 	return items
 }
+
+func beneficiariesToProto(beneficiaries []db.Beneficiary) []*pb.BeneficiaryItem {
+	items := make([]*pb.BeneficiaryItem, len(beneficiaries))
+	for i, b := range beneficiaries {
+		items[i] = &pb.BeneficiaryItem{
+			Id:     b.ID,
+			Name:   b.Name,
+			Phone:  b.Phone,
+			Avatar: b.Avatar,
+		}
+	}
+	return items
+}
+
+func transactionToProto(txn *db.PrepaidTransaction) *pb.PrepaidPayResponse {
+	return &pb.PrepaidPayResponse{
+		Id:        txn.ID,
+		Status:    txn.Status,
+		Message:   txn.Message,
+		Timestamp: txn.Timestamp,
+	}
+}

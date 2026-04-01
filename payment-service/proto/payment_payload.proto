@@ -41,3 +41,34 @@ message InternetBillResponse {
 message CurrencyListResponse {
   repeated CurrencyEntry currencies = 1;
 }
+
+// ── Mobile Prepaid Messages ──
+
+message GetBeneficiariesRequest {
+  string account_id = 1;
+}
+
+message BeneficiaryItem {
+  string id = 1;
+  string name = 2;
+  string phone = 3;
+  string avatar = 4;
+}
+
+message BeneficiaryListResponse {
+  repeated BeneficiaryItem beneficiaries = 1;
+}
+
+message PrepaidPayRequest {
+  string card_id = 1;
+  string phone = 2;
+  int64 amount = 3;
+  string idempotency_key = 4;
+}
+
+message PrepaidPayResponse {
+  string id = 1;
+  string status = 2;
+  string message = 3;
+  string timestamp = 4;
+}

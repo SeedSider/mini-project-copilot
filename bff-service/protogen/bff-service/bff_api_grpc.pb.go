@@ -31,6 +31,8 @@ type BffServiceServer interface {
 	GetProviders(context.Context, *GetProvidersRequest) (*ProviderListResponse, error)
 	GetInternetBill(context.Context, *GetInternetBillRequest) (*InternetBillResponse, error)
 	GetCurrencyList(context.Context, *GetCurrencyListRequest) (*CurrencyListResponse, error)
+	GetBeneficiaries(context.Context, *GetBeneficiariesRequest) (*BeneficiaryListResponse, error)
+	PrepaidPay(context.Context, *PrepaidPayRequest) (*PrepaidPayResponse, error)
 }
 
 // UnimplementedBffServiceServer should be embedded to have forward compatible implementations.
@@ -90,6 +92,12 @@ func (UnimplementedBffServiceServer) GetInternetBill(context.Context, *GetIntern
 func (UnimplementedBffServiceServer) GetCurrencyList(context.Context, *GetCurrencyListRequest) (*CurrencyListResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetCurrencyList not implemented")
 }
+func (UnimplementedBffServiceServer) GetBeneficiaries(context.Context, *GetBeneficiariesRequest) (*BeneficiaryListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetBeneficiaries not implemented")
+}
+func (UnimplementedBffServiceServer) PrepaidPay(context.Context, *PrepaidPayRequest) (*PrepaidPayResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PrepaidPay not implemented")
+}
 
 const bffServiceName = "/bff.BffService/"
 
@@ -116,6 +124,8 @@ var BffService_ServiceDesc = grpc.ServiceDesc{
 		{MethodName: "GetProviders", Handler: _BffService_GetProviders_Handler},
 		{MethodName: "GetInternetBill", Handler: _BffService_GetInternetBill_Handler},
 		{MethodName: "GetCurrencyList", Handler: _BffService_GetCurrencyList_Handler},
+		{MethodName: "GetBeneficiaries", Handler: _BffService_GetBeneficiaries_Handler},
+		{MethodName: "PrepaidPay", Handler: _BffService_PrepaidPay_Handler},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "bff_api.proto",
@@ -361,6 +371,36 @@ func _BffService_GetCurrencyList_Handler(srv interface{}, ctx context.Context, d
 	info := &grpc.UnaryServerInfo{Server: srv, FullMethod: bffServiceName + "GetCurrencyList"}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(BffServiceServer).GetCurrencyList(ctx, req.(*GetCurrencyListRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BffService_GetBeneficiaries_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetBeneficiariesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BffServiceServer).GetBeneficiaries(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{Server: srv, FullMethod: bffServiceName + "GetBeneficiaries"}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BffServiceServer).GetBeneficiaries(ctx, req.(*GetBeneficiariesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BffService_PrepaidPay_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PrepaidPayRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BffServiceServer).PrepaidPay(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{Server: srv, FullMethod: bffServiceName + "PrepaidPay"}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BffServiceServer).PrepaidPay(ctx, req.(*PrepaidPayRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
