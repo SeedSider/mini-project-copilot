@@ -100,6 +100,7 @@ jobs:
               echo "IDENTITY_SERVICE_ADDR=$BFF_IDENTITY_SERVICE_ADDR"
               echo "PROFILE_SERVICE_ADDR=$BFF_PROFILE_SERVICE_ADDR"
               echo "SAVING_SERVICE_ADDR=$BFF_SAVING_SERVICE_ADDR"
+              echo "PAYMENT_SERVICE_ADDR=$BFF_PAYMENT_SERVICE_ADDR"
               echo "JWT_SECRET=$BFF_JWT_SECRET"
               echo "JWT_DURATION=24h"
               echo "AZURE_SAS_URL=$BFF_AZURE_SAS_URL"
@@ -159,23 +160,23 @@ jobs:
 
             # Deploy user-profile-service
             cd "$REPO_DIR/user-profile-service"
-            docker compose up --build -d
+            docker compose up --build -d --force-recreate --remove-orphans
 
             # Deploy identity-service
             cd "$REPO_DIR/identity-service"
-            docker compose up --build -d
+            docker compose up --build -d --force-recreate --remove-orphans
 
             # Deploy saving-service
             cd "$REPO_DIR/saving-service"
-            docker compose up --build -d
+            docker compose up --build -d --force-recreate --remove-orphans
 
             # Deploy payment-service
             cd "$REPO_DIR/payment-service"
-            docker compose up --build -d
+            docker compose up --build -d --force-recreate --remove-orphans
 
             # Deploy bff-service
             cd "$REPO_DIR/bff-service"
-            docker compose up --build -d
+            docker compose up --build -d --force-recreate --remove-orphans
 
             # Remove dangling images from previous builds
             docker image prune -f
