@@ -34,3 +34,8 @@ func (s *Server) conflictError(msg string) error {
 	st := status.New(codes.AlreadyExists, msg)
 	return st.Err()
 }
+
+func (s *Server) notFoundError(msg string) error {
+	st := status.New(codes.NotFound, msg)
+	return st.Err()
+}

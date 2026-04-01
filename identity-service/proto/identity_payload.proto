@@ -36,6 +36,25 @@ message GetMeResponse {
   string username = 2;
 }
 
+// ValidateOTP
+message ValidateOtpRequest {
+  string username = 1;
+}
+
+message ValidateOtpResponse {
+  int32 otp = 1;
+}
+
+// UpdatePassword
+message UpdatePasswordRequest {
+  string username    = 1;
+  string newPassword = 2;
+}
+
+message UpdatePasswordResponse {
+  string message = 1;
+}
+
 // Error
 message ErrorBodyResponse {
   bool error = 1;

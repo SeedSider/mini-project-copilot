@@ -16,6 +16,8 @@ type IdentityServiceServer interface {
 	SignUp(context.Context, *SignUpRequest) (*SignUpResponse, error)
 	SignIn(context.Context, *SignInRequest) (*SignInResponse, error)
 	GetMe(context.Context, *GetMeRequest) (*GetMeResponse, error)
+	ValidateOtp(context.Context, *ValidateOtpRequest) (*ValidateOtpResponse, error)
+	UpdatePassword(context.Context, *UpdatePasswordRequest) (*UpdatePasswordResponse, error)
 }
 
 // UnimplementedIdentityServiceServer should be embedded to have forward compatible implementations.
@@ -30,12 +32,20 @@ func (UnimplementedIdentityServiceServer) SignIn(context.Context, *SignInRequest
 func (UnimplementedIdentityServiceServer) GetMe(context.Context, *GetMeRequest) (*GetMeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMe not implemented")
 }
+func (UnimplementedIdentityServiceServer) ValidateOtp(context.Context, *ValidateOtpRequest) (*ValidateOtpResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ValidateOtp not implemented")
+}
+func (UnimplementedIdentityServiceServer) UpdatePassword(context.Context, *UpdatePasswordRequest) (*UpdatePasswordResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdatePassword not implemented")
+}
 
 // IdentityServiceClient is the client API for IdentityService service.
 type IdentityServiceClient interface {
 	SignUp(ctx context.Context, in *SignUpRequest, opts ...grpc.CallOption) (*SignUpResponse, error)
 	SignIn(ctx context.Context, in *SignInRequest, opts ...grpc.CallOption) (*SignInResponse, error)
 	GetMe(ctx context.Context, in *GetMeRequest, opts ...grpc.CallOption) (*GetMeResponse, error)
+	ValidateOtp(ctx context.Context, in *ValidateOtpRequest, opts ...grpc.CallOption) (*ValidateOtpResponse, error)
+	UpdatePassword(ctx context.Context, in *UpdatePasswordRequest, opts ...grpc.CallOption) (*UpdatePasswordResponse, error)
 }
 
 type identityServiceClient struct {
@@ -75,6 +85,24 @@ func (c *identityServiceClient) GetMe(ctx context.Context, in *GetMeRequest, opt
 	return out, nil
 }
 
+func (c *identityServiceClient) ValidateOtp(ctx context.Context, in *ValidateOtpRequest, opts ...grpc.CallOption) (*ValidateOtpResponse, error) {
+	out := new(ValidateOtpResponse)
+	err := c.cc.Invoke(ctx, identityServiceName+"ValidateOtp", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *identityServiceClient) UpdatePassword(ctx context.Context, in *UpdatePasswordRequest, opts ...grpc.CallOption) (*UpdatePasswordResponse, error) {
+	out := new(UpdatePasswordResponse)
+	err := c.cc.Invoke(ctx, identityServiceName+"UpdatePassword", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // IdentityService_ServiceDesc is the grpc.ServiceDesc for IdentityService service.
 var IdentityService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "identity.service.v1.IdentityService",
@@ -91,6 +119,14 @@ var IdentityService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetMe",
 			Handler:    _IdentityService_GetMe_Handler,
+		},
+		{
+			MethodName: "ValidateOtp",
+			Handler:    _IdentityService_ValidateOtp_Handler,
+		},
+		{
+			MethodName: "UpdatePassword",
+			Handler:    _IdentityService_UpdatePassword_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -151,6 +187,42 @@ func _IdentityService_GetMe_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(IdentityServiceServer).GetMe(ctx, req.(*GetMeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _IdentityService_ValidateOtp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ValidateOtpRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IdentityServiceServer).ValidateOtp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: identityServiceName + "ValidateOtp",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IdentityServiceServer).ValidateOtp(ctx, req.(*ValidateOtpRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _IdentityService_UpdatePassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdatePasswordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IdentityServiceServer).UpdatePassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: identityServiceName + "UpdatePassword",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IdentityServiceServer).UpdatePassword(ctx, req.(*UpdatePasswordRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

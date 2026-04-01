@@ -39,6 +39,13 @@ argument-hint: "What to check (e.g. 'completed items', 'remaining work', 'known 
 - [x] Functional Testing: 12/12 passed (signup, signin, getme, error cases)
 - [x] Unit Tests: 7 test files (api, interceptor, db, constant, jwt, utils, database wrapper)
 - [x] gRPC Server: SignUp, SignIn, GetMe via gRPC (`identity_grpc_api.go`)
+- [x] **Forgot Password** (2026-04-01): `ValidateOtp` (random 6-digit via crypto/rand) + `UpdatePassword` (JWT-protected, username from JWT claims)
+  - [x] `identity_forgot_password_api.go` + `identity_forgot_password_api_test.go` (29 tests)
+  - [x] `UpdatePasswordByUsername` added to `identity_provider.go` + tests
+  - [x] Proto + protogen updated (ValidateOtpRequest/Response, UpdatePasswordRequest/Response)
+  - [x] HTTP routes: POST /api/auth/validate-otp, PUT /api/auth/update-password
+  - [x] Coverage: api 91.2%, db 100%, jwt 93.3% ✅
+  - [x] Docker Compose running & end-to-end verified ✅
 
 ### saving-service — SELESAI ✅
 
@@ -64,6 +71,13 @@ argument-hint: "What to check (e.g. 'completed items', 'remaining work', 'known 
 - [x] Docker Compose full stack RUNNING & VERIFIED (signup → signin → profile e2e)
 - [x] Swagger UI at `/swagger/bff/` with BearerAuth
 - [x] saving-service integration (3 routes)
+- [x] **Forgot Password** (2026-04-01): proxy ValidateOtp (public) + UpdatePassword (JWT-protected)
+  - [x] `bff_forgot_password_api.go` — ValidateOtp proxy, UpdatePassword extracts username from JWT
+  - [x] protogen/identity-service: ValidateOtp + UpdatePassword client stubs
+  - [x] protogen/bff-service: ValidateOtpRequest/Response, UpdatePasswordRequest/Response
+  - [x] `bff_authInterceptor.go` — UpdatePassword added to protected paths
+  - [x] Routes: POST /api/auth/validate-otp, PUT /api/auth/update-password
+  - [x] End-to-end verified: validate-otp → signin → update-password → signin with new pass ✅
 
 ### Infrastructure
 
@@ -74,10 +88,23 @@ argument-hint: "What to check (e.g. 'completed items', 'remaining work', 'known 
 
 ## Not Started
 
-- [ ] Functional testing BFF — 30+ test cases from testing checklist
 - [ ] Unit tests bff-service (target ≥ 90%)
-- [ ] Unit tests identity-service coverage verification ≥ 90%
+- [ ] Functional testing BFF — 30+ test cases from testing checklist
 - [ ] SonarQube analysis pass for all services
+
+## Known Issues
+
+- bff-service `docker-compose.local.yml` was missing `SAVING_SERVICE_ADDR` env var (added 2026-04-01)
+- Seed data caveat: `docker-entrypoint-initdb.d` only runs on fresh volume; use `docker exec -i <container> psql -U postgres -d <db> < seed.sql` for re-seed
+
+## Architecture Decisions Log (recent)
+
+| Keputusan | Alasan | Tanggal |
+|---|---|---|
+| Forgot Password OTP via `crypto/rand` | Security: no hardcoded/predictable OTP | 2026-04-01 |
+| UpdatePassword JWT-protected at BFF | Username sourced from JWT claims, not client request body | 2026-04-01 |
+| ValidateOtp public (no JWT) | User is unauthenticated when requesting OTP | 2026-04-01 |
+| Client MUST go through BFF | identity-service not exposed directly; all traffic via BFF | 2026-04-01 |
 
 ## In Progress / Recently Completed (2026-04-01)
 

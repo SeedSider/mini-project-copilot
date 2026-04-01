@@ -27,4 +27,18 @@ service IdentityService {
       get: "/api/identity/me"
     };
   }
+
+  rpc ValidateOtp(ValidateOtpRequest) returns (ValidateOtpResponse) {
+    option (google.api.http) = {
+      post: "/api/auth/validate-otp"
+      body: "*"
+    };
+  }
+
+  rpc UpdatePassword(UpdatePasswordRequest) returns (UpdatePasswordResponse) {
+    option (google.api.http) = {
+      put: "/api/auth/update-password"
+      body: "*"
+    };
+  }
 }

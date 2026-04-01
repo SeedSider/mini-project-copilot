@@ -128,3 +128,59 @@ func (s *Server) GetMe(ctx context.Context, _ *pb.GetMeRequest) (*pb.GetMeRespon
 		Username: user.Username,
 	}, nil
 }
+
+// ValidateOtp implements the gRPC ValidateOtp RPC method.
+func (s *Server) ValidateOtp(ctx context.Context, req *pb.ValidateOtpRequest) (*pb.ValidateOtpResponse, error) {
+	processId := utils.GetProcessIdFromCtx(ctx)
+	log.Info(processId, "ValidateOtp", "Processing gRPC validate OTP request", nil, nil, nil, nil)
+
+	if req.GetUsername() == "" {
+		return nil, s.badRequestError("username is required")
+	}
+
+	exists, err := s.provider.CheckUsernameExists(ctx, req.GetUsername())
+	if err != nil {
+		log.Error(processId, "GrpcValidateOtp", fmt.Sprintf("[error][api][func: GrpcValidateOtp] check username: %v", err), nil, nil, nil, err)
+		return nil, s.serverError()
+	}
+	if !exists {
+		return nil, s.notFoundError("Username not found")
+	}
+
+	otp, err := generateOTP()
+	if err != nil {
+		log.Error(processId, "GrpcValidateOtp", fmt.Sprintf("[error][api][func: GrpcValidateOtp] generate OTP: %v", err), nil, nil, nil, err)
+		return nil, s.serverError()
+	}
+
+	log.Info(processId, "GrpcValidateOtp", fmt.Sprintf("OTP generated for user: %s", req.GetUsername()), nil, nil, nil, nil)
+	return &pb.ValidateOtpResponse{Otp: otp}, nil
+}
+
+// UpdatePassword implements the gRPC UpdatePassword RPC method.
+func (s *Server) UpdatePassword(ctx context.Context, req *pb.UpdatePasswordRequest) (*pb.UpdatePasswordResponse, error) {
+	processId := utils.GetProcessIdFromCtx(ctx)
+	log.Info(processId, "UpdatePassword", "Processing gRPC update password request", nil, nil, nil, nil)
+
+	if req.GetUsername() == "" {
+		return nil, s.badRequestError("username is required")
+	}
+	if len(req.GetNewPassword()) < 6 {
+		return nil, s.badRequestError("password must be at least 6 characters")
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.GetNewPassword()), bcrypt.DefaultCost)
+	if err != nil {
+		log.Error(processId, "GrpcUpdatePassword", fmt.Sprintf("[error][api][func: GrpcUpdatePassword] hash password: %v", err), nil, nil, nil, err)
+		return nil, s.serverError()
+	}
+
+	err = s.provider.UpdatePasswordByUsername(ctx, req.GetUsername(), string(hashedPassword))
+	if err != nil {
+		log.Error(processId, "GrpcUpdatePassword", fmt.Sprintf("[error][api][func: GrpcUpdatePassword] update password: %v", err), nil, nil, nil, err)
+		return nil, s.serverError()
+	}
+
+	log.Info(processId, "GrpcUpdatePassword", fmt.Sprintf("Password updated for user: %s", req.GetUsername()), nil, nil, nil, nil)
+	return &pb.UpdatePasswordResponse{Message: "berhasil ubah password"}, nil
+}

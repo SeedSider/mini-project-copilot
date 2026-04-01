@@ -80,3 +80,30 @@ func (p *Provider) CheckUsernameExists(ctx context.Context, username string) (bo
 
 	return count > 0, nil
 }
+
+func (p *Provider) UpdatePasswordByUsername(ctx context.Context, username, passwordHash string) error {
+	const functionName = "UpdatePasswordByUsername"
+	processId := utils.GetProcessIdFromCtx(ctx)
+
+	result, err := p.dbSql.GetPmConnection().ExecContext(ctx,
+		`UPDATE users SET password_hash = $1 WHERE username = $2`,
+		passwordHash, username,
+	)
+	if err != nil {
+		log.Error(processId, functionName, fmt.Sprintf("[error][db][func: %s] %v", functionName, err), nil, nil, nil, err)
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		log.Error(processId, functionName, fmt.Sprintf("[error][db][func: %s] rows affected: %v", functionName, err), nil, nil, nil, err)
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return NotFound("user", username)
+	}
+
+	log.Info(processId, functionName, fmt.Sprintf("Password updated for user: %s", username), nil, nil, nil, nil)
+	return nil
+}

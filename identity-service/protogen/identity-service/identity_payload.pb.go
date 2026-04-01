@@ -122,6 +122,62 @@ func (x *GetMeResponse) GetUsername() string {
 	return ""
 }
 
+// ValidateOtpRequest
+type ValidateOtpRequest struct {
+	Username string `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
+}
+
+func (x *ValidateOtpRequest) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+// ValidateOtpResponse
+type ValidateOtpResponse struct {
+	Otp int32 `protobuf:"varint,1,opt,name=otp,proto3" json:"otp,omitempty"`
+}
+
+func (x *ValidateOtpResponse) GetOtp() int32 {
+	if x != nil {
+		return x.Otp
+	}
+	return 0
+}
+
+// UpdatePasswordRequest
+type UpdatePasswordRequest struct {
+	Username    string `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
+	NewPassword string `protobuf:"bytes,2,opt,name=newPassword,proto3" json:"newPassword,omitempty"`
+}
+
+func (x *UpdatePasswordRequest) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+func (x *UpdatePasswordRequest) GetNewPassword() string {
+	if x != nil {
+		return x.NewPassword
+	}
+	return ""
+}
+
+// UpdatePasswordResponse
+type UpdatePasswordResponse struct {
+	Message string `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+}
+
+func (x *UpdatePasswordResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
 // ErrorBodyResponse
 type ErrorBodyResponse struct {
 	Error   bool   `protobuf:"varint,1,opt,name=error,proto3" json:"error,omitempty"`

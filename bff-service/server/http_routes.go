@@ -301,6 +301,83 @@ func (s *gatewayServer) handleMenuByAccountType(w http.ResponseWriter, r *http.R
 	writeJSON(w, http.StatusOK, resp)
 }
 
+// ── Forgot Password endpoints ──
+
+// handleValidateOtp godoc
+// @Summary Validate OTP for forgot password
+// @Description Validate username and return a randomized 6-digit OTP (dummy for development)
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Param request body pb.ValidateOtpRequest true "ValidateOtp request body"
+// @Success 200 {object} pb.ValidateOtpResponse
+// @Failure 400 {object} pb.ErrorBodyResponse
+// @Failure 404 {object} pb.ErrorBodyResponse "Username not found"
+// @Failure 500 {object} pb.ErrorBodyResponse
+// @Router /api/auth/validate-otp [post]
+func (s *gatewayServer) handleValidateOtp(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		return
+	}
+	if r.Method != "POST" {
+		writeJSONError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	var req pb.ValidateOtpRequest
+	if err := decodeJSONBody(r, &req); err != nil {
+		writeJSONError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	ctx := contextFromHTTPRequest(r)
+	resp, err := s.apiServer.ValidateOtp(ctx, &req)
+	if err != nil {
+		writeGRPCError(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, resp)
+}
+
+// handleUpdatePassword godoc
+// @Summary Update password
+// @Description Update the authenticated user's password. Username is extracted from JWT token.
+// @Tags Auth
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body pb.UpdatePasswordRequest true "UpdatePassword request body"
+// @Success 200 {object} pb.UpdatePasswordResponse
+// @Failure 400 {object} pb.ErrorBodyResponse
+// @Failure 401 {object} pb.ErrorBodyResponse "Unauthorized"
+// @Failure 500 {object} pb.ErrorBodyResponse
+// @Router /api/auth/update-password [put]
+func (s *gatewayServer) handleUpdatePassword(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		return
+	}
+	if r.Method != "PUT" {
+		writeJSONError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	var req pb.UpdatePasswordRequest
+	if err := decodeJSONBody(r, &req); err != nil {
+		writeJSONError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	ctx := contextFromHTTPRequest(r)
+	resp, err := s.apiServer.UpdatePassword(ctx, &req)
+	if err != nil {
+		writeGRPCError(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, resp)
+}
+
 // ── Search / Saving endpoints ──
 
 func (s *gatewayServer) handleExchangeRates(w http.ResponseWriter, r *http.Request) {

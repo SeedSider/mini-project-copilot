@@ -170,6 +170,8 @@ func startHTTPServer(port string, apiServer *api.Server) error {
 	mux.HandleFunc("/api/auth/signup", gwServer.handleAuthSignUp)
 	mux.HandleFunc("/api/auth/signin", gwServer.handleAuthSignIn)
 	mux.HandleFunc("/api/auth/me", gwServer.handleAuthGetMe)
+	mux.HandleFunc("/api/auth/validate-otp", gwServer.handleValidateOtp)
+	mux.HandleFunc("/api/auth/update-password", gwServer.handleUpdatePassword)
 
 	// Profile endpoints
 	mux.HandleFunc("/api/profile/user/", gwServer.handleProfileByUserID)

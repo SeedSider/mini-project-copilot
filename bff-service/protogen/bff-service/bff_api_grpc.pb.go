@@ -16,6 +16,8 @@ type BffServiceServer interface {
 	SignUp(context.Context, *SignUpRequest) (*SignUpResponse, error)
 	SignIn(context.Context, *SignInRequest) (*SignInResponse, error)
 	GetMe(context.Context, *GetMeRequest) (*GetMeResponse, error)
+	ValidateOtp(context.Context, *ValidateOtpRequest) (*ValidateOtpResponse, error)
+	UpdatePassword(context.Context, *UpdatePasswordRequest) (*UpdatePasswordResponse, error)
 	GetMyProfile(context.Context, *GetMyProfileRequest) (*ProfileResponse, error)
 	GetProfileByID(context.Context, *GetProfileByIDRequest) (*ProfileResponse, error)
 	GetProfileByUserID(context.Context, *GetProfileByUserIDRequest) (*ProfileResponse, error)
@@ -39,6 +41,12 @@ func (UnimplementedBffServiceServer) SignIn(context.Context, *SignInRequest) (*S
 }
 func (UnimplementedBffServiceServer) GetMe(context.Context, *GetMeRequest) (*GetMeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMe not implemented")
+}
+func (UnimplementedBffServiceServer) ValidateOtp(context.Context, *ValidateOtpRequest) (*ValidateOtpResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ValidateOtp not implemented")
+}
+func (UnimplementedBffServiceServer) UpdatePassword(context.Context, *UpdatePasswordRequest) (*UpdatePasswordResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdatePassword not implemented")
 }
 func (UnimplementedBffServiceServer) GetMyProfile(context.Context, *GetMyProfileRequest) (*ProfileResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetMyProfile not implemented")
@@ -81,6 +89,8 @@ var BffService_ServiceDesc = grpc.ServiceDesc{
 		{MethodName: "SignUp", Handler: _BffService_SignUp_Handler},
 		{MethodName: "SignIn", Handler: _BffService_SignIn_Handler},
 		{MethodName: "GetMe", Handler: _BffService_GetMe_Handler},
+		{MethodName: "ValidateOtp", Handler: _BffService_ValidateOtp_Handler},
+		{MethodName: "UpdatePassword", Handler: _BffService_UpdatePassword_Handler},
 		{MethodName: "GetMyProfile", Handler: _BffService_GetMyProfile_Handler},
 		{MethodName: "GetProfileByID", Handler: _BffService_GetProfileByID_Handler},
 		{MethodName: "GetProfileByUserID", Handler: _BffService_GetProfileByUserID_Handler},
@@ -291,6 +301,36 @@ func _BffService_GetBranches_Handler(srv interface{}, ctx context.Context, dec f
 	info := &grpc.UnaryServerInfo{Server: srv, FullMethod: bffServiceName + "GetBranches"}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(BffServiceServer).GetBranches(ctx, req.(*GetBranchesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BffService_ValidateOtp_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ValidateOtpRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BffServiceServer).ValidateOtp(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{Server: srv, FullMethod: bffServiceName + "ValidateOtp"}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BffServiceServer).ValidateOtp(ctx, req.(*ValidateOtpRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BffService_UpdatePassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdatePasswordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BffServiceServer).UpdatePassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{Server: srv, FullMethod: bffServiceName + "UpdatePassword"}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BffServiceServer).UpdatePassword(ctx, req.(*UpdatePasswordRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

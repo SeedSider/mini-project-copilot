@@ -112,6 +112,16 @@ applyTo: "**"
 - [x] `var _ pb.IdentityServiceServer = (*Server)(nil)` compile-time check
 - [x] SignUp gRPC TIDAK melakukan best-effort HTTP ke profile (BFF orchestrates)
 
+**Forgot Password: SELESAI ✅ (2026-04-01)**
+
+- [x] `server/api/identity_forgot_password_api.go` — ValidateOtp (random OTP via `crypto/rand`), UpdatePassword (JWT-protected)
+- [x] `server/api/identity_forgot_password_api_test.go` — 29 unit tests; OTP generator injection for testability
+- [x] `server/db/identity_provider.go` — `UpdatePasswordByUsername` (bcrypt hash + UPDATE)
+- [x] Proto + protogen updated: `ValidateOtpRequest/Response`, `UpdatePasswordRequest/Response`
+- [x] HTTP routes: `POST /api/auth/validate-otp` (public), `PUT /api/auth/update-password` (JWT)
+- [x] Coverage: api 91.2%, db 100%, jwt 93.3% ✅
+- [x] Docker Compose running, end-to-end verified ✅
+
 ### saving-service — SELESAI ✅
 
 - [x] Diekstrak dari user-profile-service search feature menjadi service mandiri
@@ -173,6 +183,14 @@ applyTo: "**"
   - [x] `server/services/service.go` — SavingService gRPC client (port 9303)
   - [x] `server/api/bff_saving_api.go` — GetExchangeRates, GetInterestRates, GetBranches handlers
   - [x] `server/core_config.go` — `SavingServiceAddr` config (default: localhost:9303)
+- [x] **Forgot Password BFF (2026-04-01)**:
+  - [x] `server/api/bff_forgot_password_api.go` — ValidateOtp (public proxy), UpdatePassword (extracts username from JWT claims)
+  - [x] `protogen/identity-service/identity_api_grpc.pb.go` — ValidateOtp + UpdatePassword client stubs + payload types
+  - [x] `protogen/bff-service/bff_payload.pb.go` — ValidateOtpRequest/Response, UpdatePasswordRequest/Response
+  - [x] `protogen/bff-service/bff_api_grpc.pb.go` — BffServiceServer interface + handlers updated
+  - [x] `server/api/bff_authInterceptor.go` — UpdatePassword added to protected paths
+  - [x] Routes: POST /api/auth/validate-otp, PUT /api/auth/update-password
+  - [x] End-to-end verified: validate-otp → signin → update-password → signin with new password ✅
 
 ### BFF Service Spec — SELESAI ✅
 
@@ -204,25 +222,24 @@ _(tidak ada item in progress saat ini)_
 ### Unit Tests & Quality
 
 - [ ] Unit tests bff-service (target ≥ 90%)
-- [ ] Unit tests user-profile-service (target ≥ 90%) — belum ada test file
-- [ ] Unit tests saving-service (target ≥ 90%) — belum ada test file
-- [ ] Unit tests identity-service coverage ≥ 90% (test files sudah ada, perlu verifikasi coverage)
+- [x] Unit tests user-profile-service ✅
+- [x] Unit tests saving-service ✅
+- [x] Unit tests identity-service coverage ≥ 90% ✅ (api 91.2%, db 100%, jwt 93.3%)
 - [ ] SonarQube analysis pass untuk semua service
 
 ### Future Enhancements
 
 - [ ] Frontend integration — hubungkan mobile app ke backend real
-- [ ] Email verification, forgot password, refresh token
 - [ ] Rate limiting pada login endpoint
 - [ ] Graceful shutdown
 
 ## Known Issues
 
-- user-profile-service: belum ada unit tests
-- saving-service: belum ada unit tests
+- bff-service: belum ada unit tests
 - Semua services belum melalui SonarQube analysis
 - **Seed data caveat**: `docker-entrypoint-initdb.d` hanya jalan saat volume fresh; gunakan `docker exec -i <container> psql -U postgres -d <db> -f /docker-entrypoint-initdb.d/seed.sql` untuk re-seed
 - **`create_file` tool caveat**: tool bisa melaporkan sukses tapi file tidak terbuat di disk. SELALU verifikasi dengan `Get-Item <path>` setelah membuat file baru.
+- **bff-service `docker-compose.local.yml`**: was missing `SAVING_SERVICE_ADDR` env var (fixed 2026-04-01)
 
 ## Architecture Decisions Log
 
@@ -249,3 +266,7 @@ _(tidak ada item in progress saat ini)_
 | Search endpoints → saving-service        | Separation of concerns; search data bukan tanggung jawab user-profile  | 2026-03-31 |
 | saving-service standalone                | Service mandiri dengan DB sendiri (PostgreSQL `saving`, port 5434)      | 2026-03-31 |
 | BFF terhubung ke 3 downstream services   | identity (9301) + user-profile (9302) + saving (9303)                  | 2026-03-31 |
+| Forgot Password OTP via `crypto/rand`    | Security: no hardcoded/predictable OTP                                  | 2026-04-01 |
+| UpdatePassword JWT-protected at BFF       | Username dari JWT claims, bukan dari request body                       | 2026-04-01 |
+| ValidateOtp public (no JWT)              | User belum login saat minta OTP                                         | 2026-04-01 |
+| OTP generator injection untuk unit test  | `crypto/rand` tidak bisa di-mock langsung; inject fungsi generator      | 2026-04-01 |

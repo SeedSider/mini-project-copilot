@@ -118,6 +118,52 @@ func (x *GetMeResponse) GetUsername() string {
 	return ""
 }
 
+// ── Forgot Password Messages ──
+
+type ValidateOtpRequest struct {
+	Username string `protobuf:"bytes,1,opt,name=username,proto3" json:"username,omitempty"`
+}
+
+func (x *ValidateOtpRequest) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+type ValidateOtpResponse struct {
+	Otp int32 `protobuf:"varint,1,opt,name=otp,proto3" json:"otp,omitempty"`
+}
+
+func (x *ValidateOtpResponse) GetOtp() int32 {
+	if x != nil {
+		return x.Otp
+	}
+	return 0
+}
+
+type UpdatePasswordRequest struct {
+	NewPassword string `protobuf:"bytes,1,opt,name=newPassword,proto3" json:"newPassword,omitempty"`
+}
+
+func (x *UpdatePasswordRequest) GetNewPassword() string {
+	if x != nil {
+		return x.NewPassword
+	}
+	return ""
+}
+
+type UpdatePasswordResponse struct {
+	Message string `protobuf:"bytes,1,opt,name=message,proto3" json:"message,omitempty"`
+}
+
+func (x *UpdatePasswordResponse) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
 // ── Profile Messages ──
 
 type GetMyProfileRequest struct{}

@@ -137,6 +137,8 @@ func httpServer(port int) error {
 	mux.HandleFunc("/api/auth/signup", methodOnly("POST", apiServer.HandleSignUp))
 	mux.HandleFunc("/api/auth/signin", methodOnly("POST", apiServer.HandleSignIn))
 	mux.HandleFunc("/api/identity/me", methodOnly("GET", apiServer.HandleGetMe))
+	mux.HandleFunc("/api/auth/validate-otp", methodOnly("POST", apiServer.HandleValidateOtp))
+	mux.HandleFunc("/api/auth/update-password", methodOnly("PUT", apiServer.HandleUpdatePassword))
 
 	// Health check
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {

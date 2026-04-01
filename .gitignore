@@ -34,3 +34,4 @@ go.work.sum
 
 addons-issuance-lc-service
 .identity-service
+.misc

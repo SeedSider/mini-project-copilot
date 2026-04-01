@@ -199,3 +199,58 @@ func TestNotFoundErr(t *testing.T) {
 	assert.Equal(t, "User", err.ResourceType)
 	assert.Equal(t, "123", err.ID)
 }
+
+// --- UpdatePasswordByUsername ---
+
+func TestUpdatePasswordByUsername_Success(t *testing.T) {
+	provider, mock := newTestProvider(t)
+	ctx := context.Background()
+
+	mock.ExpectExec(`UPDATE users SET password_hash`).
+		WithArgs("new-hashed-pw", "johndoe").
+		WillReturnResult(sqlmock.NewResult(0, 1))
+
+	err := provider.UpdatePasswordByUsername(ctx, "johndoe", "new-hashed-pw")
+	assert.NoError(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestUpdatePasswordByUsername_UserNotFound(t *testing.T) {
+	provider, mock := newTestProvider(t)
+	ctx := context.Background()
+
+	mock.ExpectExec(`UPDATE users SET password_hash`).
+		WithArgs("new-hashed-pw", "unknown").
+		WillReturnResult(sqlmock.NewResult(0, 0))
+
+	err := provider.UpdatePasswordByUsername(ctx, "unknown", "new-hashed-pw")
+	assert.Error(t, err)
+	_, isNotFound := err.(NotFoundErr)
+	assert.True(t, isNotFound)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestUpdatePasswordByUsername_DBError(t *testing.T) {
+	provider, mock := newTestProvider(t)
+	ctx := context.Background()
+
+	mock.ExpectExec(`UPDATE users SET password_hash`).
+		WillReturnError(fmt.Errorf("connection refused"))
+
+	err := provider.UpdatePasswordByUsername(ctx, "johndoe", "new-hashed-pw")
+	assert.Error(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}
+
+func TestUpdatePasswordByUsername_RowsAffectedError(t *testing.T) {
+	provider, mock := newTestProvider(t)
+	ctx := context.Background()
+
+	mock.ExpectExec(`UPDATE users SET password_hash`).
+		WithArgs("new-hashed-pw", "johndoe").
+		WillReturnResult(sqlmock.NewErrorResult(fmt.Errorf("rows affected error")))
+
+	err := provider.UpdatePasswordByUsername(ctx, "johndoe", "new-hashed-pw")
+	assert.Error(t, err)
+	assert.NoError(t, mock.ExpectationsWereMet())
+}

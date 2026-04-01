@@ -6,17 +6,16 @@ applyTo: "**"
 
 ## Current Focus
 
-- All 4 services **SELESAI** — compile pass, Docker Compose running, verified end-to-end.
-- Unit tests user-profile-service ✅ (5 test files: profile_api, menu_api, upload_api, profile_provider, menu_provider)
-- Unit tests saving-service ✅ (4 test files: saving_api, saving_interceptor, saving_provider, db_error)
-- Next priority: unit tests bff-service → coverage verification → SonarQube.
+- **Forgot Password feature SELESAI** ✅ — ValidateOtp + UpdatePassword di identity-service + BFF, end-to-end verified.
+- identity-service unit tests: 91.2% coverage (api), 100% (db), 93.3% (jwt) ✅
+- identity-service + bff-service RUNNING via Docker Compose ✅ (April 1, 2026)
+- Next priority: unit tests bff-service → SonarQube analysis.
 
 ## Next Steps
 
 1. Unit tests bff-service (target ≥ 90%)
-2. Unit tests identity-service coverage verification ≥ 90%
-3. Functional testing BFF — 30+ test cases from checklist
-4. SonarQube analysis pass for all services
+2. Functional testing BFF — 30+ test cases from checklist
+3. SonarQube analysis pass for all services
 
 ## Active Decisions
 
@@ -26,6 +25,9 @@ applyTo: "**"
 - Upload image: BFF direct to Azure Blob (not via user-profile-service gRPC)
 - Docker Compose per service (local dev); full stack compose in bff-service/
 - Search endpoints extracted from user-profile to saving-service
+- **Forgot Password**: ValidateOtp is public; UpdatePassword is JWT-protected (BFF extracts username from JWT claims, forwards to identity gRPC)
+- **OTP**: `crypto/rand` random 6-digit (100000–999999); NOT hardcoded
+- **UpdatePassword flow**: Client → BFF (JWT verify, extract username) → identity-service gRPC (UpdatePassword with username + newPassword)
 
 ## Important Patterns
 
@@ -37,3 +39,5 @@ applyTo: "**"
 - Seed data: `docker-entrypoint-initdb.d` only on fresh volume; `docker cp` + `psql -f` for re-seed
 - Menu filter: PREMIUM → all, REGULAR → only REGULAR
 - SignUp orchestration (BFF): identity.SignUp → profile.CreateProfile (best-effort)
+- **Forgot Password unit test**: inject `otpGenerator func() (int, error)` into handler via closure for testability; mock `crypto/rand` errors via generator injection
+- **Protected route pattern**: add path to `protectedPaths` map in `bff_authInterceptor.go` AND in identity-service `identity_authInterceptor.go` skip-list for JWT-protected endpoints
