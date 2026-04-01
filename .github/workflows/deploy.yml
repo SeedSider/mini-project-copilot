@@ -132,7 +132,7 @@ jobs:
               echo "FLUENTBIT_PORT=24223"
             } > "$REPO_DIR/saving-service/.env"
 
-             Write .env for payment-service
+            # Write .env for payment-service
             {
               echo "JWT_SECRET=$P_JWT_SECRET"
               echo "JWT_DURATION=24h"
