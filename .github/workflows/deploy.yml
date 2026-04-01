@@ -35,13 +35,19 @@ jobs:
           SS_DB_USER: ${{ vars.SS_DB_USER }}
           SS_DB_PASSWORD: ${{ secrets.SS_DB_PASSWORD }}
           SS_DB_NAME: ${{ vars.SS_DB_NAME }}
+          P_JWT_SECRET: ${{ secrets.P_JWT_SECRET }}
+          P_DB_HOST: ${{ vars.P_DB_HOST }}
+          P_DB_PORT: ${{ vars.P_DB_PORT }}
+          P_DB_USER: ${{ vars.P_DB_USER }}
+          P_DB_PASSWORD: ${{ secrets.P_DB_PASSWORD }}
+          P_DB_NAME: ${{ vars.P_DB_NAME }}
         with:
           host: ${{ vars.REMOTE_HOST }}
           username: ${{ vars.REMOTE_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           command_timeout: 30m
           timeout: 30m
-          envs: UPS_DATABASE_URL,UPS_JWT_SECRET,UPS_AZURE_STORAGE_SAS_URL,UPS_AZURE_STORAGE_CONTAINER,IS_JWT_SECRET,IS_DB_HOST,IS_DB_PORT,IS_DB_USER,IS_DB_PASSWORD,IS_DB_NAME,BFF_JWT_SECRET,BFF_IDENTITY_SERVICE_ADDR,BFF_PROFILE_SERVICE_ADDR,BFF_SAVING_SERVICE_ADDR,BFF_AZURE_SAS_URL,BFF_AZURE_CONTAINER,SS_DB_HOST,SS_DB_PORT,SS_DB_USER,SS_DB_PASSWORD,SS_DB_NAME
+          envs: UPS_DATABASE_URL,UPS_JWT_SECRET,UPS_AZURE_STORAGE_SAS_URL,UPS_AZURE_STORAGE_CONTAINER,IS_JWT_SECRET,IS_DB_HOST,IS_DB_PORT,IS_DB_USER,IS_DB_PASSWORD,IS_DB_NAME,BFF_JWT_SECRET,BFF_IDENTITY_SERVICE_ADDR,BFF_PROFILE_SERVICE_ADDR,BFF_SAVING_SERVICE_ADDR,BFF_AZURE_SAS_URL,BFF_AZURE_CONTAINER,SS_DB_HOST,SS_DB_PORT,SS_DB_USER,SS_DB_PASSWORD,SS_DB_NAME,P_JWT_SECRET,P_DB_HOST,P_DB_PORT,P_DB_USER,P_DB_PASSWORD,P_DB_NAME,BFF_PAYMENT_SERVICE_ADDR
           script: |
             set -e
 
@@ -126,6 +132,31 @@ jobs:
               echo "FLUENTBIT_PORT=24223"
             } > "$REPO_DIR/saving-service/.env"
 
+             Write .env for payment-service
+            {
+              echo "JWT_SECRET=$P_JWT_SECRET"
+              echo "JWT_DURATION=24h"
+              echo "DB_HOST=$P_DB_HOST"
+              echo "DB_PORT=$P_DB_PORT"
+              echo "DB_USER=$P_DB_USER"
+              echo "DB_PASSWORD=$P_DB_PASSWORD"
+              echo "DB_NAME=$P_DB_NAME"
+              echo "DB_SSLMODE=disable"
+              echo "DB_TIMEZONE=Asia/Jakarta"
+              echo "DB_MAX_RETRY=3"
+              echo "DB_TIMEOUT=300"
+              echo "ENV=DEV"
+              echo "APP_NAME=payment-service"
+              echo "PRODUCT_NAME=BRICaMS"
+              echo "LOGGER_TAG=payment.dev"
+              echo "LOGGER_OUTPUT=stdout"
+              echo "LOGGER_LEVEL=debug"
+              echo "FLUENTBIT_HOST=0.0.0.0"
+              echo "FLUENTBIT_PORT=24223"
+              echo "GRPC_MAX_CALL_SEND_MESSAGE=400000000"
+              echo "GRPC_MAX_CALL_RECEIVE_MESSAGE=400000000"
+            } > "$REPO_DIR/payment-service/.env"
+
             # Deploy user-profile-service
             cd "$REPO_DIR/user-profile-service"
             docker compose up --build -d
@@ -136,6 +167,10 @@ jobs:
 
             # Deploy saving-service
             cd "$REPO_DIR/saving-service"
+            docker compose up --build -d
+
+            # Deploy payment-service
+            cd "$REPO_DIR/payment-service"
             docker compose up --build -d
 
             # Deploy bff-service
