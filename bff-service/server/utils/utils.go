@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"math/rand"
 	"os"
 
 	"github.com/bankease/bff-service/server/constant"
@@ -18,6 +19,21 @@ func GetEnv(key, fallback string) string {
 
 func GenerateProcessId() string {
 	return uuid.New().String()
+}
+
+// GenerateCardNumber generates a random 16-digit card number string.
+func GenerateCardNumber() string {
+	digits := make([]byte, 16)
+	for i := range digits {
+		digits[i] = byte('0' + rand.Intn(10))
+	}
+	return string(digits)
+}
+
+// GenerateCardProvider returns a random card provider from the supported options.
+func GenerateCardProvider() string {
+	providers := []string{"Mastercard Platinum", "VISA", "GPN"}
+	return providers[rand.Intn(len(providers))]
 }
 
 func GetProcessIdFromCtx(ctx context.Context) string {
