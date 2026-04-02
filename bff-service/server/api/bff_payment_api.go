@@ -142,3 +142,118 @@ func (s *Server) PrepaidPay(ctx context.Context, req *pb.PrepaidPayRequest) (*pb
 		Timestamp: resp.Timestamp,
 	}, nil
 }
+
+// AddBeneficiary proxies to payment-service (JWT required).
+func (s *Server) AddBeneficiary(ctx context.Context, req *pb.AddBeneficiaryRequest) (*pb.BeneficiaryItem, error) {
+	processId := utils.GetProcessIdFromCtx(ctx)
+	log.Info(processId, "AddBeneficiary", "Proxying to payment-service", nil, nil, nil, nil)
+
+	resp, err := s.svcConn.PaymentClient().AddBeneficiary(forwardAuthCtx(ctx), &paymentPB.AddBeneficiaryRequest{
+		AccountId: req.GetAccountId(),
+		Name:      req.GetName(),
+		Phone:     req.GetPhone(),
+		Avatar:    req.GetAvatar(),
+	})
+	if err != nil {
+		log.Error(processId, "AddBeneficiary", err.Error(), nil, nil, nil, err)
+		return nil, err
+	}
+
+	return &pb.BeneficiaryItem{
+		Id:     resp.Id,
+		Name:   resp.Name,
+		Phone:  resp.Phone,
+		Avatar: resp.Avatar,
+	}, nil
+}
+
+// SearchBeneficiaries proxies to payment-service (JWT required).
+func (s *Server) SearchBeneficiaries(ctx context.Context, req *pb.SearchBeneficiariesRequest) (*pb.BeneficiaryListResponse, error) {
+	processId := utils.GetProcessIdFromCtx(ctx)
+	log.Info(processId, "SearchBeneficiaries", "Proxying to payment-service", nil, nil, nil, nil)
+
+	resp, err := s.svcConn.PaymentClient().SearchBeneficiaries(forwardAuthCtx(ctx), &paymentPB.SearchBeneficiariesRequest{
+		AccountId: req.GetAccountId(),
+		Query:     req.GetQuery(),
+	})
+	if err != nil {
+		log.Error(processId, "SearchBeneficiaries", err.Error(), nil, nil, nil, err)
+		return nil, err
+	}
+
+	items := make([]*pb.BeneficiaryItem, len(resp.Beneficiaries))
+	for i, b := range resp.Beneficiaries {
+		items[i] = &pb.BeneficiaryItem{
+			Id:     b.Id,
+			Name:   b.Name,
+			Phone:  b.Phone,
+			Avatar: b.Avatar,
+		}
+	}
+
+	return &pb.BeneficiaryListResponse{Beneficiaries: items}, nil
+}
+
+// GetPaymentCards proxies to payment-service (JWT required).
+func (s *Server) GetPaymentCards(ctx context.Context, req *pb.GetPaymentCardsRequest) (*pb.PaymentCardListResponse, error) {
+	processId := utils.GetProcessIdFromCtx(ctx)
+	log.Info(processId, "GetPaymentCards", "Proxying to payment-service", nil, nil, nil, nil)
+
+	resp, err := s.svcConn.PaymentClient().GetPaymentCards(forwardAuthCtx(ctx), &paymentPB.GetPaymentCardsRequest{
+		AccountId: req.GetAccountId(),
+	})
+	if err != nil {
+		log.Error(processId, "GetPaymentCards", err.Error(), nil, nil, nil, err)
+		return nil, err
+	}
+
+	cards := make([]*pb.PaymentCardItem, len(resp.Cards))
+	for i, c := range resp.Cards {
+		cards[i] = &pb.PaymentCardItem{
+			Id:             c.Id,
+			AccountId:      c.AccountId,
+			HolderName:     c.HolderName,
+			CardLabel:      c.CardLabel,
+			MaskedNumber:   c.MaskedNumber,
+			Balance:        c.Balance,
+			Currency:       c.Currency,
+			Brand:          c.Brand,
+			GradientColors: c.GradientColors,
+		}
+	}
+
+	return &pb.PaymentCardListResponse{Cards: cards}, nil
+}
+
+// CreatePaymentCard proxies to payment-service (JWT required).
+func (s *Server) CreatePaymentCard(ctx context.Context, req *pb.CreatePaymentCardRequest) (*pb.PaymentCardItem, error) {
+	processId := utils.GetProcessIdFromCtx(ctx)
+	log.Info(processId, "CreatePaymentCard", "Proxying to payment-service", nil, nil, nil, nil)
+
+	resp, err := s.svcConn.PaymentClient().CreatePaymentCard(forwardAuthCtx(ctx), &paymentPB.CreatePaymentCardRequest{
+		AccountId:      req.GetAccountId(),
+		HolderName:     req.GetHolderName(),
+		CardLabel:      req.CardLabel,
+		MaskedNumber:   req.MaskedNumber,
+		Balance:        req.Balance,
+		Currency:       req.Currency,
+		Brand:          req.Brand,
+		GradientColors: req.GradientColors,
+	})
+	if err != nil {
+		log.Error(processId, "CreatePaymentCard", err.Error(), nil, nil, nil, err)
+		return nil, err
+	}
+
+	return &pb.PaymentCardItem{
+		Id:             resp.Id,
+		AccountId:      resp.AccountId,
+		HolderName:     resp.HolderName,
+		CardLabel:      resp.CardLabel,
+		MaskedNumber:   resp.MaskedNumber,
+		Balance:        resp.Balance,
+		Currency:       resp.Currency,
+		Brand:          resp.Brand,
+		GradientColors: resp.GradientColors,
+	}, nil
+}

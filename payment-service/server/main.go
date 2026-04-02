@@ -153,8 +153,10 @@ func httpServer(port int) error {
 	mux.HandleFunc("/api/pay-the-bill/internet-bill", methodOnly("GET", jwtMiddleware(apiServer.HandleGetInternetBill)))
 
 	// Mobile Prepaid routes (JWT required)
-	mux.HandleFunc("/api/mobile-prepaid/beneficiaries", methodOnly("GET", jwtMiddleware(apiServer.HandleGetBeneficiaries)))
+	mux.HandleFunc("/api/mobile-prepaid/beneficiaries/search", methodOnly("GET", jwtMiddleware(apiServer.HandleSearchBeneficiaries)))
+	mux.HandleFunc("/api/mobile-prepaid/beneficiaries", jwtMiddleware(beneficiaryHandler(apiServer)))
 	mux.HandleFunc("/api/mobile-prepaid/pay", methodOnly("POST", jwtMiddleware(apiServer.HandlePrepaidPay)))
+	mux.HandleFunc("/api/mobile-prepaid/cards", jwtMiddleware(cardHandler(apiServer)))
 
 	// Health check
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
@@ -200,6 +202,44 @@ func startGrpcServer(port int) error {
 
 	log.Info("", "startGrpcServer", fmt.Sprintf("gRPC server listening on port %d", port), nil, nil, nil, nil)
 	return grpcServer.Serve(list)
+}
+
+// beneficiaryHandler routes GET → HandleGetBeneficiaries, POST → HandleAddBeneficiary.
+func beneficiaryHandler(s *api.Server) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "OPTIONS" {
+			return
+		}
+		switch r.Method {
+		case "GET":
+			s.HandleGetBeneficiaries(w, r)
+		case "POST":
+			s.HandleAddBeneficiary(w, r)
+		default:
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			json.NewEncoder(w).Encode(map[string]string{"error": "Method not allowed"})
+		}
+	}
+}
+
+// cardHandler routes GET → HandleGetPaymentCards, POST → HandleCreatePaymentCard.
+func cardHandler(s *api.Server) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "OPTIONS" {
+			return
+		}
+		switch r.Method {
+		case "GET":
+			s.HandleGetPaymentCards(w, r)
+		case "POST":
+			s.HandleCreatePaymentCard(w, r)
+		default:
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			json.NewEncoder(w).Encode(map[string]string{"error": "Method not allowed"})
+		}
+	}
 }
 
 // jwtMiddleware verifies JWT for HTTP endpoints and injects user_claims into context.

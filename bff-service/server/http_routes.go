@@ -587,6 +587,195 @@ func (s *gatewayServer) handleGetBeneficiaries(w http.ResponseWriter, r *http.Re
 	writeJSON(w, http.StatusOK, resp)
 }
 
+// handleAddBeneficiary godoc
+// @Summary Add beneficiary
+// @Description Save a new mobile prepaid top-up contact
+// @Tags Mobile Prepaid
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body pb.AddBeneficiaryRequest true "Add beneficiary request body"
+// @Success 201 {object} pb.BeneficiaryItem
+// @Failure 400 {object} pb.ErrorBodyResponse
+// @Failure 401 {object} pb.ErrorBodyResponse
+// @Failure 500 {object} pb.ErrorBodyResponse
+// @Router /api/mobile-prepaid/beneficiaries [post]
+func (s *gatewayServer) handleAddBeneficiary(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		return
+	}
+	if r.Method != "POST" {
+		writeJSONError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	var req pb.AddBeneficiaryRequest
+	if err := decodeJSONBody(r, &req); err != nil {
+		writeJSONError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	ctx := contextFromHTTPRequest(r)
+	resp, err := s.apiServer.AddBeneficiary(ctx, &req)
+	if err != nil {
+		writeGRPCError(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusCreated, resp)
+}
+
+// handleBeneficiaries routes GET and POST for /api/mobile-prepaid/beneficiaries
+func (s *gatewayServer) handleBeneficiaries(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		return
+	}
+	switch r.Method {
+	case "GET":
+		s.handleGetBeneficiaries(w, r)
+	case "POST":
+		s.handleAddBeneficiary(w, r)
+	default:
+		writeJSONError(w, http.StatusMethodNotAllowed, "Method not allowed")
+	}
+}
+
+// handleSearchBeneficiaries godoc
+// @Summary Search beneficiaries
+// @Description Search saved mobile prepaid contacts by name or phone
+// @Tags Mobile Prepaid
+// @Produce json
+// @Security BearerAuth
+// @Param accountId query string true "Account ID"
+// @Param q query string true "Search query"
+// @Success 200 {object} pb.BeneficiaryListResponse
+// @Failure 400 {object} pb.ErrorBodyResponse
+// @Failure 401 {object} pb.ErrorBodyResponse
+// @Failure 500 {object} pb.ErrorBodyResponse
+// @Router /api/mobile-prepaid/beneficiaries/search [get]
+func (s *gatewayServer) handleSearchBeneficiaries(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		return
+	}
+	if r.Method != "GET" {
+		writeJSONError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	accountID := r.URL.Query().Get("accountId")
+	if accountID == "" {
+		writeJSONError(w, http.StatusBadRequest, "accountId query parameter is required")
+		return
+	}
+
+	query := r.URL.Query().Get("q")
+	if query == "" {
+		writeJSONError(w, http.StatusBadRequest, "q query parameter is required")
+		return
+	}
+
+	ctx := contextFromHTTPRequest(r)
+	resp, err := s.apiServer.SearchBeneficiaries(ctx, &pb.SearchBeneficiariesRequest{
+		AccountId: accountID,
+		Query:     query,
+	})
+	if err != nil {
+		writeGRPCError(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, resp)
+}
+
+// handleGetPaymentCards godoc
+// @Summary Get payment cards
+// @Description Retrieve all payment cards for an account
+// @Tags Mobile Prepaid
+// @Produce json
+// @Security BearerAuth
+// @Param accountId query string true "Account ID"
+// @Success 200 {object} pb.PaymentCardListResponse
+// @Failure 401 {object} pb.ErrorBodyResponse
+// @Failure 500 {object} pb.ErrorBodyResponse
+// @Router /api/mobile-prepaid/cards [get]
+func (s *gatewayServer) handleGetPaymentCards(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		return
+	}
+	if r.Method != "GET" {
+		writeJSONError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	accountID := r.URL.Query().Get("accountId")
+	if accountID == "" {
+		writeJSONError(w, http.StatusBadRequest, "accountId query parameter is required")
+		return
+	}
+
+	ctx := contextFromHTTPRequest(r)
+	resp, err := s.apiServer.GetPaymentCards(ctx, &pb.GetPaymentCardsRequest{AccountId: accountID})
+	if err != nil {
+		writeGRPCError(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusOK, resp)
+}
+
+// handleCreatePaymentCard godoc
+// @Summary Create payment card
+// @Description Register a new payment card/account
+// @Tags Mobile Prepaid
+// @Accept json
+// @Produce json
+// @Security BearerAuth
+// @Param request body pb.CreatePaymentCardRequest true "Create card request body"
+// @Success 201 {object} pb.PaymentCardItem
+// @Failure 400 {object} pb.ErrorBodyResponse
+// @Failure 401 {object} pb.ErrorBodyResponse
+// @Failure 500 {object} pb.ErrorBodyResponse
+// @Router /api/mobile-prepaid/cards [post]
+func (s *gatewayServer) handleCreatePaymentCard(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		return
+	}
+	if r.Method != "POST" {
+		writeJSONError(w, http.StatusMethodNotAllowed, "Method not allowed")
+		return
+	}
+
+	var req pb.CreatePaymentCardRequest
+	if err := decodeJSONBody(r, &req); err != nil {
+		writeJSONError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	ctx := contextFromHTTPRequest(r)
+	resp, err := s.apiServer.CreatePaymentCard(ctx, &req)
+	if err != nil {
+		writeGRPCError(w, err)
+		return
+	}
+
+	writeJSON(w, http.StatusCreated, resp)
+}
+
+// handleCards routes GET and POST for /api/mobile-prepaid/cards
+func (s *gatewayServer) handleCards(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" {
+		return
+	}
+	switch r.Method {
+	case "GET":
+		s.handleGetPaymentCards(w, r)
+	case "POST":
+		s.handleCreatePaymentCard(w, r)
+	default:
+		writeJSONError(w, http.StatusMethodNotAllowed, "Method not allowed")
+	}
+}
+
 // handlePrepaidPay godoc
 // @Summary Submit prepaid payment
 // @Description Process a mobile prepaid top-up transaction

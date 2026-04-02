@@ -481,6 +481,221 @@
                         }
                     }
                 }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Save a new mobile prepaid top-up contact",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Mobile Prepaid"
+                ],
+                "summary": "Add beneficiary",
+                "parameters": [
+                    {
+                        "description": "Add beneficiary request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.AddBeneficiaryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.BeneficiaryItem"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/mobile-prepaid/beneficiaries/search": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Search saved mobile prepaid contacts by name or phone",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Mobile Prepaid"
+                ],
+                "summary": "Search beneficiaries",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Account ID",
+                        "name": "accountId",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Search query",
+                        "name": "q",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.BeneficiaryListResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/mobile-prepaid/cards": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieve all payment cards for an account",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Mobile Prepaid"
+                ],
+                "summary": "Get payment cards",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Account ID",
+                        "name": "accountId",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.PaymentCardListResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Register a new payment card/account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Mobile Prepaid"
+                ],
+                "summary": "Create payment card",
+                "parameters": [
+                    {
+                        "description": "Create card request body",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.CreatePaymentCardRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.PaymentCardItem"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.ErrorBodyResponse"
+                        }
+                    }
+                }
             }
         },
         "/api/mobile-prepaid/pay": {
@@ -912,6 +1127,23 @@
         }
     },
     "definitions": {
+        "github_com_bankease_bff-service_protogen_bff-service.AddBeneficiaryRequest": {
+            "type": "object",
+            "properties": {
+                "accountId": {
+                    "type": "string"
+                },
+                "avatar": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "phone": {
+                    "type": "string"
+                }
+            }
+        },
         "github_com_bankease_bff-service_protogen_bff-service.BeneficiaryItem": {
             "type": "object",
             "properties": {
@@ -968,6 +1200,38 @@
                     "items": {
                         "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.BranchItem"
                     }
+                }
+            }
+        },
+        "github_com_bankease_bff-service_protogen_bff-service.CreatePaymentCardRequest": {
+            "type": "object",
+            "properties": {
+                "accountId": {
+                    "type": "string"
+                },
+                "balance": {
+                    "type": "integer"
+                },
+                "brand": {
+                    "type": "string"
+                },
+                "cardLabel": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "gradientColors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "holderName": {
+                    "type": "string"
+                },
+                "maskedNumber": {
+                    "type": "string"
                 }
             }
         },
@@ -1188,6 +1452,52 @@
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.MenuItem"
+                    }
+                }
+            }
+        },
+        "github_com_bankease_bff-service_protogen_bff-service.PaymentCardItem": {
+            "type": "object",
+            "properties": {
+                "accountId": {
+                    "type": "string"
+                },
+                "balance": {
+                    "type": "integer"
+                },
+                "brand": {
+                    "type": "string"
+                },
+                "cardLabel": {
+                    "type": "string"
+                },
+                "currency": {
+                    "type": "string"
+                },
+                "gradientColors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "holderName": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "maskedNumber": {
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_bankease_bff-service_protogen_bff-service.PaymentCardListResponse": {
+            "type": "object",
+            "properties": {
+                "cards": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_bankease_bff-service_protogen_bff-service.PaymentCardItem"
                     }
                 }
             }

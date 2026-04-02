@@ -26,9 +26,13 @@ func NewAuthInterceptor(jwtManager *manager.JWTManager) *AuthInterceptor {
 
 func accessibleRoles() map[string][]string {
 	return map[string][]string{
-		apiServicePath + "GetInternetBill":  {},
-		apiServicePath + "GetBeneficiaries": {},
-		apiServicePath + "PrepaidPay":       {},
+		apiServicePath + "GetInternetBill":     {},
+		apiServicePath + "GetBeneficiaries":    {},
+		apiServicePath + "PrepaidPay":          {},
+		apiServicePath + "AddBeneficiary":      {},
+		apiServicePath + "SearchBeneficiaries": {},
+		apiServicePath + "GetPaymentCards":     {},
+		apiServicePath + "CreatePaymentCard":   {},
 	}
 }
 

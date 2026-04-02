@@ -33,6 +33,10 @@ type BffServiceServer interface {
 	GetCurrencyList(context.Context, *GetCurrencyListRequest) (*CurrencyListResponse, error)
 	GetBeneficiaries(context.Context, *GetBeneficiariesRequest) (*BeneficiaryListResponse, error)
 	PrepaidPay(context.Context, *PrepaidPayRequest) (*PrepaidPayResponse, error)
+	AddBeneficiary(context.Context, *AddBeneficiaryRequest) (*BeneficiaryItem, error)
+	SearchBeneficiaries(context.Context, *SearchBeneficiariesRequest) (*BeneficiaryListResponse, error)
+	GetPaymentCards(context.Context, *GetPaymentCardsRequest) (*PaymentCardListResponse, error)
+	CreatePaymentCard(context.Context, *CreatePaymentCardRequest) (*PaymentCardItem, error)
 }
 
 // UnimplementedBffServiceServer should be embedded to have forward compatible implementations.
@@ -98,6 +102,18 @@ func (UnimplementedBffServiceServer) GetBeneficiaries(context.Context, *GetBenef
 func (UnimplementedBffServiceServer) PrepaidPay(context.Context, *PrepaidPayRequest) (*PrepaidPayResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PrepaidPay not implemented")
 }
+func (UnimplementedBffServiceServer) AddBeneficiary(context.Context, *AddBeneficiaryRequest) (*BeneficiaryItem, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddBeneficiary not implemented")
+}
+func (UnimplementedBffServiceServer) SearchBeneficiaries(context.Context, *SearchBeneficiariesRequest) (*BeneficiaryListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SearchBeneficiaries not implemented")
+}
+func (UnimplementedBffServiceServer) GetPaymentCards(context.Context, *GetPaymentCardsRequest) (*PaymentCardListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPaymentCards not implemented")
+}
+func (UnimplementedBffServiceServer) CreatePaymentCard(context.Context, *CreatePaymentCardRequest) (*PaymentCardItem, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreatePaymentCard not implemented")
+}
 
 const bffServiceName = "/bff.BffService/"
 
@@ -126,6 +142,10 @@ var BffService_ServiceDesc = grpc.ServiceDesc{
 		{MethodName: "GetCurrencyList", Handler: _BffService_GetCurrencyList_Handler},
 		{MethodName: "GetBeneficiaries", Handler: _BffService_GetBeneficiaries_Handler},
 		{MethodName: "PrepaidPay", Handler: _BffService_PrepaidPay_Handler},
+		{MethodName: "AddBeneficiary", Handler: _BffService_AddBeneficiary_Handler},
+		{MethodName: "SearchBeneficiaries", Handler: _BffService_SearchBeneficiaries_Handler},
+		{MethodName: "GetPaymentCards", Handler: _BffService_GetPaymentCards_Handler},
+		{MethodName: "CreatePaymentCard", Handler: _BffService_CreatePaymentCard_Handler},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "bff_api.proto",
@@ -431,6 +451,66 @@ func _BffService_UpdatePassword_Handler(srv interface{}, ctx context.Context, de
 	info := &grpc.UnaryServerInfo{Server: srv, FullMethod: bffServiceName + "UpdatePassword"}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(BffServiceServer).UpdatePassword(ctx, req.(*UpdatePasswordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BffService_AddBeneficiary_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddBeneficiaryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BffServiceServer).AddBeneficiary(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{Server: srv, FullMethod: bffServiceName + "AddBeneficiary"}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BffServiceServer).AddBeneficiary(ctx, req.(*AddBeneficiaryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BffService_SearchBeneficiaries_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SearchBeneficiariesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BffServiceServer).SearchBeneficiaries(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{Server: srv, FullMethod: bffServiceName + "SearchBeneficiaries"}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BffServiceServer).SearchBeneficiaries(ctx, req.(*SearchBeneficiariesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BffService_GetPaymentCards_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPaymentCardsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BffServiceServer).GetPaymentCards(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{Server: srv, FullMethod: bffServiceName + "GetPaymentCards"}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BffServiceServer).GetPaymentCards(ctx, req.(*GetPaymentCardsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _BffService_CreatePaymentCard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreatePaymentCardRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(BffServiceServer).CreatePaymentCard(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{Server: srv, FullMethod: bffServiceName + "CreatePaymentCard"}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(BffServiceServer).CreatePaymentCard(ctx, req.(*CreatePaymentCardRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

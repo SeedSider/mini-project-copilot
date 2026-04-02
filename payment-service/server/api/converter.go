@@ -64,3 +64,25 @@ func transactionToProto(txn *db.PrepaidTransaction) *pb.PrepaidPayResponse {
 		Timestamp: txn.Timestamp,
 	}
 }
+
+func cardsToProto(cards []db.PaymentCard) []*pb.PaymentCardItem {
+	items := make([]*pb.PaymentCardItem, len(cards))
+	for i, c := range cards {
+		items[i] = cardToProto(&c)
+	}
+	return items
+}
+
+func cardToProto(c *db.PaymentCard) *pb.PaymentCardItem {
+	return &pb.PaymentCardItem{
+		Id:             c.ID,
+		AccountId:      c.AccountID,
+		HolderName:     c.HolderName,
+		CardLabel:      c.CardLabel,
+		MaskedNumber:   c.MaskedNumber,
+		Balance:        c.Balance,
+		Currency:       c.Currency,
+		Brand:          c.Brand,
+		GradientColors: c.GradientColors,
+	}
+}

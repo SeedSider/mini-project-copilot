@@ -373,3 +373,289 @@ func TestBeneficiariesToProto_Empty(t *testing.T) {
 	result := beneficiariesToProto([]db.Beneficiary{})
 	assert.Empty(t, result)
 }
+
+// ═══════════════════════════════════════════════════════════
+// gRPC AddBeneficiary
+// ═══════════════════════════════════════════════════════════
+
+func TestGRPC_AddBeneficiary_Success(t *testing.T) {
+	srv, mock := newTestServer(t)
+	mock.ExpectQuery("INSERT INTO beneficiary").
+		WithArgs("acc-1", "Rina", "085678901234", "").
+		WillReturnRows(sqlmock.NewRows([]string{"id", "account_id", "name", "phone", "avatar"}).
+			AddRow("ben-003", "acc-1", "Rina", "085678901234", ""))
+
+	resp, err := srv.AddBeneficiary(ctxWithClaims(), &pb.AddBeneficiaryRequest{
+		AccountId: "acc-1", Name: "Rina", Phone: "085678901234",
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "Rina", resp.Name)
+	assert.Equal(t, "ben-003", resp.Id)
+}
+
+func TestGRPC_AddBeneficiary_NoClaims(t *testing.T) {
+	srv, _ := newTestServer(t)
+	_, err := srv.AddBeneficiary(context.Background(), &pb.AddBeneficiaryRequest{
+		AccountId: "acc-1", Name: "X", Phone: "081234567890",
+	})
+	st, _ := status.FromError(err)
+	assert.Equal(t, codes.Unauthenticated, st.Code())
+}
+
+func TestGRPC_AddBeneficiary_ValidationErrors(t *testing.T) {
+	tests := []struct {
+		name string
+		req  *pb.AddBeneficiaryRequest
+	}{
+		{"no accountId", &pb.AddBeneficiaryRequest{Name: "X", Phone: "081234567890"}},
+		{"no name", &pb.AddBeneficiaryRequest{AccountId: "a", Phone: "081234567890"}},
+		{"no phone", &pb.AddBeneficiaryRequest{AccountId: "a", Name: "X"}},
+		{"bad phone", &pb.AddBeneficiaryRequest{AccountId: "a", Name: "X", Phone: "12"}},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			srv, _ := newTestServer(t)
+			_, err := srv.AddBeneficiary(ctxWithClaims(), tc.req)
+			st, _ := status.FromError(err)
+			assert.Equal(t, codes.InvalidArgument, st.Code())
+		})
+	}
+}
+
+func TestGRPC_AddBeneficiary_DBError(t *testing.T) {
+	srv, mock := newTestServer(t)
+	mock.ExpectQuery("INSERT INTO beneficiary").WillReturnError(errors.New("db error"))
+
+	_, err := srv.AddBeneficiary(ctxWithClaims(), &pb.AddBeneficiaryRequest{
+		AccountId: "acc-1", Name: "X", Phone: "081234567890",
+	})
+	st, _ := status.FromError(err)
+	assert.Equal(t, codes.Internal, st.Code())
+}
+
+// ═══════════════════════════════════════════════════════════
+// gRPC SearchBeneficiaries
+// ═══════════════════════════════════════════════════════════
+
+func TestGRPC_SearchBeneficiaries_Success(t *testing.T) {
+	srv, mock := newTestServer(t)
+	rows := sqlmock.NewRows([]string{"id", "account_id", "name", "phone", "avatar"}).
+		AddRow("b-1", "acc-1", "Emma", "081234567890", "")
+	mock.ExpectQuery("SELECT id, account_id, name, phone, avatar FROM beneficiary").
+		WithArgs("acc-1", "%Emma%").
+		WillReturnRows(rows)
+
+	resp, err := srv.SearchBeneficiaries(ctxWithClaims(), &pb.SearchBeneficiariesRequest{
+		AccountId: "acc-1", Query: "Emma",
+	})
+	require.NoError(t, err)
+	assert.Len(t, resp.Beneficiaries, 1)
+	assert.Equal(t, "Emma", resp.Beneficiaries[0].Name)
+}
+
+func TestGRPC_SearchBeneficiaries_NoClaims(t *testing.T) {
+	srv, _ := newTestServer(t)
+	_, err := srv.SearchBeneficiaries(context.Background(), &pb.SearchBeneficiariesRequest{
+		AccountId: "a", Query: "q",
+	})
+	st, _ := status.FromError(err)
+	assert.Equal(t, codes.Unauthenticated, st.Code())
+}
+
+func TestGRPC_SearchBeneficiaries_ValidationErrors(t *testing.T) {
+	tests := []struct {
+		name string
+		req  *pb.SearchBeneficiariesRequest
+	}{
+		{"no accountId", &pb.SearchBeneficiariesRequest{Query: "q"}},
+		{"no query", &pb.SearchBeneficiariesRequest{AccountId: "a"}},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			srv, _ := newTestServer(t)
+			_, err := srv.SearchBeneficiaries(ctxWithClaims(), tc.req)
+			st, _ := status.FromError(err)
+			assert.Equal(t, codes.InvalidArgument, st.Code())
+		})
+	}
+}
+
+func TestGRPC_SearchBeneficiaries_DBError(t *testing.T) {
+	srv, mock := newTestServer(t)
+	mock.ExpectQuery("SELECT id, account_id, name, phone, avatar FROM beneficiary").
+		WillReturnError(errors.New("db error"))
+
+	_, err := srv.SearchBeneficiaries(ctxWithClaims(), &pb.SearchBeneficiariesRequest{
+		AccountId: "a", Query: "q",
+	})
+	st, _ := status.FromError(err)
+	assert.Equal(t, codes.Internal, st.Code())
+}
+
+func TestGRPC_SearchBeneficiaries_EmptyResult(t *testing.T) {
+	srv, mock := newTestServer(t)
+	rows := sqlmock.NewRows([]string{"id", "account_id", "name", "phone", "avatar"})
+	mock.ExpectQuery("SELECT id, account_id, name, phone, avatar FROM beneficiary").
+		WithArgs("acc-1", "%zzz%").
+		WillReturnRows(rows)
+
+	resp, err := srv.SearchBeneficiaries(ctxWithClaims(), &pb.SearchBeneficiariesRequest{
+		AccountId: "acc-1", Query: "zzz",
+	})
+	require.NoError(t, err)
+	assert.Empty(t, resp.Beneficiaries)
+}
+
+// ═══════════════════════════════════════════════════════════
+// gRPC GetPaymentCards
+// ═══════════════════════════════════════════════════════════
+
+func TestGRPC_GetPaymentCards_Success(t *testing.T) {
+	srv, mock := newTestServer(t)
+	rows := sqlmock.NewRows([]string{"id", "account_id", "holder_name", "card_label", "masked_number", "balance", "currency", "brand", "gradient_colors"}).
+		AddRow("card-001", "acc-1", "John", "Primary", "****1234", int64(500000), "USD", "VISA", "{#aaa,#bbb}")
+	mock.ExpectQuery("SELECT id, account_id, holder_name").
+		WithArgs("acc-1").
+		WillReturnRows(rows)
+
+	resp, err := srv.GetPaymentCards(ctxWithClaims(), &pb.GetPaymentCardsRequest{AccountId: "acc-1"})
+	require.NoError(t, err)
+	assert.Len(t, resp.Cards, 1)
+	assert.Equal(t, "John", resp.Cards[0].HolderName)
+}
+
+func TestGRPC_GetPaymentCards_NoClaims(t *testing.T) {
+	srv, _ := newTestServer(t)
+	_, err := srv.GetPaymentCards(context.Background(), &pb.GetPaymentCardsRequest{AccountId: "a"})
+	st, _ := status.FromError(err)
+	assert.Equal(t, codes.Unauthenticated, st.Code())
+}
+
+func TestGRPC_GetPaymentCards_MissingAccountId(t *testing.T) {
+	srv, _ := newTestServer(t)
+	_, err := srv.GetPaymentCards(ctxWithClaims(), &pb.GetPaymentCardsRequest{})
+	st, _ := status.FromError(err)
+	assert.Equal(t, codes.InvalidArgument, st.Code())
+}
+
+func TestGRPC_GetPaymentCards_DBError(t *testing.T) {
+	srv, mock := newTestServer(t)
+	mock.ExpectQuery("SELECT id, account_id, holder_name").
+		WillReturnError(errors.New("db error"))
+
+	_, err := srv.GetPaymentCards(ctxWithClaims(), &pb.GetPaymentCardsRequest{AccountId: "a"})
+	st, _ := status.FromError(err)
+	assert.Equal(t, codes.Internal, st.Code())
+}
+
+func TestGRPC_GetPaymentCards_EmptyList(t *testing.T) {
+	srv, mock := newTestServer(t)
+	rows := sqlmock.NewRows([]string{"id", "account_id", "holder_name", "card_label", "masked_number", "balance", "currency", "brand", "gradient_colors"})
+	mock.ExpectQuery("SELECT id, account_id, holder_name").
+		WithArgs("acc-1").
+		WillReturnRows(rows)
+
+	resp, err := srv.GetPaymentCards(ctxWithClaims(), &pb.GetPaymentCardsRequest{AccountId: "acc-1"})
+	require.NoError(t, err)
+	assert.Empty(t, resp.Cards)
+}
+
+// ═══════════════════════════════════════════════════════════
+// gRPC CreatePaymentCard
+// ═══════════════════════════════════════════════════════════
+
+func TestGRPC_CreatePaymentCard_Success(t *testing.T) {
+	srv, mock := newTestServer(t)
+	mock.ExpectQuery("INSERT INTO payment_card").
+		WithArgs("acc-1", "John", "Main", "****1234", int64(100000), "USD", "VISA", sqlmock.AnyArg()).
+		WillReturnRows(sqlmock.NewRows([]string{"id", "account_id", "holder_name", "card_label", "masked_number", "balance", "currency", "brand", "gradient_colors"}).
+			AddRow("card-new", "acc-1", "John", "Main", "****1234", int64(100000), "USD", "VISA", "{#111,#222}"))
+
+	resp, err := srv.CreatePaymentCard(ctxWithClaims(), &pb.CreatePaymentCardRequest{
+		AccountId: "acc-1", HolderName: "John", CardLabel: "Main",
+		MaskedNumber: "****1234", Balance: 100000, Currency: "USD",
+		Brand: "VISA", GradientColors: []string{"#111", "#222"},
+	})
+	require.NoError(t, err)
+	assert.Equal(t, "card-new", resp.Id)
+	assert.Equal(t, "John", resp.HolderName)
+}
+
+func TestGRPC_CreatePaymentCard_NoClaims(t *testing.T) {
+	srv, _ := newTestServer(t)
+	_, err := srv.CreatePaymentCard(context.Background(), &pb.CreatePaymentCardRequest{
+		AccountId: "a", HolderName: "J",
+	})
+	st, _ := status.FromError(err)
+	assert.Equal(t, codes.Unauthenticated, st.Code())
+}
+
+func TestGRPC_CreatePaymentCard_ValidationErrors(t *testing.T) {
+	tests := []struct {
+		name string
+		req  *pb.CreatePaymentCardRequest
+	}{
+		{"no accountId", &pb.CreatePaymentCardRequest{HolderName: "J"}},
+		{"no holderName", &pb.CreatePaymentCardRequest{AccountId: "a"}},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			srv, _ := newTestServer(t)
+			_, err := srv.CreatePaymentCard(ctxWithClaims(), tc.req)
+			st, _ := status.FromError(err)
+			assert.Equal(t, codes.InvalidArgument, st.Code())
+		})
+	}
+}
+
+func TestGRPC_CreatePaymentCard_DBError(t *testing.T) {
+	srv, mock := newTestServer(t)
+	mock.ExpectQuery("INSERT INTO payment_card").
+		WillReturnError(errors.New("db error"))
+
+	_, err := srv.CreatePaymentCard(ctxWithClaims(), &pb.CreatePaymentCardRequest{
+		AccountId: "a", HolderName: "J",
+	})
+	st, _ := status.FromError(err)
+	assert.Equal(t, codes.Internal, st.Code())
+}
+
+// ═══════════════════════════════════════════════════════════
+// Converter: cardsToProto + cardToProto
+// ═══════════════════════════════════════════════════════════
+
+func TestCardsToProto(t *testing.T) {
+	cards := []db.PaymentCard{
+		{ID: "c1", AccountID: "a1", HolderName: "H1", Balance: 100, Currency: "USD", Brand: "VISA", GradientColors: []string{"#a"}},
+		{ID: "c2", AccountID: "a2", HolderName: "H2", Balance: 200, Currency: "EUR", Brand: "MASTERCARD"},
+	}
+	result := cardsToProto(cards)
+	assert.Len(t, result, 2)
+	assert.Equal(t, "c1", result[0].Id)
+	assert.Equal(t, int64(100), result[0].Balance)
+	assert.Equal(t, []string{"#a"}, result[0].GradientColors)
+	assert.Equal(t, "c2", result[1].Id)
+}
+
+func TestCardsToProto_Empty(t *testing.T) {
+	result := cardsToProto([]db.PaymentCard{})
+	assert.Empty(t, result)
+}
+
+func TestCardToProto_AllFields(t *testing.T) {
+	card := &db.PaymentCard{
+		ID: "c1", AccountID: "a1", HolderName: "H", CardLabel: "L",
+		MaskedNumber: "****1234", Balance: 999, Currency: "USD",
+		Brand: "VISA", GradientColors: []string{"#x", "#y"},
+	}
+	result := cardToProto(card)
+	assert.Equal(t, "c1", result.Id)
+	assert.Equal(t, "a1", result.AccountId)
+	assert.Equal(t, "H", result.HolderName)
+	assert.Equal(t, "L", result.CardLabel)
+	assert.Equal(t, "****1234", result.MaskedNumber)
+	assert.Equal(t, int64(999), result.Balance)
+	assert.Equal(t, "USD", result.Currency)
+	assert.Equal(t, "VISA", result.Brand)
+	assert.Equal(t, []string{"#x", "#y"}, result.GradientColors)
+}

@@ -151,3 +151,137 @@ func (s *Server) PrepaidPay(ctx context.Context, req *pb.PrepaidPayRequest) (*pb
 
 	return transactionToProto(result), nil
 }
+
+// AddBeneficiary implements the gRPC AddBeneficiary RPC (JWT protected).
+func (s *Server) AddBeneficiary(ctx context.Context, req *pb.AddBeneficiaryRequest) (*pb.BeneficiaryItem, error) {
+	processId := utils.GetProcessIdFromCtx(ctx)
+
+	claims, ok := ctx.Value("user_claims").(*manager.UserClaims)
+	if !ok || claims == nil {
+		return nil, status.Errorf(codes.Unauthenticated, "Unauthorized")
+	}
+
+	if req.GetAccountId() == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "accountId is required")
+	}
+	if req.GetName() == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "name is required")
+	}
+	if req.GetPhone() == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "phone is required")
+	}
+	if !grpcPhoneRegex.MatchString(req.GetPhone()) {
+		return nil, status.Errorf(codes.InvalidArgument, "phone must be 10-13 digits")
+	}
+
+	created, err := s.provider.CreateBeneficiary(ctx, db.Beneficiary{
+		AccountID: req.GetAccountId(),
+		Name:      req.GetName(),
+		Phone:     req.GetPhone(),
+		Avatar:    req.GetAvatar(),
+	})
+	if err != nil {
+		log.Error(processId, "AddBeneficiary", err.Error(), nil, nil, nil, err)
+		return nil, status.Errorf(codes.Internal, InternalServerErrorMessage)
+	}
+
+	return &pb.BeneficiaryItem{
+		Id:     created.ID,
+		Name:   created.Name,
+		Phone:  created.Phone,
+		Avatar: created.Avatar,
+	}, nil
+}
+
+// SearchBeneficiaries implements the gRPC SearchBeneficiaries RPC (JWT protected).
+func (s *Server) SearchBeneficiaries(ctx context.Context, req *pb.SearchBeneficiariesRequest) (*pb.BeneficiaryListResponse, error) {
+	processId := utils.GetProcessIdFromCtx(ctx)
+
+	claims, ok := ctx.Value("user_claims").(*manager.UserClaims)
+	if !ok || claims == nil {
+		return nil, status.Errorf(codes.Unauthenticated, "Unauthorized")
+	}
+
+	if req.GetAccountId() == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "accountId is required")
+	}
+	if req.GetQuery() == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "query is required")
+	}
+
+	beneficiaries, err := s.provider.SearchBeneficiaries(ctx, req.GetAccountId(), req.GetQuery())
+	if err != nil {
+		log.Error(processId, "SearchBeneficiaries", err.Error(), nil, nil, nil, err)
+		return nil, status.Errorf(codes.Internal, InternalServerErrorMessage)
+	}
+
+	if beneficiaries == nil {
+		beneficiaries = []db.Beneficiary{}
+	}
+
+	return &pb.BeneficiaryListResponse{
+		Beneficiaries: beneficiariesToProto(beneficiaries),
+	}, nil
+}
+
+// GetPaymentCards implements the gRPC GetPaymentCards RPC (JWT protected).
+func (s *Server) GetPaymentCards(ctx context.Context, req *pb.GetPaymentCardsRequest) (*pb.PaymentCardListResponse, error) {
+	processId := utils.GetProcessIdFromCtx(ctx)
+
+	claims, ok := ctx.Value("user_claims").(*manager.UserClaims)
+	if !ok || claims == nil {
+		return nil, status.Errorf(codes.Unauthenticated, "Unauthorized")
+	}
+
+	if req.GetAccountId() == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "accountId is required")
+	}
+
+	cards, err := s.provider.GetCardsByAccountID(ctx, req.GetAccountId())
+	if err != nil {
+		log.Error(processId, "GetPaymentCards", err.Error(), nil, nil, nil, err)
+		return nil, status.Errorf(codes.Internal, InternalServerErrorMessage)
+	}
+
+	if cards == nil {
+		cards = []db.PaymentCard{}
+	}
+
+	return &pb.PaymentCardListResponse{
+		Cards: cardsToProto(cards),
+	}, nil
+}
+
+// CreatePaymentCard implements the gRPC CreatePaymentCard RPC (JWT protected).
+func (s *Server) CreatePaymentCard(ctx context.Context, req *pb.CreatePaymentCardRequest) (*pb.PaymentCardItem, error) {
+	processId := utils.GetProcessIdFromCtx(ctx)
+
+	claims, ok := ctx.Value("user_claims").(*manager.UserClaims)
+	if !ok || claims == nil {
+		return nil, status.Errorf(codes.Unauthenticated, "Unauthorized")
+	}
+
+	if req.GetAccountId() == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "accountId is required")
+	}
+	if req.GetHolderName() == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "holderName is required")
+	}
+
+	created, err := s.provider.CreatePaymentCard(ctx, db.PaymentCard{
+		AccountID:      req.GetAccountId(),
+		HolderName:     req.GetHolderName(),
+		CardLabel:      req.GetCardLabel(),
+		MaskedNumber:   req.GetMaskedNumber(),
+		Balance:        req.GetBalance(),
+		Currency:       req.GetCurrency(),
+		Brand:          req.GetBrand(),
+		GradientColors: req.GetGradientColors(),
+	})
+	if err != nil {
+		log.Error(processId, "CreatePaymentCard", err.Error(), nil, nil, nil, err)
+		return nil, status.Errorf(codes.Internal, InternalServerErrorMessage)
+	}
+
+	return cardToProto(created), nil
+}

@@ -18,6 +18,10 @@ type PaymentServiceServer interface {
 	GetCurrencyList(context.Context, *GetCurrencyListRequest) (*CurrencyListResponse, error)
 	GetBeneficiaries(context.Context, *GetBeneficiariesRequest) (*BeneficiaryListResponse, error)
 	PrepaidPay(context.Context, *PrepaidPayRequest) (*PrepaidPayResponse, error)
+	AddBeneficiary(context.Context, *AddBeneficiaryRequest) (*BeneficiaryItem, error)
+	SearchBeneficiaries(context.Context, *SearchBeneficiariesRequest) (*BeneficiaryListResponse, error)
+	GetPaymentCards(context.Context, *GetPaymentCardsRequest) (*PaymentCardListResponse, error)
+	CreatePaymentCard(context.Context, *CreatePaymentCardRequest) (*PaymentCardItem, error)
 }
 
 // UnimplementedPaymentServiceServer should be embedded to have forward compatible implementations.
@@ -38,6 +42,18 @@ func (UnimplementedPaymentServiceServer) GetBeneficiaries(context.Context, *GetB
 func (UnimplementedPaymentServiceServer) PrepaidPay(context.Context, *PrepaidPayRequest) (*PrepaidPayResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method PrepaidPay not implemented")
 }
+func (UnimplementedPaymentServiceServer) AddBeneficiary(context.Context, *AddBeneficiaryRequest) (*BeneficiaryItem, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddBeneficiary not implemented")
+}
+func (UnimplementedPaymentServiceServer) SearchBeneficiaries(context.Context, *SearchBeneficiariesRequest) (*BeneficiaryListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SearchBeneficiaries not implemented")
+}
+func (UnimplementedPaymentServiceServer) GetPaymentCards(context.Context, *GetPaymentCardsRequest) (*PaymentCardListResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPaymentCards not implemented")
+}
+func (UnimplementedPaymentServiceServer) CreatePaymentCard(context.Context, *CreatePaymentCardRequest) (*PaymentCardItem, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreatePaymentCard not implemented")
+}
 
 // PaymentServiceClient is the client API for PaymentService service.
 type PaymentServiceClient interface {
@@ -46,6 +62,10 @@ type PaymentServiceClient interface {
 	GetCurrencyList(ctx context.Context, in *GetCurrencyListRequest, opts ...grpc.CallOption) (*CurrencyListResponse, error)
 	GetBeneficiaries(ctx context.Context, in *GetBeneficiariesRequest, opts ...grpc.CallOption) (*BeneficiaryListResponse, error)
 	PrepaidPay(ctx context.Context, in *PrepaidPayRequest, opts ...grpc.CallOption) (*PrepaidPayResponse, error)
+	AddBeneficiary(ctx context.Context, in *AddBeneficiaryRequest, opts ...grpc.CallOption) (*BeneficiaryItem, error)
+	SearchBeneficiaries(ctx context.Context, in *SearchBeneficiariesRequest, opts ...grpc.CallOption) (*BeneficiaryListResponse, error)
+	GetPaymentCards(ctx context.Context, in *GetPaymentCardsRequest, opts ...grpc.CallOption) (*PaymentCardListResponse, error)
+	CreatePaymentCard(ctx context.Context, in *CreatePaymentCardRequest, opts ...grpc.CallOption) (*PaymentCardItem, error)
 }
 
 type paymentServiceClient struct {
@@ -103,6 +123,42 @@ func (c *paymentServiceClient) PrepaidPay(ctx context.Context, in *PrepaidPayReq
 	return out, nil
 }
 
+func (c *paymentServiceClient) AddBeneficiary(ctx context.Context, in *AddBeneficiaryRequest, opts ...grpc.CallOption) (*BeneficiaryItem, error) {
+	out := new(BeneficiaryItem)
+	err := c.cc.Invoke(ctx, paymentServiceName+"AddBeneficiary", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *paymentServiceClient) SearchBeneficiaries(ctx context.Context, in *SearchBeneficiariesRequest, opts ...grpc.CallOption) (*BeneficiaryListResponse, error) {
+	out := new(BeneficiaryListResponse)
+	err := c.cc.Invoke(ctx, paymentServiceName+"SearchBeneficiaries", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *paymentServiceClient) GetPaymentCards(ctx context.Context, in *GetPaymentCardsRequest, opts ...grpc.CallOption) (*PaymentCardListResponse, error) {
+	out := new(PaymentCardListResponse)
+	err := c.cc.Invoke(ctx, paymentServiceName+"GetPaymentCards", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *paymentServiceClient) CreatePaymentCard(ctx context.Context, in *CreatePaymentCardRequest, opts ...grpc.CallOption) (*PaymentCardItem, error) {
+	out := new(PaymentCardItem)
+	err := c.cc.Invoke(ctx, paymentServiceName+"CreatePaymentCard", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // PaymentService_ServiceDesc is the grpc.ServiceDesc for PaymentService service.
 var PaymentService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "payment.PaymentService",
@@ -127,6 +183,22 @@ var PaymentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "PrepaidPay",
 			Handler:    _PaymentService_PrepaidPay_Handler,
+		},
+		{
+			MethodName: "AddBeneficiary",
+			Handler:    _PaymentService_AddBeneficiary_Handler,
+		},
+		{
+			MethodName: "SearchBeneficiaries",
+			Handler:    _PaymentService_SearchBeneficiaries_Handler,
+		},
+		{
+			MethodName: "GetPaymentCards",
+			Handler:    _PaymentService_GetPaymentCards_Handler,
+		},
+		{
+			MethodName: "CreatePaymentCard",
+			Handler:    _PaymentService_CreatePaymentCard_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -223,6 +295,78 @@ func _PaymentService_PrepaidPay_Handler(srv interface{}, ctx context.Context, de
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(PaymentServiceServer).PrepaidPay(ctx, req.(*PrepaidPayRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PaymentService_AddBeneficiary_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddBeneficiaryRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PaymentServiceServer).AddBeneficiary(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: paymentServiceName + "AddBeneficiary",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PaymentServiceServer).AddBeneficiary(ctx, req.(*AddBeneficiaryRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PaymentService_SearchBeneficiaries_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SearchBeneficiariesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PaymentServiceServer).SearchBeneficiaries(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: paymentServiceName + "SearchBeneficiaries",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PaymentServiceServer).SearchBeneficiaries(ctx, req.(*SearchBeneficiariesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PaymentService_GetPaymentCards_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPaymentCardsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PaymentServiceServer).GetPaymentCards(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: paymentServiceName + "GetPaymentCards",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PaymentServiceServer).GetPaymentCards(ctx, req.(*GetPaymentCardsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _PaymentService_CreatePaymentCard_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreatePaymentCardRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(PaymentServiceServer).CreatePaymentCard(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: paymentServiceName + "CreatePaymentCard",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(PaymentServiceServer).CreatePaymentCard(ctx, req.(*CreatePaymentCardRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

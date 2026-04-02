@@ -689,3 +689,110 @@ func (x *PrepaidPayResponse) GetTimestamp() string {
 	}
 	return ""
 }
+
+// ── Add Beneficiary Messages ──
+
+type AddBeneficiaryRequest struct {
+	AccountId string `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"accountId,omitempty"`
+	Name      string `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Phone     string `protobuf:"bytes,3,opt,name=phone,proto3" json:"phone,omitempty"`
+	Avatar    string `protobuf:"bytes,4,opt,name=avatar,proto3" json:"avatar,omitempty"`
+}
+
+func (x *AddBeneficiaryRequest) GetAccountId() string {
+	if x != nil {
+		return x.AccountId
+	}
+	return ""
+}
+func (x *AddBeneficiaryRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+func (x *AddBeneficiaryRequest) GetPhone() string {
+	if x != nil {
+		return x.Phone
+	}
+	return ""
+}
+func (x *AddBeneficiaryRequest) GetAvatar() string {
+	if x != nil {
+		return x.Avatar
+	}
+	return ""
+}
+
+// ── Search Beneficiary Messages ──
+
+type SearchBeneficiariesRequest struct {
+	AccountId string `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"accountId,omitempty"`
+	Query     string `protobuf:"bytes,2,opt,name=query,proto3" json:"query,omitempty"`
+}
+
+func (x *SearchBeneficiariesRequest) GetAccountId() string {
+	if x != nil {
+		return x.AccountId
+	}
+	return ""
+}
+func (x *SearchBeneficiariesRequest) GetQuery() string {
+	if x != nil {
+		return x.Query
+	}
+	return ""
+}
+
+// ── Payment Card Messages ──
+
+type GetPaymentCardsRequest struct {
+	AccountId string `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"accountId,omitempty"`
+}
+
+func (x *GetPaymentCardsRequest) GetAccountId() string {
+	if x != nil {
+		return x.AccountId
+	}
+	return ""
+}
+
+type PaymentCardItem struct {
+	Id             string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id"`
+	AccountId      string   `protobuf:"bytes,2,opt,name=account_id,json=accountId,proto3" json:"accountId"`
+	HolderName     string   `protobuf:"bytes,3,opt,name=holder_name,json=holderName,proto3" json:"holderName"`
+	CardLabel      string   `protobuf:"bytes,4,opt,name=card_label,json=cardLabel,proto3" json:"cardLabel"`
+	MaskedNumber   string   `protobuf:"bytes,5,opt,name=masked_number,json=maskedNumber,proto3" json:"maskedNumber"`
+	Balance        int64    `protobuf:"varint,6,opt,name=balance,proto3" json:"balance"`
+	Currency       string   `protobuf:"bytes,7,opt,name=currency,proto3" json:"currency"`
+	Brand          string   `protobuf:"bytes,8,opt,name=brand,proto3" json:"brand"`
+	GradientColors []string `protobuf:"bytes,9,rep,name=gradient_colors,json=gradientColors,proto3" json:"gradientColors"`
+}
+
+type PaymentCardListResponse struct {
+	Cards []*PaymentCardItem `protobuf:"bytes,1,rep,name=cards,proto3" json:"cards"`
+}
+
+type CreatePaymentCardRequest struct {
+	AccountId      string   `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"accountId,omitempty"`
+	HolderName     string   `protobuf:"bytes,2,opt,name=holder_name,json=holderName,proto3" json:"holderName,omitempty"`
+	CardLabel      string   `protobuf:"bytes,3,opt,name=card_label,json=cardLabel,proto3" json:"cardLabel,omitempty"`
+	MaskedNumber   string   `protobuf:"bytes,4,opt,name=masked_number,json=maskedNumber,proto3" json:"maskedNumber,omitempty"`
+	Balance        int64    `protobuf:"varint,5,opt,name=balance,proto3" json:"balance,omitempty"`
+	Currency       string   `protobuf:"bytes,6,opt,name=currency,proto3" json:"currency,omitempty"`
+	Brand          string   `protobuf:"bytes,7,opt,name=brand,proto3" json:"brand,omitempty"`
+	GradientColors []string `protobuf:"bytes,8,rep,name=gradient_colors,json=gradientColors,proto3" json:"gradientColors,omitempty"`
+}
+
+func (x *CreatePaymentCardRequest) GetAccountId() string {
+	if x != nil {
+		return x.AccountId
+	}
+	return ""
+}
+func (x *CreatePaymentCardRequest) GetHolderName() string {
+	if x != nil {
+		return x.HolderName
+	}
+	return ""
+}

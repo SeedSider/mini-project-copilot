@@ -28,6 +28,11 @@ var (
 	_ *bff_service.BeneficiaryListResponse
 	_ *bff_service.PrepaidPayRequest
 	_ *bff_service.PrepaidPayResponse
+	_ *bff_service.AddBeneficiaryRequest
+	_ *bff_service.SearchBeneficiariesRequest
+	_ *bff_service.PaymentCardItem
+	_ *bff_service.PaymentCardListResponse
+	_ *bff_service.CreatePaymentCardRequest
 )
 
 // Swagger documentation stubs for endpoints that share a single handler

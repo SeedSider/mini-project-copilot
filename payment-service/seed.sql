@@ -31,3 +31,9 @@ INSERT INTO beneficiary (account_id, name, phone, avatar) VALUES
   ('acc-001', 'Jane Smith', '087654321012', ''),
   ('acc-001', 'Bob Wilson', '082112345678', '')
 ON CONFLICT DO NOTHING;
+
+-- Payment Cards (sample cards for test account)
+INSERT INTO payment_card (id, account_id, holder_name, card_label, masked_number, balance, currency, brand, gradient_colors) VALUES
+  ('card-001', 'acc-001', 'John Doe', 'Primary Card', '**** **** **** 1234', 500000, 'USD', 'VISA', '{"#1a2980","#26d0ce"}'),
+  ('card-002', 'acc-001', 'John Doe', 'Business Card', '**** **** **** 5678', 1000000, 'USD', 'MASTERCARD', '{"#eb3349","#f45c43"}')
+ON CONFLICT DO NOTHING;

@@ -15,6 +15,7 @@ services:
       - ./migrations/003_add_currencies.sql:/docker-entrypoint-initdb.d/003_add_currencies.sql
       - ./migrations/004_add_beneficiaries.sql:/docker-entrypoint-initdb.d/004_add_beneficiaries.sql
       - ./migrations/005_add_prepaid_transactions.sql:/docker-entrypoint-initdb.d/005_add_prepaid_transactions.sql
+      - ./migrations/006_add_payment_cards.sql:/docker-entrypoint-initdb.d/006_add_payment_cards.sql
       - ./seed.sql:/docker-entrypoint-initdb.d/seed.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
@@ -29,14 +30,7 @@ services:
     container_name: payment-service
     restart: on-failure
     command:
-      [
-        "./server",
-        "grpc-gw-server",
-        "--port1",
-        "9304",
-        "--port2",
-        "8082",
-      ]
+      ["./server", "grpc-gw-server", "--port1", "9304", "--port2", "8082"]
     ports:
       - "8082:8082"
       - "9304:9304"

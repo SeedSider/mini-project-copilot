@@ -84,6 +84,49 @@ type PrepaidPayResponse struct {
 	Timestamp string `protobuf:"bytes,4,opt,name=timestamp,proto3" json:"timestamp"`
 }
 
+type AddBeneficiaryRequest struct {
+	AccountId string `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"accountId"`
+	Name      string `protobuf:"bytes,2,opt,name=name,proto3" json:"name"`
+	Phone     string `protobuf:"bytes,3,opt,name=phone,proto3" json:"phone"`
+	Avatar    string `protobuf:"bytes,4,opt,name=avatar,proto3" json:"avatar"`
+}
+
+type SearchBeneficiariesRequest struct {
+	AccountId string `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"accountId"`
+	Query     string `protobuf:"bytes,2,opt,name=query,proto3" json:"query"`
+}
+
+type GetPaymentCardsRequest struct {
+	AccountId string `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"accountId"`
+}
+
+type PaymentCardItem struct {
+	Id             string   `protobuf:"bytes,1,opt,name=id,proto3" json:"id"`
+	AccountId      string   `protobuf:"bytes,2,opt,name=account_id,json=accountId,proto3" json:"accountId"`
+	HolderName     string   `protobuf:"bytes,3,opt,name=holder_name,json=holderName,proto3" json:"holderName"`
+	CardLabel      string   `protobuf:"bytes,4,opt,name=card_label,json=cardLabel,proto3" json:"cardLabel"`
+	MaskedNumber   string   `protobuf:"bytes,5,opt,name=masked_number,json=maskedNumber,proto3" json:"maskedNumber"`
+	Balance        int64    `protobuf:"varint,6,opt,name=balance,proto3" json:"balance"`
+	Currency       string   `protobuf:"bytes,7,opt,name=currency,proto3" json:"currency"`
+	Brand          string   `protobuf:"bytes,8,opt,name=brand,proto3" json:"brand"`
+	GradientColors []string `protobuf:"bytes,9,rep,name=gradient_colors,json=gradientColors,proto3" json:"gradientColors"`
+}
+
+type PaymentCardListResponse struct {
+	Cards []*PaymentCardItem `protobuf:"bytes,1,rep,name=cards,proto3" json:"cards,omitempty"`
+}
+
+type CreatePaymentCardRequest struct {
+	AccountId      string   `protobuf:"bytes,1,opt,name=account_id,json=accountId,proto3" json:"accountId"`
+	HolderName     string   `protobuf:"bytes,2,opt,name=holder_name,json=holderName,proto3" json:"holderName"`
+	CardLabel      string   `protobuf:"bytes,3,opt,name=card_label,json=cardLabel,proto3" json:"cardLabel"`
+	MaskedNumber   string   `protobuf:"bytes,4,opt,name=masked_number,json=maskedNumber,proto3" json:"maskedNumber"`
+	Balance        int64    `protobuf:"varint,5,opt,name=balance,proto3" json:"balance"`
+	Currency       string   `protobuf:"bytes,6,opt,name=currency,proto3" json:"currency"`
+	Brand          string   `protobuf:"bytes,7,opt,name=brand,proto3" json:"brand"`
+	GradientColors []string `protobuf:"bytes,8,rep,name=gradient_colors,json=gradientColors,proto3" json:"gradientColors"`
+}
+
 // ── Client interface ──
 
 type PaymentServiceClient interface {
@@ -92,6 +135,10 @@ type PaymentServiceClient interface {
 	GetCurrencyList(ctx context.Context, in *GetCurrencyListRequest, opts ...grpc.CallOption) (*CurrencyListResponse, error)
 	GetBeneficiaries(ctx context.Context, in *GetBeneficiariesRequest, opts ...grpc.CallOption) (*BeneficiaryListResponse, error)
 	PrepaidPay(ctx context.Context, in *PrepaidPayRequest, opts ...grpc.CallOption) (*PrepaidPayResponse, error)
+	AddBeneficiary(ctx context.Context, in *AddBeneficiaryRequest, opts ...grpc.CallOption) (*BeneficiaryItem, error)
+	SearchBeneficiaries(ctx context.Context, in *SearchBeneficiariesRequest, opts ...grpc.CallOption) (*BeneficiaryListResponse, error)
+	GetPaymentCards(ctx context.Context, in *GetPaymentCardsRequest, opts ...grpc.CallOption) (*PaymentCardListResponse, error)
+	CreatePaymentCard(ctx context.Context, in *CreatePaymentCardRequest, opts ...grpc.CallOption) (*PaymentCardItem, error)
 }
 
 type paymentServiceClient struct {
@@ -143,6 +190,42 @@ func (c *paymentServiceClient) GetBeneficiaries(ctx context.Context, in *GetBene
 func (c *paymentServiceClient) PrepaidPay(ctx context.Context, in *PrepaidPayRequest, opts ...grpc.CallOption) (*PrepaidPayResponse, error) {
 	out := new(PrepaidPayResponse)
 	err := c.cc.Invoke(ctx, paymentServiceName+"PrepaidPay", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *paymentServiceClient) AddBeneficiary(ctx context.Context, in *AddBeneficiaryRequest, opts ...grpc.CallOption) (*BeneficiaryItem, error) {
+	out := new(BeneficiaryItem)
+	err := c.cc.Invoke(ctx, paymentServiceName+"AddBeneficiary", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *paymentServiceClient) SearchBeneficiaries(ctx context.Context, in *SearchBeneficiariesRequest, opts ...grpc.CallOption) (*BeneficiaryListResponse, error) {
+	out := new(BeneficiaryListResponse)
+	err := c.cc.Invoke(ctx, paymentServiceName+"SearchBeneficiaries", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *paymentServiceClient) GetPaymentCards(ctx context.Context, in *GetPaymentCardsRequest, opts ...grpc.CallOption) (*PaymentCardListResponse, error) {
+	out := new(PaymentCardListResponse)
+	err := c.cc.Invoke(ctx, paymentServiceName+"GetPaymentCards", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *paymentServiceClient) CreatePaymentCard(ctx context.Context, in *CreatePaymentCardRequest, opts ...grpc.CallOption) (*PaymentCardItem, error) {
+	out := new(PaymentCardItem)
+	err := c.cc.Invoke(ctx, paymentServiceName+"CreatePaymentCard", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
